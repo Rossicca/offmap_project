@@ -993,13 +993,18 @@ html, body {
   cursor: grab;
   touch-action: none;
   user-select: none;
+  -webkit-user-drag: none;
   transition: filter 160ms ease, opacity 160ms ease;
   will-change: left, top;
 }
+.scene-object * { pointer-events: none; user-select: none; -webkit-user-drag: none; }
 .scene-object:active:not(:disabled) { transform: translate(-50%, -50%); }
 .scene-object:hover { filter: contrast(1.03) drop-shadow(0 7px 8px rgba(54, 48, 39, .16)); }
 .scene-object.is-dragging { z-index: 30; cursor: grabbing; filter: contrast(1.04) drop-shadow(0 15px 13px rgba(54, 48, 39, .2)); }
 .scene-object.is-dragging::after { content: ""; position: absolute; inset: -8px; border: 1px dashed rgba(76, 119, 148, .8); border-radius: 8px; pointer-events: none; }
+.scene-object::before { content: "↔"; position: absolute; z-index: 40; left: 50%; top: -24px; min-width: 24px; height: 22px; display: grid; place-items: center; border: 1px solid rgba(47,50,50,.7); border-radius: 999px; color: #354b5a; background: rgba(250,248,241,.94); box-shadow: 0 3px 8px rgba(47,50,50,.16); opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(4px); transition: opacity 140ms ease, transform 140ms ease; font-size: .72rem; font-weight: 900; }
+.scene-object:hover::before, .scene-object:focus-visible::before, .scene-object.is-dragging::before { opacity: 1; transform: translateX(-50%) translateY(0); }
+.scene-object.is-dragging { transition: none; }
 .scene-object > span { filter: none; }
 .motion-avatar, .motion-dog { filter: saturate(.72) contrast(.96) drop-shadow(0 8px 6px rgba(54, 48, 39, .14)); }
 .uploaded-avatar-art { filter: saturate(.7) contrast(.98); }
@@ -1073,6 +1078,9 @@ html, body {
 .object-position-list article > header b { font-size: .82rem; }
 .object-position-list article > header button { min-height: 28px; padding: 0 8px; border: 1px solid #d6a29e; border-radius: 7px; color: #a7352e; background: #fff3f1; font-size: .67rem; font-weight: 900; cursor: pointer; }
 .object-position-list article.is-custom-object { border-color: #ef998f; background: #fff8f0; }
+.object-layer-controls { margin-top: 9px; padding-top: 9px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px; border-top: 1px dashed #b8ccd4; }
+.object-layer-controls span { color: #557284; font-size: .69rem; font-weight: 900; }
+.object-layer-controls button { min-height: 30px; padding: 0 8px; border: 1px solid #8da8b5; border-radius: 7px; color: #315b75; background: #f7fbfc; font-size: .65rem; font-weight: 900; cursor: pointer; }
 
 .world-drawing-backdrop { position: fixed; z-index: 110; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(23,50,77,.58); }
 .world-drawing-editor { width: min(980px, 100%); max-height: calc(100dvh - 40px); padding: 22px; display: grid; gap: 14px; overflow-y: auto; border: 3px solid var(--ink); border-radius: 25px; background: #fffaf0; box-shadow: 12px 14px 0 rgba(23,50,77,.35); }
@@ -1095,6 +1103,11 @@ html, body {
 .world-drawing-editor footer p { margin: 0; color: #557284; font-size: .78rem; font-weight: 800; }
 .world-drawing-editor footer > div { display: flex; gap: 8px; flex: 0 0 auto; }
 .world-drawing-editor footer .primary-button { color: #fff; background: var(--red); }
+.world-drawing-editor footer .primary-button:disabled { opacity: .45; cursor: not-allowed; }
+.world-drawing-editor.is-embedded { width: min(1080px, calc(100% - 24px)); max-height: none; margin: 0 auto 64px; box-shadow: 9px 9px 0 var(--ink); }
+.world-drawing-editor.is-embedded .world-drawing-paper { min-height: 430px; }
+.world-drawing-editor.is-embedded .world-drawing-paper canvas { min-height: 430px; aspect-ratio: 3 / 2; }
+.world-drawing-editor.is-embedded .world-drawing-paper { background-color: #fff; background-image: linear-gradient(45deg,#e9eef0 25%,transparent 25%),linear-gradient(-45deg,#e9eef0 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9eef0 75%),linear-gradient(-45deg,transparent 75%,#e9eef0 75%); background-position: 0 0,0 12px,12px -12px,-12px 0; background-size: 24px 24px; }
 
 
 .custom-world-background { position: absolute; z-index: 0; inset: 0; pointer-events: none; background-position: center; background-repeat: no-repeat; background-size: 100% 100%; transition: filter 1.5s ease; }
@@ -1106,6 +1119,9 @@ html, body {
 .custom-drawn-object { z-index: 5; width: clamp(105px, 11vw, 155px); height: clamp(105px, 11vw, 155px); }
 .custom-drawn-object.custom-kind-house { width: clamp(145px, 16vw, 220px); height: clamp(125px, 14vw, 190px); }
 .custom-drawn-art { position: absolute; inset: 0; display: block; background-position: center bottom; background-repeat: no-repeat; background-size: contain; filter: drop-shadow(0 9px 4px rgba(23,50,77,.2)) !important; }
+.custom-house-door { position: absolute; z-index: 3; left: 50%; bottom: 10%; width: 22%; height: 34%; display: block; border: 2px solid var(--ink); border-radius: 4px 4px 1px 1px; background: #9b5f43; box-shadow: inset -5px 0 rgba(23,50,77,.12); transform: translateX(-50%) perspective(90px) rotateY(0); transform-origin: left center; transition: transform 420ms ease; }
+.custom-house-door.is-open { transform: translateX(-50%) perspective(90px) rotateY(-68deg); }
+.custom-house-door i { position: absolute; right: 12%; top: 52%; width: 4px; height: 4px; border-radius: 50%; background: #ffd86d; }
 .custom-drawn-object > b { position: absolute; z-index: 2; left: 50%; bottom: -19px; padding: 3px 7px; border: 1px solid var(--ink); border-radius: 999px; background: rgba(255,255,255,.9); transform: translateX(-50%); font-size: .62rem; white-space: nowrap; }
 .custom-drawn-object.is-animating.custom-kind-animal { animation: custom-animal-hop 780ms ease-in-out; }
 .custom-drawn-object.is-animating.custom-kind-character { animation: custom-character-wave 800ms ease-in-out; }
@@ -1173,7 +1189,6 @@ html, body {
   .drawing-history-actions button { flex: 1; }
   .drawing-canvas-footer, .drawing-canvas-footer > div { align-items: stretch; flex-direction: column; width: 100%; }
 }
-
 /* AI companion home — soft crayon UI based on the product's visual direction. */
 .companion-home {
   --crayon-blue: #a9dded;
@@ -1238,6 +1253,7 @@ html, body {
 .companion-action.sunshine { color: #9b4319; background: #ffe17a; }.companion-action.sunshine span { color: #c67124; }
 .companion-action.leaf { color: #fff; background: #acd862; }.companion-action.leaf span { color: #8fbd42; }
 .draw-own-button, .studio-back { justify-self: center; border: 0; color: #6caac0; background: transparent; font-weight: 800; cursor: pointer; }
+.companion-secondary-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }.companion-secondary-actions button { border: 0; color: #6caac0; background: transparent; font-weight: 800; cursor: pointer; }.companion-secondary-actions button:hover { color: #e17e68; }
 .studio-back { margin: 22px 0 0 4vw; min-height: 42px; font-size: 1rem; }
 .companion-error { margin: 0; color: #bd4b3e; font-size: .8rem; font-weight: 800; }
 

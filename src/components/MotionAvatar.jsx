@@ -47,7 +47,7 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
   return (
     <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
       {avatar.isUploaded
-        ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" />
+        ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
@@ -67,5 +67,4 @@ export function MotionDog({ action, showJoints }) {
     </div>
   );
 }
-
 

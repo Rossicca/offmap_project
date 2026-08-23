@@ -112,13 +112,38 @@ export default function App() {
   };
 
 
+  const createBackgroundWorld = (background) => {
+    const avatar = avatarCatalog[0];
+    const sceneObjects = demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object });
+    setCurrentProjectId(null);
+    setSelectedAvatar(avatar);
+    setCompanions([avatar]);
+    setAnalysis({
+      sceneObjects,
+      source: "background-canvas",
+      previewUrl: null,
+      savedState: {
+        sceneObjects,
+        sceneTheme: "meadow",
+        worldArt: { house: null, background },
+        customObjects: [],
+        replacedTypes: [],
+      },
+      rigAnalysis: {
+        person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints },
+        dog: { type: "小狗", joints: 7, movable: ["头", "躯干", "四腿", "尾巴"] },
+      },
+    });
+  };
+
+
   const saveProject = (snapshot) => {
     const id = currentProjectId || `project-${Date.now()}`;
     const now = new Date().toISOString();
     setProjects((current) => {
       const existing = current.find((project) => project.id === id);
       const avatarData = selectedAvatar?.isUploaded ? { ...selectedAvatar } : null;
-      const project = { id, name: existing?.name || `${selectedAvatar?.name || "我的角色"}的世界`, avatarId: selectedAvatar?.id || "explorer", avatarData, companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
+      const project = { id, name: existing?.name || (analysis?.source === "background-canvas" ? "我的手绘背景世界" : `${selectedAvatar?.name || "我的角色"}的世界`), avatarId: selectedAvatar?.id || "explorer", avatarData, companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
       const next = [project, ...current.filter((item) => item.id !== id)].slice(0, 20);
       while (next.length > 1 && JSON.stringify(next).length > 4_200_000) next.pop();
       return next;
@@ -168,5 +193,5 @@ export default function App() {
 
   return analysis
     ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
-    : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
+    : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 }
