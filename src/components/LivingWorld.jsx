@@ -13,6 +13,7 @@ import ObjectDrawingEditor from "./ObjectDrawingEditor";
 import CustomSceneObject from "./CustomSceneObject";
 import ParentControls from "./ParentControls";
 import { screenChildMessage } from "../utils/safety";
+import { chatWithArk } from "../utils/api";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -204,7 +205,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   };
 
 
-  const handleConversation = (text) => {
+  const handleConversation = async (text) => {
     const screened = screenChildMessage(text, safety.safeChat);
     appendMessage("user", screened.text);
     if (!screened.safe) {
@@ -219,13 +220,25 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     setSuggestions([]);
 
 
-    later(() => {
-      const reply = createCharacterReply(text, {
+    try {
+      let reply;
+      try {
+        reply = await chatWithArk({
+          text,
+          name: characterName,
+          sceneObjects: objects,
+          persistentState,
+          history: messages.slice(-8),
+        });
+      } catch (error) {
+        console.warn("Chat API unavailable; using local reply fallback:", error.message);
+        reply = createCharacterReply(text, {
         name: characterName,
         turn: messages.length,
         sceneObjects: objects,
         persistentState,
-      });
+        });
+      }
       if (reply.target === "person1" && activeCompanionId !== selectedAvatar?.id) reply.target = "person2";
       setTyping(false);
       appendMessage("assistant", reply.text);
@@ -234,7 +247,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
       setBubbleVisible(true);
       if (reply.target && reply.action) playAction(reply.target, reply.action, reply.text);
       later(() => setBubbleVisible(false), 2800);
-    }, 560);
+    } finally {
+      setTyping(false);
+    }
   };
 
 
