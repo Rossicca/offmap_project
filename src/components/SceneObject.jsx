@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
 import MotionAvatar, { MotionDog } from "./MotionAvatar";
 
+
 const emojiByType = { person: "🧒", sun: "☀️", tree: "🌳", dog: "🐕", food: "🍎" };
+
 
 function WorldProp({ type }) {
   if (type === "sun") return <span className="world-sun-art" aria-hidden="true"><i /></span>;
@@ -10,7 +12,8 @@ function WorldProp({ type }) {
   return <span aria-hidden="true">{emojiByType[type]}</span>;
 }
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, avatar, showJoints }) {
+
+export default function SceneObject({ object, action, persistentState, onInteract, onMove, avatar, showJoints, houseArt }) {
   const dragRef = useRef(null);
   const suppressClickRef = useRef(false);
   const [dragging, setDragging] = useState(false);
@@ -61,6 +64,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
   };
   const dragHandlers = { onPointerDown: startDrag, onPointerMove: moveDrag, onPointerUp: endDrag, onPointerCancel: cancelDrag };
 
+
   if (object.type === "house") {
     const doorOpen = persistentState.doorOpen;
     return (
@@ -74,14 +78,19 @@ export default function SceneObject({ object, action, persistentState, onInterac
         onClick={() => activate(() => onInteract(object.id, doorOpen ? "closeDoor" : "openDoor"))}
         {...dragHandlers}
       >
-        <span className="house-roof" aria-hidden="true" />
-        <span className="house-body" aria-hidden="true">
-          <i className="window left" /><i className="window right" />
-          <i className={`door ${doorOpen ? "is-open" : ""}`}><b /></i>
-        </span>
+        {houseArt
+          ? <span className="custom-house-art" style={{ backgroundImage: `url(${houseArt})` }} aria-hidden="true" />
+          : <>
+            <span className="house-roof" aria-hidden="true" />
+            <span className="house-body" aria-hidden="true">
+              <i className="window left" /><i className="window right" />
+              <i className={`door ${doorOpen ? "is-open" : ""}`}><b /></i>
+            </span>
+          </>}
       </button>
     );
   }
+
 
   const hidden = object.type === "food" && persistentState.appleHidden;
   const isRiggedPerson = object.type === "person" && avatar;

@@ -1,6 +1,7 @@
 import { demoScene } from "../data/demoScene";
 import { analyzeAnimalRig } from "../data/animalRigProfiles";
 
+
 function createLocalPreview(file) {
   return new Promise((resolve, reject) => {
     const sourceUrl = URL.createObjectURL(file);
@@ -12,11 +13,14 @@ function createLocalPreview(file) {
       canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
       canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
       const context = canvas.getContext("2d");
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      const preserveTransparency = file.type === "image/png";
+      if (!preserveTransparency) {
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(sourceUrl);
-      resolve(canvas.toDataURL("image/jpeg", .76));
+      resolve(preserveTransparency ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", .76));
     };
     image.onerror = () => {
       URL.revokeObjectURL(sourceUrl);
@@ -26,14 +30,17 @@ function createLocalPreview(file) {
   });
 }
 
+
 export async function analyzeDrawing(image) {
   if (!(image instanceof File) || !image.type.startsWith("image/")) {
     throw new Error("请选择一张图片文件。支持 JPG、PNG、WEBP 或 GIF。 ");
   }
 
+
   if (image.size > 12 * 1024 * 1024) {
     throw new Error("图片有点大，请选择 12MB 以内的图片。 ");
   }
+
 
   // Demo fallback: keep this boundary stable so a real Vision API can replace it later.
   await new Promise((resolve) => window.setTimeout(resolve, 850));
@@ -48,3 +55,5 @@ export async function analyzeDrawing(image) {
     },
   };
 }
+
+

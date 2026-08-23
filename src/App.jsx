@@ -7,7 +7,9 @@ import { avatarCatalog } from "./data/avatarCatalog";
 import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
 
+
 const releasePreview = (url) => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
+
 
 export default function App() {
   const [userName, setUserNameState] = useState(() => localStorage.getItem("living-drawing-name") || "");
@@ -25,8 +27,10 @@ export default function App() {
   });
   const previewUrlRef = useRef(null);
 
+
   useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem("living-drawing-safety", JSON.stringify(safety)); }, [safety]);
+
 
   const setUserName = (name) => {
     setUserNameState(name);
@@ -34,9 +38,11 @@ export default function App() {
     else localStorage.removeItem("living-drawing-name");
   };
 
+
   useEffect(() => () => {
     releasePreview(previewUrlRef.current);
   }, []);
+
 
   const upload = async (file) => {
     setBusy(true);
@@ -55,6 +61,7 @@ export default function App() {
     }
   };
 
+
   const reset = () => {
     releasePreview(previewUrlRef.current);
     previewUrlRef.current = null;
@@ -64,6 +71,7 @@ export default function App() {
     setError("");
     setCurrentProjectId(null);
   };
+
 
   const confirmRig = (nextAnalysis) => {
     const rig = nextAnalysis.rigAnalysis.person;
@@ -85,6 +93,7 @@ export default function App() {
     });
   };
 
+
   const chooseAvatar = (selection) => {
     const selectedCompanions = Array.isArray(selection) ? selection.filter(Boolean) : [selection];
     const avatar = selectedCompanions[0];
@@ -102,6 +111,7 @@ export default function App() {
     });
   };
 
+
   const saveProject = (snapshot) => {
     const id = currentProjectId || `project-${Date.now()}`;
     const now = new Date().toISOString();
@@ -116,6 +126,7 @@ export default function App() {
     setCurrentProjectId(id);
   };
 
+
   const openProject = (project) => {
     const restoredUploadedAvatar = project.avatarData?.isUploaded ? project.avatarData : null;
     const restoredCompanions = restoredUploadedAvatar ? [restoredUploadedAvatar] : (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
@@ -127,15 +138,18 @@ export default function App() {
     setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: restoredUploadedAvatar ? "saved-upload" : "saved-project", previewUrl: restoredUploadedAvatar?.imageUrl || null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints, nodes: avatar.rigNodes }, dog: { type: "小狗", joints: 7 } } });
   };
 
+
   const renameProject = (id) => {
     const current = projects.find((project) => project.id === id);
     const name = window.prompt("给作品取一个新名字", current?.name || "我的作品")?.trim();
     if (name) setProjects((items) => items.map((project) => project.id === id ? { ...project, name, updatedAt: new Date().toISOString() } : project));
   };
 
+
   const deleteProject = (id) => {
     if (window.confirm("确定删除这个本地作品吗？")) setProjects((items) => items.filter((project) => project.id !== id));
   };
+
 
   const clearLocalData = () => {
     if (!window.confirm("确定清除所有本地作品、聊天和语音设置吗？此操作无法撤销。")) return;
@@ -145,9 +159,12 @@ export default function App() {
     if (analysis) reset();
   };
 
+
   if (!userName) return <LoginScreen onLogin={setUserName} />;
 
+
   if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={confirmRig} onCancel={reset} />;
+
 
   return analysis
     ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />

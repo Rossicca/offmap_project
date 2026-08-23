@@ -1,5 +1,6 @@
 import dogMotion from "../assets/dog-motion-paper.png";
 
+
 const frameByAction = {
   wave: "100% 0%",
   jump: "0% 100%",
@@ -10,7 +11,9 @@ const frameByAction = {
   rest: "0% 0%",
 };
 
+
 const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "休息一下" };
+
 
 const humanNodes = [
   ["头", 50, 25], ["身体", 50, 54],
@@ -18,10 +21,12 @@ const humanNodes = [
   ["左髋", 43, 67], ["左膝", 40, 80], ["右髋", 57, 67], ["右膝", 60, 80],
 ];
 
+
 const rabbitNodes = [
   ["头", 50, 31], ["身体", 50, 60], ["左耳", 39, 12], ["右耳", 61, 12],
   ["左前爪", 29, 53], ["右前爪", 72, 53], ["左后腿", 42, 78], ["右后腿", 59, 78], ["尾巴", 76, 65],
 ];
+
 
 function JointOverlay({ species, calibratedNodes }) {
   const nodes = calibratedNodes?.length
@@ -36,6 +41,7 @@ function JointOverlay({ species, calibratedNodes }) {
   );
 }
 
+
 export default function MotionAvatar({ avatar, action, showJoints }) {
   const frame = frameByAction[action] || "0% 0%";
   return (
@@ -49,6 +55,7 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
   );
 }
 
+
 export function MotionDog({ action, showJoints }) {
   const dogFrames = { idle: "0% 0%", move: "100% 0%", jump: "0% 100%", sit: "100% 100%" };
   const frame = dogFrames[action] || dogFrames.idle;
@@ -60,3 +67,5 @@ export function MotionDog({ action, showJoints }) {
     </div>
   );
 }
+
+
