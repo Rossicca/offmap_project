@@ -6,3 +6,5 @@ export const demoScene = [
   { id: "dog1", type: "dog", x: 62, y: 63, actions: ["move", "jump"], label: "小狗" },
   { id: "apple1", type: "food", x: 51, y: 69, actions: ["feed"], label: "苹果" },
 ];
+
+export const companionObject = { id: "person2", type: "person", x: 54, y: 57, actions: ["wave", "jump", "eat"], label: "搭档" };

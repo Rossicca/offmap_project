@@ -9,7 +9,7 @@ function WorldProp({ type }) {
   return <span aria-hidden="true">{emojiByType[type]}</span>;
 }
 
-export default function SceneObject({ object, action, persistentState, onInteract, selectedAvatar, showJoints }) {
+export default function SceneObject({ object, action, persistentState, onInteract, avatar, showJoints }) {
   if (object.type === "house") {
     const doorOpen = persistentState.doorOpen;
     return (
@@ -30,7 +30,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
   }
 
   const hidden = object.type === "food" && persistentState.appleHidden;
-  const isRiggedPerson = object.type === "person" && selectedAvatar;
+  const isRiggedPerson = object.type === "person" && avatar;
   const isRiggedDog = object.type === "dog";
   return (
     <button
@@ -42,7 +42,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={selectedAvatar} action={action} showJoints={showJoints} />
+        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} />}

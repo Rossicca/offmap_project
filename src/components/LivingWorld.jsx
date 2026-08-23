@@ -9,8 +9,10 @@ import StoryMode from "./StoryMode";
 import ExportPanel from "./ExportPanel";
 import SceneEditor from "./SceneEditor";
 
-export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName, initialState, onSave }) {
-  const characterName = selectedAvatar?.name || "画中小伙伴";
+export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave }) {
+  const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
+  const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
+  const characterName = activeCompanion?.name || "画中小伙伴";
   const [objects, setObjects] = useState(() => initialState?.sceneObjects || sceneObjects);
   const [sceneTheme, setSceneTheme] = useState(initialState?.sceneTheme || "meadow");
   const [activeActions, setActiveActions] = useState({});
@@ -90,6 +92,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         sceneObjects: objects,
         persistentState,
       });
+      if (reply.target === "person1" && activeCompanionId !== selectedAvatar?.id) reply.target = "person2";
       setTyping(false);
       appendMessage("assistant", reply.text);
       setSuggestions(reply.suggestions || []);
@@ -141,7 +144,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
               action={activeActions[object.id]}
               persistentState={persistentState}
               onInteract={handleDirectAction}
-              selectedAvatar={selectedAvatar}
+              avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
               showJoints={showJoints}
             />
           ))}
@@ -157,6 +160,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
       <ConversationPanel
         characterName={characterName}
+        companions={companions}
+        activeCompanionId={activeCompanionId}
+        onCompanionChange={setActiveCompanionId}
         messages={messages}
         suggestions={suggestions}
         typing={typing}

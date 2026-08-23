@@ -4,13 +4,14 @@ import LoginScreen from "./components/LoginScreen";
 import LivingWorld from "./components/LivingWorld";
 import RigEditor from "./components/RigEditor";
 import { avatarCatalog } from "./data/avatarCatalog";
-import { demoScene } from "./data/demoScene";
+import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
 
 export default function App() {
   const [userName, setUserName] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [companions, setCompanions] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [currentProjectId, setCurrentProjectId] = useState(null);
@@ -30,6 +31,7 @@ export default function App() {
     try {
       const result = await analyzeDrawing(file);
       setSelectedAvatar(avatarCatalog[0]);
+      setCompanions([avatarCatalog[0]]);
       setAnalysis({ ...result, needsRigSetup: true });
     } catch (uploadError) {
       setError(uploadError.message || "这张图片暂时打不开，请换一张试试。 ");
@@ -42,15 +44,19 @@ export default function App() {
     if (analysis?.previewUrl) URL.revokeObjectURL(analysis.previewUrl);
     setAnalysis(null);
     setSelectedAvatar(null);
+    setCompanions([]);
     setError("");
     setCurrentProjectId(null);
   };
 
-  const chooseAvatar = (avatar) => {
+  const chooseAvatar = (selection) => {
+    const selectedCompanions = Array.isArray(selection) ? selection.filter(Boolean) : [selection];
+    const avatar = selectedCompanions[0];
     setCurrentProjectId(null);
     setSelectedAvatar(avatar);
+    setCompanions(selectedCompanions);
     setAnalysis({
-      sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }),
+      sceneObjects: [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(selectedCompanions[1] ? [{ ...companionObject, avatarId: selectedCompanions[1].id, label: selectedCompanions[1].name }] : [])],
       source: "avatar-library",
       previewUrl: null,
       rigAnalysis: {
@@ -65,17 +71,19 @@ export default function App() {
     const now = new Date().toISOString();
     setProjects((current) => {
       const existing = current.find((project) => project.id === id);
-      const project = { id, name: existing?.name || `${selectedAvatar?.name || "我的角色"}的世界`, avatarId: selectedAvatar?.id || "explorer", createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
+      const project = { id, name: existing?.name || `${selectedAvatar?.name || "我的角色"}的世界`, avatarId: selectedAvatar?.id || "explorer", companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
       return [project, ...current.filter((item) => item.id !== id)].slice(0, 20);
     });
     setCurrentProjectId(id);
   };
 
   const openProject = (project) => {
-    const avatar = avatarCatalog.find((item) => item.id === project.avatarId) || avatarCatalog[0];
+    const restoredCompanions = (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
+    const avatar = restoredCompanions[0] || avatarCatalog[0];
     setSelectedAvatar(avatar);
+    setCompanions(restoredCompanions.length ? restoredCompanions : [avatar]);
     setCurrentProjectId(project.id);
-    setAnalysis({ sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), source: "saved-project", previewUrl: null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints }, dog: { type: "小狗", joints: 7 } } });
+    setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: "saved-project", previewUrl: null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints }, dog: { type: "小狗", joints: 7 } } });
   };
 
   const renameProject = (id) => {
@@ -93,6 +101,6 @@ export default function App() {
   if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={setAnalysis} onCancel={reset} />;
 
   return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} />
+    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} />
     : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 }

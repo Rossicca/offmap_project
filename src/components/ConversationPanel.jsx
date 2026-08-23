@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const defaultSuggestions = ["你好呀！", "你喜欢什么？", "我们去冒险吧"];
 
-export default function ConversationPanel({ characterName, messages, suggestions = defaultSuggestions, typing, onSend }) {
+export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend }) {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   const [voiceReply, setVoiceReply] = useState(() => localStorage.getItem("living-drawing-voice") === "on");
@@ -71,6 +71,7 @@ export default function ConversationPanel({ characterName, messages, suggestions
         <div><h2 id="conversation-title">和{characterName}聊聊天</h2><p><i /> 正在这个小世界里陪你</p></div>
         <button className={`voice-reply-toggle ${voiceReply ? "is-active" : ""}`} type="button" onClick={toggleVoiceReply} aria-pressed={voiceReply} aria-label={voiceReply ? "关闭角色朗读" : "开启角色朗读"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path d="M17 9c1.5 1.5 1.5 4.5 0 6M19.5 6.5c3 3 3 8 0 11"/></svg></button>
       </header>
+      {companions.length > 1 && <div className="conversation-people" aria-label="选择聊天对象">{companions.map((avatar) => <button type="button" key={avatar.id} className={activeCompanionId === avatar.id ? "is-active" : ""} onClick={() => onCompanionChange(avatar.id)} aria-pressed={activeCompanionId === avatar.id}>{avatar.name}</button>)}</div>}
 
       <div className="conversation-log" ref={logRef} role="log" aria-live="polite" aria-label="对话记录">
         {messages.map((message) => (

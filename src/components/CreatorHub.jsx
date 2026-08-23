@@ -6,6 +6,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
   const inputRef = useRef(null);
   const [mode, setMode] = useState("avatar");
   const [selected, setSelected] = useState(avatarCatalog[0]);
+  const [partnerId, setPartnerId] = useState("");
   const [showGallery, setShowGallery] = useState(false);
 
   return (
@@ -61,8 +62,9 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
               <h2>{selected.name}</h2>
               <div className="joint-tags">{selected.joints.map((joint) => <em key={joint}>{joint}</em>)}</div>
               <p className="avatar-conversion-note">进入世界后保留同一个角色外观，并切换它的专属动作帧；关节节点可以单独打开查看。</p>
+              <label className="partner-picker">邀请一位搭档<select value={partnerId} onChange={(event) => setPartnerId(event.target.value)}><option value="">暂时不邀请</option>{avatarCatalog.filter((avatar) => avatar.id !== selected.id).map((avatar) => <option key={avatar.id} value={avatar.id}>{avatar.name}</option>)}</select></label>
             </div>
-            <button className="primary-button" type="button" onClick={() => onChooseAvatar(selected)}>带原角色进入世界 <span aria-hidden="true">→</span></button>
+            <button className="primary-button" type="button" onClick={() => onChooseAvatar([selected, ...(partnerId ? [avatarCatalog.find((avatar) => avatar.id === partnerId)] : [])])}>{partnerId ? "和搭档一起进入世界" : "带原角色进入世界"} <span aria-hidden="true">→</span></button>
           </aside>
         </section>
       ) : (
