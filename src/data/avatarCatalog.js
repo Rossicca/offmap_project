@@ -1,8 +1,7 @@
-import characterSprite from "../assets/ai-character-sprite.png";
-import explorerMotion from "../assets/explorer-motion.png";
-import rabbitMotion from "../assets/rabbit-motion.png";
-import robotMotion from "../assets/robot-motion.png";
-import heroMotion from "../assets/hero-motion.png";
+import explorerMotion from "../assets/explorer-motion-paper.png";
+import rabbitMotion from "../assets/rabbit-motion-paper.png";
+import robotMotion from "../assets/robot-motion-paper.png";
+import heroMotion from "../assets/hero-motion-paper.png";
 
 export const avatarCatalog = [
   {
@@ -46,5 +45,3 @@ export const avatarCatalog = [
     joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
   },
 ];
-
-export { characterSprite };

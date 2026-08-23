@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { avatarCatalog, characterSprite } from "../data/avatarCatalog";
+import { avatarCatalog } from "../data/avatarCatalog";
 import ProjectGallery from "./ProjectGallery";
 
 export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
@@ -46,7 +46,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
                   onClick={() => setSelected(avatar)}
                   aria-pressed={selected.id === avatar.id}
                 >
-                  <span className="sprite-window"><i style={{ backgroundImage: `url(${characterSprite})`, backgroundPosition: avatar.spritePosition }} /></span>
+                  <span className="sprite-window"><i style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: "0% 0%" }} /></span>
                   <b>{avatar.name}</b><small>{avatar.kind} · {avatar.joints.length} 个节点</small>
                 </button>
               ))}
@@ -55,7 +55,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
 
           <aside className="rig-preview">
             <div className="selected-character">
-              <i style={{ backgroundImage: `url(${characterSprite})`, backgroundPosition: selected.spritePosition }} />
+              <i style={{ backgroundImage: `url(${selected.motionSprite})`, backgroundPosition: "0% 0%" }} />
             </div>
             <div className="rig-preview-copy">
               <span>{selected.kind}骨架已就绪</span>

@@ -1,4 +1,4 @@
-import dogMotion from "../assets/dog-motion.png";
+import dogMotion from "../assets/dog-motion-paper.png";
 
 const frameByAction = {
   wave: "100% 0%",

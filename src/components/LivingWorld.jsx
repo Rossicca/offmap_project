@@ -38,9 +38,11 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [storyEnding, setStoryEnding] = useState(initialState?.storyEnding || null);
   const [showExport, setShowExport] = useState(false);
   const [showSceneEditor, setShowSceneEditor] = useState(false);
+  const [positionBounds, setPositionBounds] = useState({});
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
+  const stageRef = useRef(null);
   const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
@@ -73,7 +75,10 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     if (action === "sunrise") setPersistentState((state) => ({ ...state, night: false }));
     if (action === "openDoor") setPersistentState((state) => ({ ...state, doorOpen: true }));
     if (action === "closeDoor") setPersistentState((state) => ({ ...state, doorOpen: false }));
-    if (action === "move") setPersistentState((state) => ({ ...state, dogMoved: !state.dogMoved }));
+    if (action === "move") {
+      setPersistentState((state) => ({ ...state, dogMoved: !state.dogMoved }));
+      setObjects((current) => current.map((item) => item.id === objectId ? { ...item, x: item.x > 58 ? 50 : 70 } : item));
+    }
     if (action === "feed") {
       later(() => {
         setPersistentState((state) => ({ ...state, appleHidden: true }));
@@ -135,6 +140,34 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     setSuggestions(["跟我挥挥手", "你喜欢什么？", "给我讲个故事"]);
   };
 
+  const openSceneEditor = () => {
+    const stage = stageRef.current;
+    const stageBounds = stage?.getBoundingClientRect();
+    if (stage && stageBounds) {
+      const nextBounds = {};
+      objects.forEach((object) => {
+        const element = stage.querySelector(`[data-object-id="${object.id}"]`);
+        const bounds = element?.getBoundingClientRect();
+        const halfWidth = Math.min(42, ((bounds?.width || 0) / 2 / stageBounds.width) * 100 + 1.5);
+        const halfHeight = Math.min(42, ((bounds?.height || 0) / 2 / stageBounds.height) * 100 + 1.5);
+        nextBounds[object.id] = { minX: Math.ceil(halfWidth), maxX: Math.floor(100 - halfWidth), minY: Math.ceil(halfHeight), maxY: Math.floor(100 - halfHeight) };
+      });
+      setPositionBounds(nextBounds);
+    }
+    setShowSceneEditor(true);
+  };
+
+  const moveObject = (objectId, clientX, clientY, objectSize) => {
+    const rect = stageRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const halfWidth = Math.min(42, ((objectSize?.width || 0) / 2 / rect.width) * 100 + 1.5);
+    const halfHeight = Math.min(42, ((objectSize?.height || 0) / 2 / rect.height) * 100 + 1.5);
+    const x = Math.max(halfWidth, Math.min(100 - halfWidth, ((clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(halfHeight, Math.min(100 - halfHeight, ((clientY - rect.top) / rect.height) * 100));
+    setObjects((current) => current.map((object) => object.id === objectId ? { ...object, x, y } : object));
+    if (objectId === "dog1") setPersistentState((state) => state.dogMoved ? { ...state, dogMoved: false } : state);
+  };
+
   return (
     <main className="world-page">
       <header className="world-header">
@@ -142,16 +175,17 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
           <span aria-hidden="true">✦</span><b>My Living Drawing</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 找到 {objects.length} 个朋友</div>
-        <div className="world-header-actions"><button type="button" onClick={() => setShowParentControls(true)}>家长设置</button><button type="button" onClick={() => setShowSceneEditor(true)}>编辑场景</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
+        <div className="world-header-actions"><button type="button" onClick={() => setShowParentControls(true)}>家长设置</button><button type="button" onClick={openSceneEditor}>编辑场景</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
       </header>
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
-      {showSceneEditor && <SceneEditor objects={objects} theme={sceneTheme} onThemeChange={setSceneTheme} onObjectChange={(id, axis, value) => setObjects((current) => current.map((object) => object.id === id ? { ...object, [axis]: value } : object))} onClose={() => setShowSceneEditor(false)} />}
+      {showSceneEditor && <SceneEditor objects={objects} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={(id, axis, value) => setObjects((current) => current.map((object) => object.id === id ? { ...object, [axis]: value } : object))} onClose={() => setShowSceneEditor(false)} />}
       {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
       {timeUp && <div className="break-reminder" role="dialog" aria-modal="true" aria-labelledby="break-title"><section><span aria-hidden="true">✦</span><h2 id="break-title">让眼睛休息一下吧</h2><p>已经创作了一段时间。看看远处、活动一下，准备好后再回来。</p><div><button type="button" onClick={onReset}>回到作品库</button><button type="button" onClick={() => setTimeUp(false)}>再创作一会儿</button></div></section></div>}
 
       <div className="world-experience">
-      <section className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="互动世界">
+      <section ref={stageRef} className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="可拖动的互动世界">
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
+        <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 拖动画中角色和道具；键盘用户可在“编辑场景”中调整位置</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
         </button>
@@ -171,6 +205,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
               action={activeActions[object.id]}
               persistentState={persistentState}
               onInteract={handleDirectAction}
+              onMove={moveObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
               showJoints={showJoints}
             />
