@@ -1,4 +1,4 @@
-import dogMotion from "../assets/dog-motion.png";
+import dogMotion from "../assets/dog-motion-paper.png";
 
 
 const frameByAction = {
@@ -28,12 +28,12 @@ const rabbitNodes = [
 ];
 
 
-function JointOverlay({ species, rigNodes }) {
-  const nodes = rigNodes?.length
-    ? rigNodes.map(({ label, x, y }) => [label, x, y])
+function JointOverlay({ species, calibratedNodes }) {
+  const nodes = calibratedNodes?.length
+    ? calibratedNodes.map((node) => [node.label, node.x, node.y])
     : species === "rabbit" ? rabbitNodes : humanNodes;
   return (
-    <span className="image-joints" aria-hidden="true">
+    <span className={`image-joints ${calibratedNodes?.length ? "is-calibrated" : ""}`} aria-hidden="true">
       {nodes.map(([label, x, y]) => (
         <i key={label} style={{ left: `${x}%`, top: `${y}%` }}><b>{label}</b></i>
       ))}
@@ -42,19 +42,14 @@ function JointOverlay({ species, rigNodes }) {
 }
 
 
-export default function MotionAvatar({ avatar, action, showJoints, rigNodes }) {
+export default function MotionAvatar({ avatar, action, showJoints }) {
   const frame = frameByAction[action] || "0% 0%";
-  const isCustom = Boolean(avatar?.isCustom && avatar?.imageUrl);
   return (
-    <div className={`motion-avatar motion-${action || "idle"} ${isCustom ? "is-custom-avatar" : ""} ${showJoints ? "show-joints" : ""}`}>
-      <span
-        className={isCustom ? "custom-motion-art" : "motion-sprite"}
-        style={isCustom
-          ? { backgroundImage: `url(${avatar.imageUrl})` }
-          : { backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }}
-        aria-hidden="true"
-      />
-      {showJoints && <JointOverlay species={avatar.species} rigNodes={rigNodes} />}
+    <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
+      {avatar.isUploaded
+        ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" />
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
+      {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>
   );

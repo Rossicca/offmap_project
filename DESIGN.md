@@ -1,28 +1,28 @@
 ---
 name: My Living Drawing
-description: A warm paper-cut story board where a child's drawing becomes a commandable animated world.
+description: An animator's light-table where a child's drawing becomes a movable, conversational paper world.
 colors:
-  ink-navy: "#17324d"
-  paper-cream: "#fffaf0"
+  graphite: "#2f3232"
+  drafting-paper: "#ece7da"
+  tracing-paper: "#f6f2e8"
   clean-white: "#ffffff"
-  warm-white: "#fffdf8"
-  story-sky: "#79d8f2"
-  story-sky-deep: "#38b9df"
-  story-ground: "#91cc69"
-  friendly-green: "#55a85c"
-  action-coral: "#e84133"
-  action-coral-dark: "#b92720"
+  warm-white: "#faf8f1"
+  blue-pencil: "#4d7b97"
+  blue-pencil-pale: "#dfe8e8"
+  colored-pencil-green: "#71846f"
+  colored-pencil-red: "#c65343"
+  colored-pencil-red-dark: "#90392f"
   focus-gold: "#ffd34f"
-  night-sky: "#172a59"
+  night-graphite: "#343a40"
 typography:
   display:
-    fontFamily: "ui-rounded, Arial Rounded MT Bold, Microsoft YaHei, system-ui, sans-serif"
+    fontFamily: "KaiTi, STKaiti, Microsoft YaHei, sans-serif"
     fontSize: "clamp(3.5rem, 7vw, 6rem)"
     fontWeight: 700
     lineHeight: 0.96
     letterSpacing: "-0.04em"
   headline:
-    fontFamily: "ui-rounded, Arial Rounded MT Bold, Microsoft YaHei, system-ui, sans-serif"
+    fontFamily: "KaiTi, STKaiti, Microsoft YaHei, sans-serif"
     fontSize: "clamp(1.7rem, 3vw, 2.25rem)"
     fontWeight: 700
     lineHeight: 1.2
@@ -44,12 +44,12 @@ typography:
     fontWeight: 900
     lineHeight: 1.2
 rounded:
-  paper: "8px"
-  field: "11px"
-  control: "14px"
-  surface: "16px"
-  stage-mobile: "20px"
-  stage: "28px"
+  paper: "6px"
+  field: "9px"
+  control: "7px"
+  surface: "12px"
+  stage-mobile: "6px"
+  stage: "8px"
   pill: "999px"
 spacing:
   xs: "8px"
@@ -60,28 +60,28 @@ spacing:
   2xl: "48px"
 components:
   button-primary:
-    backgroundColor: "{colors.action-coral}"
+    backgroundColor: "{colors.colored-pencil-red}"
     textColor: "{colors.clean-white}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
     padding: "0 22px"
     height: "58px"
   button-primary-hover:
-    backgroundColor: "#d93328"
+    backgroundColor: "{colors.colored-pencil-red-dark}"
     textColor: "{colors.clean-white}"
     rounded: "{rounded.control}"
     padding: "0 22px"
     height: "58px"
   button-quick-action:
-    backgroundColor: "{colors.clean-white}"
-    textColor: "{colors.ink-navy}"
+    backgroundColor: "{colors.tracing-paper}"
+    textColor: "{colors.graphite}"
     typography: "{typography.label}"
     rounded: "{rounded.control}"
     padding: "0 16px"
     height: "52px"
   input-command:
     backgroundColor: "{colors.warm-white}"
-    textColor: "{colors.ink-navy}"
+    textColor: "{colors.graphite}"
     typography: "{typography.body}"
     rounded: "{rounded.field}"
     padding: "0 15px"
@@ -93,40 +93,40 @@ components:
     rounded: "{rounded.pill}"
     padding: "8px 14px"
   mode-switch-active:
-    backgroundColor: "{colors.action-coral}"
+    backgroundColor: "{colors.colored-pencil-red}"
     textColor: "{colors.clean-white}"
     typography: "{typography.label}"
     rounded: "10px"
     padding: "0 17px"
     height: "46px"
   avatar-card-selected:
-    backgroundColor: "#dff4fa"
-    textColor: "{colors.ink-navy}"
+    backgroundColor: "{colors.blue-pencil-pale}"
+    textColor: "{colors.graphite}"
     typography: "{typography.label}"
     rounded: "{rounded.surface}"
     padding: "10px 10px 14px"
   joint-toggle-active:
-    backgroundColor: "{colors.action-coral}"
+    backgroundColor: "{colors.colored-pencil-red}"
     textColor: "{colors.clean-white}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
     padding: "0 11px"
     height: "34px"
   chat-assistant-bubble:
-    backgroundColor: "#eaf8fb"
-    textColor: "{colors.ink-navy}"
+    backgroundColor: "#eef1ed"
+    textColor: "{colors.graphite}"
     typography: "{typography.body}"
     rounded: "{rounded.control}"
     padding: "10px 12px"
   chat-user-bubble:
-    backgroundColor: "{colors.action-coral}"
+    backgroundColor: "#a55246"
     textColor: "{colors.clean-white}"
     typography: "{typography.body}"
     rounded: "{rounded.control}"
     padding: "10px 12px"
   chip-quick-topic:
-    backgroundColor: "{colors.paper-cream}"
-    textColor: "{colors.ink-navy}"
+    backgroundColor: "{colors.tracing-paper}"
+    textColor: "{colors.graphite}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
     padding: "0 10px"
@@ -137,69 +137,75 @@ components:
 
 ## Overview
 
-**Creative North Star: "The Living Paper Theater"**
+**Creative North Star: "The Animator's Light Table"**
 
-My Living Drawing is a warm, low-density paper-cut theater: cream paper surrounds a framed cyan sky and green ground, while thick navy ink holds every silhouette together. Coral is the single action voice. Rounded cards, taped-paper cues, physical shadow bases, and deliberately authored scenery make the experience feel handmade and immediately playable rather than like an AI dashboard.
+My Living Drawing is a quiet animator's workbench: warm drafting paper supports a translucent tracing-paper stage, graphite defines structure, blue-pencil guides reveal construction, and restrained colored-pencil fills make characters and props feel touched by hand. The interface should resemble a working animation lightbox rather than a polished AI dashboard or a bright children's game template.
 
-The same identity must survive from character choice to motion. Product-provided companions use authored selection art and dedicated, identity-consistent 2×2 motion sprite sheets for idle, wave, jump, and eat states; the dog has its own matching motion sheet. Houses, sun, tree, apple, clouds, stars, and ground are authored in CSS as paper-cut scenery. Optional joint overlays sit on top of the motion artwork for inspection without replacing or permanently technicalizing it.
+The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, sun, tree, apple, clouds, stars, and ground use simple hand-drawn geometry. Scene objects are direct-manipulation pieces: pointer and touch dragging moves them inside measured stage bounds, while the scene editor provides labeled range controls as the keyboard-accessible alternative.
 
 **Key Characteristics:**
 
-- Warm cream paper, cyan sky, green ground, coral actions, and navy outlines form one unmistakable world.
+- Warm drafting paper, translucent tracing paper, graphite marks, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable workbench.
 - One framed stage is the interaction anchor; supporting controls stay compact and tactile.
 - AI-authored character identities remain recognizable across dedicated motion frames.
-- CSS scenery and paper-cut props replace decorative emoji in the living world.
-- All quick actions use one navy inline-SVG stroke family.
+- CSS scenery and illustrated props use graphite construction and quiet fill rather than glossy clip art.
+- All quick actions use one graphite inline-SVG stroke family.
 - The living world and its white paper conversation card read as one responsive two-column play surface.
-- Conversation stays continuous and lightweight through pale-sky assistant bubbles, coral user bubbles, typing dots, quick-topic pills, and one composer.
+- Conversation stays continuous and lightweight through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick-topic pills, and one composer.
+- Uploaded drawings pass through an explicit paper-board calibration workspace; draggable red-pencil joints preserve the child’s artwork while making the local template model understandable.
+- Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
+- A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
+- Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
 - Motion is short, readable, object-specific, and fully reduced when requested.
-- The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px`.
+- The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px` with a two-row header and touch-safe controls.
 
 ## Colors
 
-The palette behaves like bright craft paper drawn with a dark felt-tip pen.
+The palette behaves like an animator's desk viewed through a warm lightbox. Most contrast comes from graphite on pale paper; color appears as imperfect, low-saturation pencil rather than digital candy.
 
 ### Primary
 
-- **Action Coral:** The sole strong action voice for primary buttons, active segments, joint-inspector state, and small emphasis marks.
-- **Ink Navy:** Text, structural outlines, SVG action icons, roof geometry, and interactive definition.
+- **Graphite:** Text, structural outlines, SVG action icons, roof geometry, and interactive definition.
+- **Colored-Pencil Red:** The sole strong action voice for primary buttons, active segments, joint-inspector state, and small emphasis marks.
 
 ### Secondary
 
-- **Story Sky:** The dominant stage, rig-preview, and upload-board field.
-- **Deep Story Sky:** Supporting blue depth and active drag-state character.
+- **Blue Pencil:** Construction lines, drag guidance, positional affordances, and quiet secondary information.
+- **Blue-Pencil Pale:** Cool tracing-paper variation and selected surface tint.
 
 ### Tertiary
 
-- **Story Ground:** The broad green hill that anchors the living stage.
-- **Friendly Green:** Positive status, local-demo reassurance, foliage, and success cues.
+- **Colored-Pencil Green:** Ground wash, foliage, positive status, and local-demo reassurance.
 - **Focus Gold:** The shared high-visibility keyboard focus ring.
 
 ### Neutral
 
-- **Paper Cream:** Page canvas and warm negative space.
-- **Clean White:** Cards, overlays, bubbles, and action faces.
-- **Warm White:** Inputs and paper-like inset fields.
-- **Night Sky:** The deep-blue starting point for the sunset state.
+- **Drafting Paper:** The lined page canvas and warm negative space.
+- **Tracing Paper:** The dominant stage and control surface.
+- **Clean White:** Limited use for crisp utility faces.
+- **Warm White:** Cards, overlays, bubbles, and inset fields.
+- **Night Graphite:** The charcoal surface for night and space scenes.
 
 ### Named Rules
 
-**The One Coral Voice Rule.** Coral signals action or deliberate emphasis; never scatter it as general decoration.
+**The One Red-Pencil Voice Rule.** Colored-pencil red signals action or deliberate emphasis; never scatter it as general decoration.
 
-**The Navy Ink Rule.** Interactive shapes, authored props, and action icons share navy definition so they remain legible over cream, cyan, and green.
+**The Graphite Structure Rule.** Interactive shapes, authored props, and action icons share graphite definition so they remain legible over layered paper.
+
+**The Blue Pencil Rule.** Blue pencil explains construction, position, and movement; it never competes with red action emphasis.
 
 ## Typography
 
-**Display Font:** ui-rounded, with Arial Rounded MT Bold, Microsoft YaHei, system-ui, and sans-serif fallbacks  
+**Display Font:** KaiTi, STKaiti, Microsoft YaHei, and sans-serif fallbacks
 **Body Font:** the same resilient rounded system stack  
 **Label Font:** the same stack at heavier weights
 
-**Character:** A single rounded stack keeps the voice chunky, friendly, offline-safe, and legible in Chinese. Scale, weight, and tight display tracking provide hierarchy without introducing a second font dependency.
+**Character:** Brush-like Chinese display headings establish the animator's notebook voice, while the resilient rounded system stack keeps controls and longer instructions legible and offline-safe. Scale, weight, and tight display tracking provide hierarchy without ornamental typography.
 
 ### Hierarchy
 
-- **Display** (700, fluid `3.5rem`–`6rem`, `0.96` line-height): Welcoming promises and creator questions, split into short balanced lines.
-- **Headline** (700, fluid `1.7rem`–`2.25rem`, `1.2` line-height): Upload and primary section headings.
+- **Display** (KaiTi, 700, fluid `3.5rem`–`6rem`, `0.96` line-height): Welcoming promises and creator questions, split into short balanced lines.
+- **Headline** (KaiTi, 700, fluid `1.7rem`–`2.25rem`, `1.2` line-height): Upload, editor, gallery, and modal headings.
 - **Title** (900, `1.45rem`, `1.2` line-height): Compact utility headings such as quick actions.
 - **Body** (700, `1rem`, `1.55` line-height): Short explanatory copy; avoid long reading blocks.
 - **Label** (900, `0.9rem`, `1.2` line-height): Buttons, pills, fields, and action names.
@@ -210,9 +216,15 @@ The palette behaves like bright craft paper drawn with a dark felt-tip pen.
 
 ## Layout
 
-The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
+The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. Its follow-on rig editor stays within `1220px`, pairing a `1.35fr / .65fr` image canvas and control column; the canvas remains dominant and the node inventory never becomes a separate dashboard. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
 
-The stage and desktop conversation card are fluid from `560px` to `760px` tall. At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, the header simplifies, the avatar grid becomes two columns, and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, large radii tighten to `20px`, the stage becomes a tall `600px` minimum viewport, the conversation card becomes `420px` high, quick-topic pills hold a `44px` minimum touch target, composer text yields to its arrow on the narrow send button, and horizontal actions remain touch-scrollable.
+The stage and desktop conversation card are fluid from `560px` to `760px` tall. The story task is a compact `270px` paper card inside the stage’s upper-left safe area, with a progress line and one obvious next action. Every movable object stores its center as stage-relative percentages. Its measured half-width and half-height define per-object minimum and maximum coordinates, so the whole illustration remains inside the lightbox at every viewport size. A drag threshold separates taps from moves and preserves object actions after ordinary clicks.
+
+At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, including the calibration workspace; the avatar grid becomes two columns and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, the stage becomes a tall `600px` minimum viewport with a `6px` paper corner, and the conversation card becomes `420px` high. The header becomes two rows: a centered wordmark first, then a horizontally scrollable utility rail. Mobile topics, dialog actions, editor confirmations, joint/story toggles, and other primary controls keep a `44px` minimum touch target. Composer text yields to its arrow on the narrow send button, and horizontal action rails scroll internally without increasing page width.
+
+The application must maintain zero horizontal page overflow at the `320px` minimum viewport. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing.
+
+Scene editing is a `420px` right drawer on desktop and a bottom sheet capped at `78dvh` on mobile. Export and parent safety use centered, scroll-safe dialogs with `24px` outer insets and a dark graphite scrim; the break reminder uses the same modal plane. Only one such modal layer may be open at once, and destructive local-data actions stay visually separated from ordinary settings.
 
 Spacing follows the observed rhythm of `8px`, `12px`, `16px`, `24px`, `34px`, and `48px`. Preserve generous air around the stage and keep control internals dense and consistent.
 
@@ -220,31 +232,29 @@ Spacing follows the observed rhythm of `8px`, `12px`, `16px`, `24px`, `34px`, an
 
 ## Elevation & Depth
 
-Depth combines hard physical offsets with soft ambient lift. Touchable cards and magnets receive short opaque bases; the stage and floating composer use diffuse navy-blue shadows. Sprite characters and authored props use restrained drop shadows to separate their cut-paper edges from the sky.
+Depth comes from translucent sheets laid on a workbench. Fine graphite borders define paper edges; restrained warm-gray ambient shadows separate major sheets without plastic button bases. Sprite characters and scene props use low, soft drop shadows only when needed to remain legible over the tracing grid. Dragging temporarily increases lift to show that a piece has left the paper plane.
 
 ### Shadow Vocabulary
 
-- **Stage Ambient** (`0 18px 46px rgba(37, 91, 113, 0.18)`): Separation beneath the living stage.
-- **Board Backing** (`14px 16px 0 #cbeef3`): Physical backing for desktop login and upload boards; compress to `8px 9px` on compact screens.
-- **Primary Press Base** (`0 6px 0 #b92720`): Coral button depth.
-- **Quick Action Base** (`0 5px 0 #dce8ea`): Pale base beneath white action magnets.
-- **Overlay Ambient** (`0 10px 30px rgba(23,50,77,.18)`): Command composer separation.
-- **Conversation Card Backing** (`8px 10px 0 #cbeef3`): Pale-blue physical offset beneath the desktop white paper chat card; compress to `6px 7px` on mobile.
-- **Sprite Lift** (`drop-shadow(0 12px 7px rgba(23,50,77,.18))`): Gentle cutout separation for the chosen companion.
+- **Stage Lightbox** (`0 18px 40px rgba(58,54,45,.15)`): Warm separation beneath the tracing-paper world.
+- **Paper Sheet** (`0 14px 34px rgba(58,54,45,.12)`): Shared lift for login, library, conversation, editor, export, and safety sheets.
+- **Overlay Ambient** (`0 10px 30px rgba(47,50,50,.14)`): Command composer and compact stage overlay separation.
+- **Sprite Lift** (`drop-shadow(0 8px 6px rgba(54,48,39,.14))`): Quiet cutout separation after low-saturation treatment.
+- **Drag Lift** (`drop-shadow(0 15px 13px rgba(54,48,39,.20))`): Temporary depth while a scene object is held.
 
-**The Physical-Then-Ambient Rule.** Use hard offsets for touchable magnets and diffuse lift for frames, overlays, sprites, and scenery.
+**The Layered Paper Rule.** Use thin graphite borders and warm ambient shadows to describe sheet order; reserve stronger lift for the actively dragged object.
 
 ## Shapes
 
-The form language combines chunky rounded rectangles with `2px` or `3px` navy outlines. Controls use `10px`–`16px` corners, major boards use `28px`, compact mobile boards use `20px`, paper previews use `8px`, and status or joint controls are pills. Paper-cut scenery mixes simple circles, capsules, rounded organic foliage, a triangular roof, an arched hill, and visibly inked edges. Avoid generic icon tiles and unoutlined clip-art.
+The form language uses lightly worn paper rectangles with `1px`–`1.5px` graphite outlines. Controls use `7px`–`9px` corners, major sheets use `12px`, the stage uses `8px` on desktop and `6px` on mobile, and small status or mode controls may remain pills when their meaning benefits from compact grouping. Hand-drawn scenery mixes simple circles, capsules, rounded foliage, a triangular roof, an arched ground wash, and visibly constructed edges. Avoid glossy cards, oversized bubble corners, generic icon tiles, and unoutlined clip art.
 
 ## Components
 
 ### Buttons
 
-- **Primary:** Coral face, white heavy label, `58px` minimum height, `22px` horizontal padding, `14px` corners, `2px` navy border, and dark-coral press base.
-- **Quick Action:** White face, navy inline SVG plus label, `52px` minimum height, `14px` corners, muted border, and pale-blue base.
-- **Hover / Focus / Active:** Hover deepens or lifts; focus uses a `4px` gold ring with `3px` offset; active shifts down `1px` and scales to `0.985`.
+- **Primary:** Muted red-pencil face, white heavy label, `58px` minimum height, `22px` horizontal padding, `7px` corners, and a fine graphite border without a hard press base.
+- **Quick Action:** Tracing-paper face, graphite inline SVG plus label, `52px` minimum height, `7px` corners, and a `1.5px` graphite border.
+- **Hover / Focus / Active:** Hover increases contrast or adds a slight warm lift; focus uses a `4px` gold ring with `3px` offset; active shifts down `1px` and scales to `0.985`.
 
 ### Chips
 
@@ -252,53 +262,86 @@ Status chips are compact green-on-pale-green pills. They report recognition or l
 
 ### Cards / Containers
 
-Major cards have `3px` navy borders and `28px` corners. The living stage uses cyan sky over a green hill; white cards and overlays remain warm and opaque enough to read. Selected avatar cards add a pale-sky face and a `5px` pale-blue base, reinforced by `aria-pressed`.
+Major cards are warm near-opaque paper sheets with `1.5px` graphite borders, `12px` corners, and one shared ambient shadow. The living stage is a tracing-paper grid with blue-pencil construction marks and a quiet colored-pencil ground wash. Selected avatar cards use a pale blue-pencil tint and `aria-pressed`, never a glossy glow.
+
+Calibration, story, and modal surfaces reuse the same graphite-and-paper family. The scene drawer keeps a square desktop edge against the viewport and changes to a softly rounded top edge when docked to the mobile bottom.
 
 ### Inputs / Fields
 
-Fields use Warm White, a `2px` muted blue-gray border, `11px`–`12px` corners, `50px`–`56px` height, and heavy rounded text. Focus uses the shared gold ring; disabled command submission becomes muted blue-gray and visibly unavailable.
+Fields use Warm White, a fine blue-gray border, `9px`–`12px` corners, `50px`–`56px` height, and heavy rounded text. Range inputs use the red-pencil accent, explicit horizontal/vertical labels, and bounds derived from the actual object size. Focus uses the shared gold ring; disabled command submission becomes muted graphite-gray and visibly unavailable.
 
 ### Navigation
 
-Headers stay transparent and low-density so the stage retains authority. The wordmark uses a small coral spark; utility actions are navy text with minimal decoration. The centered status disappears where the active surface already repeats it.
+Headers stay transparent and low-density so the stage retains authority. The wordmark uses a small red-pencil spark; utility actions are graphite text with minimal decoration. The centered status disappears where the active surface already repeats it.
 
 ### Motion Sprite Characters
 
-Each product-provided character has a dedicated 2×2 motion sheet. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Never substitute an unrelated figure or rebuild the chosen character as generic geometry.
+Each product-provided character has a dedicated 2×2 motion sheet. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Apply restrained saturation and contrast so authored art sits naturally on tracing paper. Never substitute an unrelated figure or rebuild the chosen character as generic geometry.
 
-### Paper-Cut World Props
+### Hand-Drawn World Props
 
-Sun, tree, apple, house, door, clouds, stars, and ground are authored with CSS geometry, flat fills, navy outlines, and small physical shadows. Their action states are semantic: the door rotates in perspective, the sun descends into a darkened world, the tree shakes, and the apple travels toward the character.
+Sun, tree, apple, house, door, clouds, stars, and ground are authored with CSS geometry, low-saturation pencil fills, graphite outlines, and minimal warm shadows. Their action states are semantic: the door rotates in perspective, the sun descends into a charcoal world, the tree shakes, and the apple travels toward the character.
+
+### Direct-Manipulation Scene Objects
+
+Every visible `.scene-object` is a native button that supports click actions plus pointer-based dragging on mouse, pen, and touch. At rest it uses `cursor: grab`, `touch-action: none`, and `user-select: none`. Dragging begins only after a `5px` movement threshold, captures the pointer, raises the object above overlays, changes to `grabbing`, adds Drag Lift, and draws a blue-pencil `1px` dashed frame `8px` outside the object (`5px` on mobile). Releasing or cancelling always clears the drag state; a completed drag suppresses the accidental click that would otherwise fire the object's action.
+
+Movement is calculated from the object's center plus the initial pointer offset. Clamp the resulting stage-relative percentages using the rendered object's half-width and half-height, with a small safety inset, so no artwork can be dragged outside the stage. Recompute bounds when the scene or viewport changes.
 
 ### Joint Inspector
 
-The joint toggle is a small white pill at rest and coral when active. It reveals labeled coral-and-navy nodes positioned over the preserved sprite artwork plus a compact rig summary. During motion, nodes fade to reduce visual clutter; the overlay remains optional and diagnostic.
+The joint toggle is a small tracing-paper control at rest and red-pencil when active. It reveals labeled red-pencil-and-graphite nodes positioned over the preserved sprite artwork plus a compact rig summary. During motion, nodes fade to reduce visual clutter; the overlay remains optional and diagnostic.
+
+### Joint Calibration Editor
+
+The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes use a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
 
 ### Command Composer & Feedback
 
-The composer is a white, navy-framed overlay attached to the stage bottom. It pairs a warm input with a coral send action and explicit offline reassurance. Speech feedback appears near the stage top as a white tailed bubble with a coral spark and short enter/exit motion.
+The composer is a warm paper, graphite-framed overlay attached to the stage bottom. It pairs a warm input with a red-pencil send action and explicit offline reassurance. Speech feedback appears near the stage top as a pale tailed note with a red-pencil spark and short enter/exit motion.
 
 ### Conversation Panel
 
-The conversation is a `370px` desktop companion to the world, presented as one white paper card with a `3px` navy frame, `28px` corners, and a pale-blue physical backing. A compact character header leads into one continuous, vertically scrolling transcript; messages do not become separate cards or interrupt the reading flow with extra chrome.
+The conversation is a `370px` desktop companion to the world, presented as one warm paper sheet with a `1.5px` graphite frame, `12px` corners, and quiet ambient lift. A compact character header leads into one continuous, vertically scrolling transcript; messages do not become separate cards or interrupt the reading flow with extra chrome.
 
-Assistant replies use pale-sky bubbles with a navy outline and a lower-left tail corner; user messages align right in coral bubbles with deep-coral outlines and the inverse lower-right corner. A three-dot typing bubble keeps the assistant voice visible while waiting. Below the transcript, up to three pill-shaped quick topics scroll horizontally, followed by a warm-white composer and coral send action. Suggested and freeform replies share the same send path, and action-linked assistant replies visibly trigger the matching world object so conversation and play remain one system. On mobile, each quick-topic pill keeps at least a `44px` touch target.
+Assistant replies use pale tracing-paper bubbles with a graphite outline and a lower-left tail corner; user messages align right in muted red-pencil bubbles with the inverse lower-right corner. A three-dot typing bubble keeps the assistant voice visible while waiting. Below the transcript, up to three pill-shaped quick topics scroll horizontally, followed by a warm-white composer and red-pencil send action. Suggested and freeform replies share the same send path, and action-linked assistant replies visibly trigger the matching world object so conversation and play remain one system. On mobile, each quick-topic pill keeps at least a `44px` touch target.
+
+When two companions are present, a compact speaker switch sits between the chat header and transcript. It uses `aria-pressed` buttons, changes the named assistant without clearing history, and keeps each assistant message attributed to its actual speaker. Never split companions into parallel chat columns.
+
+### Story Task Card
+
+Story mode is an optional stage overlay opened by a small control. Its warm-paper card pairs a red-pencil task label, count, green-pencil progress line, short title, one-sentence instruction, and a full-width action. Branching endings offer at most two vertically stacked choices; the secondary path may use gold, but the next step remains unmistakable. On mobile, the card stays within `10px` stage insets and suppresses overlapping speech feedback while open.
+
+### Scene, Export & Safety Layers
+
+Scene editing is the keyboard-accessible alternative to free dragging: a directional drawer with theme controls, one object card per piece, and labeled horizontal/vertical range inputs using the same measured bounds as the stage. This is not a second positioning model; both interfaces update the same coordinates. Export is a centered paper dialog with a pale tracing-paper preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions. Every dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit.
+
+### Mobile Utility Navigation
+
+Below `560px`, the world header is two rows: the centered wordmark occupies the first row and the utility actions form a horizontally scrollable pill rail on the second. Preserve the `44px` row and touch-safe target envelope, never wrap action labels, hide the scrollbar, and keep every function reachable without compressing the stage width.
 
 ### Action Icon Family
 
-Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` strokes, rounded caps, and rounded joins. Hand, jump arrow, door, sun, tree, dog, and apple all follow this one visual grammar.
+Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px` strokes, rounded caps, and rounded joins. Hand, jump arrow, door, sun, tree, dog, and apple all follow this one visual grammar.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** keep cream paper, cyan sky, green ground, coral actions, and navy outlines consistent across every surface.
+- **Do** keep drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills consistent across every surface.
 - **Do** preserve each AI companion's identity across its dedicated motion frames.
-- **Do** author scene props as simple paper-cut CSS forms with navy edges and restrained shadows.
-- **Do** use the same navy inline-SVG stroke style for every quick action.
+- **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
+- **Do** use the same graphite inline-SVG stroke style for every quick action.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
-- **Do** keep chat as one continuous transcript with pale-sky assistant bubbles, coral user bubbles, visible typing feedback, and action-linked replies.
-- **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, `44px` mobile topic targets, shared gold focus ring, and reduced-motion override.
+- **Do** keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.
+- **Do** keep human and animal calibration templates anatomy-aware, draggable, and honest about local processing.
+- **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
+- **Do** preserve speaker attribution when switching between two companions in one transcript.
+- **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
+- **Do** keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
+- **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
+- **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
+- **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 
 ### Don't:
@@ -310,4 +353,9 @@ Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` str
 - **Don't** add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.
 - **Don't** show joint nodes permanently or force animal anatomy into human shoulder-and-hip terminology.
 - **Don't** fragment the conversation into a stack of heavy cards or detach it visually and behaviorally from the living world.
+- **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
+- **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
+- **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
+- **Don't** make drag the only way to position an object; keep labeled range controls available to keyboard users.
+- **Don't** shrink mobile actions below the touch-safe envelope merely to fit every utility label on one line.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.

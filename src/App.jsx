@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CreatorHub from "./components/CreatorHub";
 import LoginScreen from "./components/LoginScreen";
 import LivingWorld from "./components/LivingWorld";
@@ -6,6 +6,9 @@ import RigEditor from "./components/RigEditor";
 import { avatarCatalog } from "./data/avatarCatalog";
 import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
+
+
+const releasePreview = (url) => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
 
 
 export default function App() {
@@ -22,6 +25,7 @@ export default function App() {
   const [safety, setSafety] = useState(() => {
     try { return JSON.parse(localStorage.getItem("living-drawing-safety")) || { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; } catch { return { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; }
   });
+  const previewUrlRef = useRef(null);
 
 
   useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
@@ -35,12 +39,9 @@ export default function App() {
   };
 
 
-  useEffect(() => {
-    const previewUrl = analysis?.previewUrl;
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [analysis?.previewUrl]);
+  useEffect(() => () => {
+    releasePreview(previewUrlRef.current);
+  }, []);
 
 
   const upload = async (file) => {
@@ -48,9 +49,10 @@ export default function App() {
     setError("");
     try {
       const result = await analyzeDrawing(file);
-      const uploadAvatar = result.customAvatar || avatarCatalog[0];
-      setSelectedAvatar(uploadAvatar);
-      setCompanions([uploadAvatar]);
+      releasePreview(previewUrlRef.current);
+      previewUrlRef.current = result.previewUrl;
+      setSelectedAvatar(null);
+      setCompanions([]);
       setAnalysis({ ...result, needsRigSetup: true });
     } catch (uploadError) {
       setError(uploadError.message || "这张图片暂时打不开，请换一张试试。 ");
@@ -61,12 +63,34 @@ export default function App() {
 
 
   const reset = () => {
-    if (analysis?.previewUrl) URL.revokeObjectURL(analysis.previewUrl);
+    releasePreview(previewUrlRef.current);
+    previewUrlRef.current = null;
     setAnalysis(null);
     setSelectedAvatar(null);
     setCompanions([]);
     setError("");
     setCurrentProjectId(null);
+  };
+
+
+  const confirmRig = (nextAnalysis) => {
+    const rig = nextAnalysis.rigAnalysis.person;
+    const uploadedAvatar = {
+      id: "uploaded-character",
+      name: rig.type === "人物" ? "我的画中伙伴" : `我的${rig.type}`,
+      kind: rig.type,
+      species: rig.type === "兔子" ? "rabbit" : rig.type === "人物" ? "human" : "animal",
+      joints: rig.movable,
+      rigNodes: rig.nodes,
+      imageUrl: nextAnalysis.previewUrl,
+      isUploaded: true,
+    };
+    setSelectedAvatar(uploadedAvatar);
+    setCompanions([uploadedAvatar]);
+    setAnalysis({
+      ...nextAnalysis,
+      sceneObjects: nextAnalysis.sceneObjects.map((object) => object.type === "person" ? { ...object, avatarId: uploadedAvatar.id, label: uploadedAvatar.name } : object),
+    });
   };
 
 
@@ -93,20 +117,25 @@ export default function App() {
     const now = new Date().toISOString();
     setProjects((current) => {
       const existing = current.find((project) => project.id === id);
-      const project = { id, name: existing?.name || `${selectedAvatar?.name || "我的角色"}的世界`, avatarId: selectedAvatar?.id || "explorer", companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
-      return [project, ...current.filter((item) => item.id !== id)].slice(0, 20);
+      const avatarData = selectedAvatar?.isUploaded ? { ...selectedAvatar } : null;
+      const project = { id, name: existing?.name || `${selectedAvatar?.name || "我的角色"}的世界`, avatarId: selectedAvatar?.id || "explorer", avatarData, companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
+      const next = [project, ...current.filter((item) => item.id !== id)].slice(0, 20);
+      while (next.length > 1 && JSON.stringify(next).length > 4_200_000) next.pop();
+      return next;
     });
     setCurrentProjectId(id);
   };
 
 
   const openProject = (project) => {
-    const restoredCompanions = (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
+    const restoredUploadedAvatar = project.avatarData?.isUploaded ? project.avatarData : null;
+    const restoredCompanions = restoredUploadedAvatar ? [restoredUploadedAvatar] : (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
     const avatar = restoredCompanions[0] || avatarCatalog[0];
+    previewUrlRef.current = restoredUploadedAvatar?.imageUrl || null;
     setSelectedAvatar(avatar);
     setCompanions(restoredCompanions.length ? restoredCompanions : [avatar]);
     setCurrentProjectId(project.id);
-    setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: "saved-project", previewUrl: null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints }, dog: { type: "小狗", joints: 7 } } });
+    setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: restoredUploadedAvatar ? "saved-upload" : "saved-project", previewUrl: restoredUploadedAvatar?.imageUrl || null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints, nodes: avatar.rigNodes }, dog: { type: "小狗", joints: 7 } } });
   };
 
 
@@ -134,18 +163,10 @@ export default function App() {
   if (!userName) return <LoginScreen onLogin={setUserName} />;
 
 
-  if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={setAnalysis} onCancel={reset} />;
+  if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={confirmRig} onCancel={reset} />;
 
 
   return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={selectedAvatar?.isCustom ? null : analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
+    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
     : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 }
-
-
-
-
-
-
-
-
