@@ -4,7 +4,13 @@ const frameByAction = {
   wave: "100% 0%",
   jump: "0% 100%",
   eat: "100% 100%",
+  dance: "100% 0%",
+  spin: "0% 0%",
+  cheer: "0% 100%",
+  rest: "0% 0%",
 };
+
+const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "休息一下" };
 
 const humanNodes = [
   ["头", 50, 25], ["身体", 50, 54],
@@ -38,6 +44,7 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
         aria-hidden="true"
       />
       {showJoints && <JointOverlay species={avatar.species} />}
+      {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>
   );
 }

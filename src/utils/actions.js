@@ -9,6 +9,10 @@ export const actionFeedback = {
   shake: "风来啦！",
   move: "汪！我来找你啦！",
   feed: "好吃！",
+  dance: "跟着节奏跳舞吧！",
+  spin: "转一圈，世界也跟着转起来！",
+  cheer: "太棒啦，我们一起欢呼！",
+  rest: "先安静休息一会儿吧。",
 };
 
 export const actionDurations = {
@@ -22,4 +26,8 @@ export const actionDurations = {
   shake: 1100,
   move: 1400,
   feed: 2100,
+  dance: 1800,
+  spin: 1100,
+  cheer: 1300,
+  rest: 1800,
 };

@@ -522,6 +522,11 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 .motion-avatar.motion-wave { animation: image-wave 780ms cubic-bezier(.2,.8,.2,1); }
 .motion-avatar.motion-jump { animation: image-jump 820ms cubic-bezier(.16,.82,.24,1); }
 .motion-avatar.motion-eat { animation: image-eat 950ms cubic-bezier(.2,.8,.2,1); }
+.motion-avatar.motion-dance { animation: character-dance 460ms ease-in-out 4; }
+.motion-avatar.motion-spin { animation: character-spin 900ms cubic-bezier(.2,.8,.2,1); }
+.motion-avatar.motion-cheer { animation: character-cheer 620ms ease-out 2; }
+.motion-avatar.motion-rest { animation: character-rest 1.8s ease-in-out; }
+.reaction-badge { position: absolute; z-index: 22; left: 50%; top: -8px; padding: 5px 8px; border: 2px solid var(--ink); border-radius: 999px; color: var(--ink); background: #ffd86d; box-shadow: 0 4px 0 rgba(23,50,77,.14); transform: translateX(-50%); font-size: .65rem; font-style: normal; font-weight: 900; white-space: nowrap; }
 .motion-dog.motion-move { animation: image-dog-run 380ms ease-in-out 4; }
 .motion-dog.motion-jump { animation: image-jump 750ms cubic-bezier(.16,.82,.24,1); }
 
@@ -665,6 +670,10 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 @keyframes chat-in { from { opacity: 0; transform: translateY(7px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes typing-dot { from { transform: translateY(1px); opacity: .35; } to { transform: translateY(-2px); opacity: 1; } }
 @keyframes voice-pulse { from { box-shadow: 0 0 0 0 rgba(232,65,51,.28); } to { box-shadow: 0 0 0 6px rgba(232,65,51,0); } }
+@keyframes character-dance { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(6deg) translateY(-10px); } }
+@keyframes character-spin { from { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(.88); } to { transform: rotate(360deg) scale(1); } }
+@keyframes character-cheer { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-28px) scale(1.06); } }
+@keyframes character-rest { 0%,100% { transform: translateY(0); filter: saturate(1); } 50% { transform: translateY(5px) scale(.98); filter: saturate(.72); } }
 
 @media (max-width: 1050px) {
   .world-experience { grid-template-columns: 1fr; }

@@ -7,6 +7,10 @@ const rules = [
   { test: (text) => /(小狗|狗狗|狗)/.test(text) && /(走|过来|移动|找|跑)/.test(text), type: "dog", action: "move", message: "小狗跑过来啦！" },
   { test: (text) => /(小狗|狗狗|狗)/.test(text) && /跳/.test(text), type: "dog", action: "jump", message: "小狗跳起来啦！" },
   { test: (text) => /挥手/.test(text), type: "person", action: "wave", message: "你好呀！" },
+  { test: (text) => /(跳舞|舞蹈|跳个舞)/.test(text), type: "person", action: "dance", message: "跟着节奏跳起来！" },
+  { test: (text) => /(转圈|转一圈|旋转)/.test(text), type: "person", action: "spin", message: "转一圈！" },
+  { test: (text) => /(欢呼|庆祝|太棒)/.test(text), type: "person", action: "cheer", message: "一起欢呼吧！" },
+  { test: (text) => /(休息|睡觉|困了)/.test(text), type: "person", action: "rest", message: "安静休息一下。" },
   { test: (text) => /跳/.test(text), type: "person", action: "jump", message: "一起跳起来！" },
   { test: (text) => /(苹果|吃|喂)/.test(text), type: "food", action: "feed", message: "把苹果送过去！" },
 ];
