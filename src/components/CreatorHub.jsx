@@ -69,12 +69,12 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
   return (
     <main className={`companion-home${dreamMode ? " is-dreaming" : ""}`}>
       <div className="side-doodles left">
-        <button className="doodle-tile blue side-tool" type="button" onClick={() => setPanel("canvas")} aria-label="打开画板" title="现在就画">✎</button><i aria-hidden="true">〰</i>
-        <button className="doodle-tile blue side-tool" type="button" onClick={() => setPanel("gallery")} aria-label="打开收藏作品" title="收藏作品">★</button>
-        <button className={`doodle-tile yellow music-tile side-tool${musicPlaying ? " is-playing" : ""}`} type="button" onClick={playMusicHint} aria-label="播放伙伴音乐" title="伙伴音乐">♫</button><i aria-hidden="true">➰</i>
+        <button className="doodle-tile blue side-tool" data-label="现在就画" type="button" onClick={() => setPanel("canvas")} aria-label="打开画板" title="现在就画">✎</button><i aria-hidden="true">〰</i>
+        <button className="doodle-tile blue side-tool" data-label="收藏作品" type="button" onClick={() => setPanel("gallery")} aria-label="打开收藏作品" title="收藏作品">★</button>
+        <button className={`doodle-tile yellow music-tile side-tool${musicPlaying ? " is-playing" : ""}`} data-label="伙伴音乐" type="button" onClick={playMusicHint} aria-label="播放伙伴音乐" title="伙伴音乐">♫</button><i aria-hidden="true">➰</i>
       </div>
       <section className="companion-window" aria-labelledby="companion-title">
-        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>MY LIVING DRAWING</span><h1 id="companion-title">AI 画伴</h1></div><button type="button" onClick={onLogout} aria-label="退出当前用户">{userName.slice(0, 1)}</button></header>
+        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>MY LIVING DRAWING</span><h1 id="companion-title">AI 画伴</h1></div><button type="button" onClick={onLogout} aria-label="进入登录界面">登</button></header>
         <div className="companion-content">
           <section className="companion-hero">
             <div className="character-showcase"><span className="spark s1">★</span><span className="spark s2">✦</span><span className="spark s3">〰</span><div className="character-frame" style={{ backgroundImage: `url(${selected.motionSprite})` }} role="img" aria-label={selected.name} /><div className="character-caption"><b>{selected.name}</b><span>今天也想陪你一起玩！</span></div></div>
@@ -92,7 +92,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
           <section className="companion-picker" aria-label="选择小伙伴"><span>换个伙伴</span>{avatarCatalog.map((avatar) => <button key={avatar.id} type="button" className={selected.id === avatar.id ? "is-selected" : ""} onClick={() => setSelected(avatar)} aria-label={`选择${avatar.name}`}><i style={{ backgroundImage: `url(${avatar.motionSprite})` }} /></button>)}</section>
         </div>
       </section>
-      <div className="side-doodles right"><button className="doodle-tile yellow side-tool heart-tool" type="button" onClick={addFriendship} aria-label={`送爱心，当前亲密度${friendship}`} title="送给伙伴爱心">♥<small>{friendship || ""}</small></button><i aria-hidden="true">✦</i><button className={`doodle-tile blue side-tool${dreamMode ? " is-active" : ""}`} type="button" onClick={toggleDreamMode} aria-label="切换云朵梦境" title="云朵梦境">☁</button><button className="doodle-tile green side-tool camera-tool" type="button" onClick={() => inputRef.current?.click()} aria-label="上传画作" title="上传画作"><span aria-hidden="true" /></button><i aria-hidden="true">〰</i></div>
+      <div className="side-doodles right"><button className="doodle-tile yellow side-tool heart-tool" data-label="送爱心" type="button" onClick={addFriendship} aria-label={`送爱心，当前亲密度${friendship}`} title="送给伙伴爱心">♥<small>{friendship || ""}</small></button><i aria-hidden="true">✦</i><button className={`doodle-tile blue side-tool${dreamMode ? " is-active" : ""}`} data-label="云朵梦境" type="button" onClick={toggleDreamMode} aria-label="切换云朵梦境" title="云朵梦境">☁</button><button className="doodle-tile green side-tool camera-tool" data-label="上传画作" type="button" onClick={() => inputRef.current?.click()} aria-label="上传画作" title="上传画作"><span aria-hidden="true" /></button><i aria-hidden="true">〰</i></div>
       {toolNotice && <div className="side-tool-notice" role="status">{toolNotice}</div>}
     </main>
   );
