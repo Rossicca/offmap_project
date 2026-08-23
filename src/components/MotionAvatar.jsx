@@ -1,5 +1,6 @@
 import dogMotion from "../assets/dog-motion.png";
 
+
 const frameByAction = {
   wave: "100% 0%",
   jump: "0% 100%",
@@ -10,7 +11,9 @@ const frameByAction = {
   rest: "0% 0%",
 };
 
+
 const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "休息一下" };
+
 
 const humanNodes = [
   ["头", 50, 25], ["身体", 50, 54],
@@ -18,13 +21,17 @@ const humanNodes = [
   ["左髋", 43, 67], ["左膝", 40, 80], ["右髋", 57, 67], ["右膝", 60, 80],
 ];
 
+
 const rabbitNodes = [
   ["头", 50, 31], ["身体", 50, 60], ["左耳", 39, 12], ["右耳", 61, 12],
   ["左前爪", 29, 53], ["右前爪", 72, 53], ["左后腿", 42, 78], ["右后腿", 59, 78], ["尾巴", 76, 65],
 ];
 
-function JointOverlay({ species }) {
-  const nodes = species === "rabbit" ? rabbitNodes : humanNodes;
+
+function JointOverlay({ species, rigNodes }) {
+  const nodes = rigNodes?.length
+    ? rigNodes.map(({ label, x, y }) => [label, x, y])
+    : species === "rabbit" ? rabbitNodes : humanNodes;
   return (
     <span className="image-joints" aria-hidden="true">
       {nodes.map(([label, x, y]) => (
@@ -34,20 +41,25 @@ function JointOverlay({ species }) {
   );
 }
 
-export default function MotionAvatar({ avatar, action, showJoints }) {
+
+export default function MotionAvatar({ avatar, action, showJoints, rigNodes }) {
   const frame = frameByAction[action] || "0% 0%";
+  const isCustom = Boolean(avatar?.isCustom && avatar?.imageUrl);
   return (
-    <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
+    <div className={`motion-avatar motion-${action || "idle"} ${isCustom ? "is-custom-avatar" : ""} ${showJoints ? "show-joints" : ""}`}>
       <span
-        className="motion-sprite"
-        style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }}
+        className={isCustom ? "custom-motion-art" : "motion-sprite"}
+        style={isCustom
+          ? { backgroundImage: `url(${avatar.imageUrl})` }
+          : { backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }}
         aria-hidden="true"
       />
-      {showJoints && <JointOverlay species={avatar.species} />}
+      {showJoints && <JointOverlay species={avatar.species} rigNodes={rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>
   );
 }
+
 
 export function MotionDog({ action, showJoints }) {
   const dogFrames = { idle: "0% 0%", move: "100% 0%", jump: "0% 100%", sit: "100% 100%" };
@@ -60,3 +72,5 @@ export function MotionDog({ action, showJoints }) {
     </div>
   );
 }
+
+
