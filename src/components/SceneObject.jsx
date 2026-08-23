@@ -1,6 +1,8 @@
 import MotionAvatar, { MotionDog } from "./MotionAvatar";
 
+
 const emojiByType = { person: "🧒", sun: "☀️", tree: "🌳", dog: "🐕", food: "🍎" };
+
 
 function WorldProp({ type }) {
   if (type === "sun") return <span className="world-sun-art" aria-hidden="true"><i /></span>;
@@ -9,7 +11,8 @@ function WorldProp({ type }) {
   return <span aria-hidden="true">{emojiByType[type]}</span>;
 }
 
-export default function SceneObject({ object, action, persistentState, onInteract, avatar, showJoints }) {
+
+export default function SceneObject({ object, action, persistentState, onInteract, avatar, showJoints, rigNodes, houseArt }) {
   if (object.type === "house") {
     const doorOpen = persistentState.doorOpen;
     return (
@@ -20,14 +23,16 @@ export default function SceneObject({ object, action, persistentState, onInterac
         aria-label={`${object.label}，${doorOpen ? "门已打开" : "门已关闭"}`}
         onClick={() => onInteract(object.id, doorOpen ? "closeDoor" : "openDoor")}
       >
-        <span className="house-roof" aria-hidden="true" />
-        <span className="house-body" aria-hidden="true">
-          <i className="window left" /><i className="window right" />
-          <i className={`door ${doorOpen ? "is-open" : ""}`}><b /></i>
-        </span>
+        {houseArt
+          ? <span className="custom-house-art" style={{ backgroundImage: `url(${houseArt})` }} aria-hidden="true" />
+          : <><span className="house-roof" aria-hidden="true" /><span className="house-body" aria-hidden="true">
+            <i className="window left" /><i className="window right" />
+            <i className={`door ${doorOpen ? "is-open" : ""}`}><b /></i>
+          </span></>}
       </button>
     );
   }
+
 
   const hidden = object.type === "food" && persistentState.appleHidden;
   const isRiggedPerson = object.type === "person" && avatar;
@@ -42,7 +47,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
+        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} rigNodes={rigNodes} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} />}
