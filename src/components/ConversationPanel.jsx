@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createAsrClient } from "../utils/asrClient";
 
 const defaultSuggestions = ["你好呀！", "你喜欢什么？", "我们去冒险吧"];
 
@@ -9,6 +10,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
   const [voiceNotice, setVoiceNotice] = useState("");
   const logRef = useRef(null);
   const recognitionRef = useRef(null);
+  const asrRef = useRef(null);
   const spokenMessageRef = useRef(0);
 
   useEffect(() => {
@@ -28,11 +30,12 @@ export default function ConversationPanel({ characterName, companions = [], acti
   }, [messages, voiceReply]);
 
   useEffect(() => () => {
+    asrRef.current?.cancel();
     recognitionRef.current?.abort();
     window.speechSynthesis?.cancel();
   }, []);
 
-  useEffect(() => { if (!voiceAllowed) { setVoiceReply(false); recognitionRef.current?.abort(); window.speechSynthesis?.cancel(); } }, [voiceAllowed]);
+  useEffect(() => { if (!voiceAllowed) { setVoiceReply(false); asrRef.current?.cancel(); recognitionRef.current?.abort(); window.speechSynthesis?.cancel(); } }, [voiceAllowed]);
 
   const send = (value) => {
     const next = value.trim();
@@ -48,7 +51,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
     if (!next) window.speechSynthesis?.cancel();
   };
 
-  const startListening = () => {
+  const startLegacyRecognition = () => {
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Recognition) {
       setVoiceNotice("当前浏览器不支持语音输入，请继续使用文字聊天。");
@@ -64,6 +67,31 @@ export default function ConversationPanel({ characterName, companions = [], acti
     recognition.onend = () => setListening(false);
     recognitionRef.current = recognition;
     recognition.start();
+  };
+
+  const startListening = async () => {
+    setListening(true);
+    setVoiceNotice("正在听你说…");
+    try {
+      asrRef.current = createAsrClient({
+        onPartial: (partial) => setVoiceNotice(`正在听：${partial}`),
+        onFinal: (heard) => {
+          setListening(false);
+          if (heard.trim()) { setText(heard.trim()); setVoiceNotice(`听到：${heard.trim()}`); }
+          else setVoiceNotice("没有听清楚，可以再试一次或直接输入文字。");
+        },
+        onError: (message) => { setListening(false); setVoiceNotice(message); },
+      });
+      await asrRef.current.start();
+    } catch (error) {
+      if (error?.code === "ASR_UNSUPPORTED") {
+        setListening(false);
+        startLegacyRecognition();
+      } else {
+        setListening(false);
+        setVoiceNotice(error?.message || "语音服务暂时不可用，请稍后再试。");
+      }
+    }
   };
 
   return (
@@ -96,7 +124,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
         <button type="submit" disabled={!text.trim() || typing} aria-label="发送消息"><span>发送</span><b aria-hidden="true">↑</b></button>
       </form>
       {voiceNotice && <p className="voice-notice" role="status">{voiceNotice}</p>}
-      <small>本地对话 Demo · 也能听懂场景动作指令</small>
+      <small>云端语音识别 · 对话与作品保存在本机</small>
     </aside>
   );
 }

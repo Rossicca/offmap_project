@@ -1,5 +1,7 @@
 import { demoScene } from "../data/demoScene";
-import { analyzeAnimalRig } from "../data/animalRigProfiles";
+import { analyzeAnimalRig, animalRigProfiles } from "../data/animalRigProfiles";
+
+const SPECIES = Object.keys(animalRigProfiles);
 
 function createLocalPreview(file) {
   return new Promise((resolve, reject) => {
@@ -26,6 +28,33 @@ function createLocalPreview(file) {
   });
 }
 
+async function analyzeWithVision(previewUrl) {
+  try {
+    const response = await fetch("/api/analyze-drawing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: previewUrl }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || !data.subject) return null;
+    return data;
+  } catch (error) {
+    console.warn("云端画作识别不可用，使用本地模板。", error);
+    return null;
+  }
+}
+
+function mapVisionToRig(vision) {
+  if (vision?.subject === "animal" && SPECIES.includes(vision.species)) {
+    return { person: analyzeAnimalRig(vision.species), dog: analyzeAnimalRig("dog") };
+  }
+  return {
+    person: { type: "人物", joints: 10, movable: ["头", "身体", "双臂", "双腿"] },
+    dog: analyzeAnimalRig("dog"),
+  };
+}
+
 export async function analyzeDrawing(image) {
   if (!(image instanceof File) || !image.type.startsWith("image/")) {
     throw new Error("请选择一张图片文件。支持 JPG、PNG、WEBP 或 GIF。 ");
@@ -35,16 +64,14 @@ export async function analyzeDrawing(image) {
     throw new Error("图片有点大，请选择 12MB 以内的图片。 ");
   }
 
-  // Demo fallback: keep this boundary stable so a real Vision API can replace it later.
-  await new Promise((resolve) => window.setTimeout(resolve, 850));
   const previewUrl = await createLocalPreview(image);
+  const vision = await analyzeWithVision(previewUrl);
+
   return {
     sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: "uploaded-character" } : { ...object }),
-    source: "mock",
+    source: vision ? "vision" : "mock",
     previewUrl,
-    rigAnalysis: {
-      person: { type: "人物", joints: 10, movable: ["头", "身体", "双臂", "双腿"] },
-      dog: analyzeAnimalRig("dog"),
-    },
+    rigAnalysis: mapVisionToRig(vision),
+    notice: vision ? `识别到：${vision.description}` : "云端识别暂不可用，已用本地模板继续。",
   };
 }

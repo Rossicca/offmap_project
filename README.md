@@ -9,12 +9,24 @@ npm install
 npm run dev
 ```
 
+`npm run dev` 会同时启动前端（Vite，5173 端口）和识别后端代理（`server/`，3001 端口）。也可以分开运行：`npm run dev:web` / `npm run dev:api`。
+
 生产构建：
 
 ```bash
 npm run build
 npm run preview
 ```
+
+## 火山引擎配置（可选）
+
+未配置时应用完整可用：画作识别自动降级为本地模板，语音输入会提示未配置。配置后启用云端画作识别（火山方舟豆包视觉）与云端语音识别（豆包语音识别大模型）。
+
+1. 复制 `server/.env.example` 为 `server/.env`。
+2. **画作识别**：登录 [火山方舟控制台](https://console.volcengine.com/ark) →「API Key 管理」创建 API Key 填入 `ARK_API_KEY`；在「开通管理」开通 `doubao-1-5-vision-pro-32k-250115`（新开通模型通常有约 50 万 token 免费额度）。
+3. **语音识别**：控制台开通「大模型流式语音识别 2.0」；在语音技术「应用管理」创建应用，把 APP ID / Access Token 填入 `SPEECH_APP_ID` / `SPEECH_ACCESS_TOKEN`；资源 ID 默认 `volc.seedasr.sauc.duration`（小时版），如购买的是其他资源包请在「资源包管理」中核对并修改 `SPEECH_RESOURCE_ID`。
+
+密钥只存在于本地 `server/.env`，已加入 `.gitignore`，不会被提交。
 
 ## Demo 路径
 
@@ -29,16 +41,17 @@ npm run preview
 
 ## 已实现功能
 
+- 火山方舟豆包视觉云端画作识别（识别人物/动物并预选关节模板，失败自动降级本地模板）
 - 人物、狗、兔子关节模板与可拖动节点校准
 - 身份一致的 AI 卡通角色动作帧、双角色世界与对象级动作
-- 分支故事任务、连续角色对话、快捷话题和浏览器语音能力
+- 分支故事任务、连续角色对话、快捷话题和云端语音识别（豆包流式 ASR，浏览器不支持时回退原生语音输入）
 - 四种场景主题、对象位置编辑、本地作品保存与恢复
 - 本地 SVG/JSON 导出、PWA 安装与离线缓存
 - 儿童隐私拦截、家长 PIN、语音权限和休息提醒
 
 ## 离线优先
 
-- `src/utils/analyzeDrawing.js` 是儿童画分析边界。当前压缩并本地保存图片，提供人工选择与校准的关节模板；未来可在这里替换真实 Vision API。
+- `src/utils/analyzeDrawing.js` 是儿童画分析边界。压缩图片后调用后端 `/api/analyze-drawing`（火山方舟豆包视觉）识别主角，映射到本地关节模板；识别不可用时自动降级为本地默认模板并给出提示。
 - `src/data/avatarCatalog.js` 保存 AI 角色库及每个角色的关节定义，角色素材在 `src/assets/ai-character-sprite.png`。
 - `src/data/animalRigProfiles.js` 根据动物类型返回可动节点；当前内置狗、猫、兔、鸟、马、乌龟和章鱼模板。
 - `src/components/MotionAvatar.jsx` 保留选角页的原角色外观，在待机、挥手、跳跃和吃苹果动作帧之间切换，并叠加可选关节点。
@@ -61,4 +74,4 @@ artifacts/qa/       本地视觉验证截图
 
 ## 已知边界
 
-当前版本不会自动分割上传图片中的人物轮廓。用户需要选择最接近的关节模板并手动校准节点；图片、作品、对话与设置都保存在浏览器本地。语音能力取决于浏览器的 Speech Recognition / Speech Synthesis 支持，导出格式为 SVG 作品卡和 JSON 数据。
+当前版本不会自动分割上传图片中的人物轮廓，云端识别负责认出主角并预选最接近的关节模板，用户仍需手动校准节点。画作与语音会发送到火山引擎云端用于本次识别；图片、作品、对话与设置保存在浏览器本地。语音输入使用豆包流式识别（不支持 AudioWorklet 的浏览器回退原生 Speech Recognition），角色朗读使用浏览器 Speech Synthesis。导出格式为 SVG 作品卡和 JSON 数据。识别后端（`server/`）的生产部署（托管、TLS、反向代理）不在当前 Demo 范围内。
