@@ -12,10 +12,22 @@ export async function analyzeDrawing(image) {
 
   // Demo fallback: keep this boundary stable so a real Vision API can replace it later.
   await new Promise((resolve) => window.setTimeout(resolve, 850));
+  const previewUrl = URL.createObjectURL(image);
+  const customAvatar = {
+    id: `custom-drawing-${Date.now()}`,
+    name: "我的画中伙伴",
+    kind: "自绘角色",
+    species: "custom",
+    imageUrl: previewUrl,
+    isCustom: true,
+    joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
+  };
+
   return {
-    sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: "explorer" } : { ...object }),
+    sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: customAvatar.id } : { ...object }),
     source: "mock",
-    previewUrl: URL.createObjectURL(image),
+    previewUrl,
+    customAvatar,
     rigAnalysis: {
       person: { type: "人物", joints: 10, movable: ["头", "身体", "双臂", "双腿"] },
       dog: analyzeAnimalRig("dog"),
