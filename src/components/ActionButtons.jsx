@@ -31,7 +31,8 @@ function ActionIcon({ name }) {
 }
 
 
-export default function ActionButtons({ onAction, persistentState }) {
+export default function ActionButtons({ onAction, persistentState, visibleObjectIds }) {
+  const visibleActions = visibleObjectIds ? actions.filter((item) => visibleObjectIds.has(item.target)) : actions;
   return (
     <section className="quick-actions" aria-labelledby="quick-actions-title">
       <div className="quick-heading">
@@ -40,7 +41,7 @@ export default function ActionButtons({ onAction, persistentState }) {
         <p className="scroll-hint">左右滑动查看更多 →</p>
       </div>
       <div className="action-scroll">
-        {actions.map((item) => {
+        {visibleActions.map((item) => {
           const actualAction = item.target === "house1" && persistentState.doorOpen ? "closeDoor" : item.action;
           const label = actualAction === "closeDoor" ? "关上门" : item.label;
           return (
