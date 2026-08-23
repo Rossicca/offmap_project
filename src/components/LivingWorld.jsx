@@ -27,6 +27,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [messages, setMessages] = useState(() => initialState?.messages || [{
     id: 1,
     role: "assistant",
+    speakerId: selectedAvatar?.id,
+    speakerName: characterName,
     text: `你好，${userName || "小小创作者"}！我是${characterName}。现在不只可以让我动起来，也可以和我聊天啦！`,
   }]);
   const [suggestions, setSuggestions] = useState(["你好呀！", "你喜欢什么？", "我们去冒险吧"]);
@@ -39,7 +41,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
-  const messageId = useRef(2);
+  const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
   useEffect(() => {
@@ -86,7 +88,12 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   };
 
   const appendMessage = (role, text) => {
-    setMessages((current) => [...current, { id: messageId.current++, role, text }]);
+    setMessages((current) => [...current, {
+      id: messageId.current++,
+      role,
+      text,
+      ...(role === "assistant" ? { speakerId: activeCompanion?.id, speakerName: characterName } : {}),
+    }]);
   };
 
   const handleConversation = (text) => {
@@ -143,7 +150,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
       {timeUp && <div className="break-reminder" role="dialog" aria-modal="true" aria-labelledby="break-title"><section><span aria-hidden="true">✦</span><h2 id="break-title">让眼睛休息一下吧</h2><p>已经创作了一段时间。看看远处、活动一下，准备好后再回来。</p><div><button type="button" onClick={onReset}>回到作品库</button><button type="button" onClick={() => setTimeUp(false)}>再创作一会儿</button></div></section></div>}
 
       <div className="world-experience">
-      <section className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""}`} aria-label="互动世界">
+      <section className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="互动世界">
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
@@ -155,7 +162,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         <div className="cloud cloud-one" aria-hidden="true" />
         <div className="cloud cloud-two" aria-hidden="true" />
         <div className="ground" aria-hidden="true" />
-        <SpeechBubble message={message} visible={bubbleVisible} />
+        <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />
         <div className={persistentState.dogMoved ? "dog-route is-moved" : "dog-route"}>
           {objects.map((object) => (
             <SceneObject

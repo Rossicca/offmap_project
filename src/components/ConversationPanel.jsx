@@ -78,7 +78,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
       <div className="conversation-log" ref={logRef} role="log" aria-live="polite" aria-label="对话记录">
         {messages.map((message) => (
           <div className={`chat-message is-${message.role}`} key={message.id}>
-            {message.role === "assistant" && <b>{characterName}</b>}
+            {message.role === "assistant" && <b>{message.speakerName || characterName}</b>}
             <p>{message.text}</p>
           </div>
         ))}

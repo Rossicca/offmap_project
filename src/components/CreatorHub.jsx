@@ -72,7 +72,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
           <div className="upload-illustration" aria-hidden="true"><span>🖍️</span><b>你的画</b><i>＋</i><span>关节</span></div>
           <div>
             <h2>{busy ? "正在分析角色和动物…" : "上传人物或动物画"}</h2>
-            <p>Demo 会识别人物与小狗，并生成对应的关节模板。真实 Vision 模型可以之后接入同一个分析接口。</p>
+            <p>Demo 提供人物与动物关节模板，由你选择并校准位置；真实 Vision 模型之后可以接入同一个分析接口。</p>
             <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" disabled={busy} onChange={(event) => event.target.files[0] && onUpload(event.target.files[0])} />
             <button className="primary-button" type="button" disabled={busy} onClick={() => inputRef.current?.click()}>{busy ? "正在生成骨架…" : "选择人物或动物画"} <span aria-hidden="true">↗</span></button>
             {error && <p className="inline-error" role="alert">{error}</p>}

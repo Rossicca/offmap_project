@@ -152,8 +152,11 @@ The same identity must survive from character choice to motion. Product-provided
 - All quick actions use one navy inline-SVG stroke family.
 - The living world and its white paper conversation card read as one responsive two-column play surface.
 - Conversation stays continuous and lightweight through pale-sky assistant bubbles, coral user bubbles, typing dots, quick-topic pills, and one composer.
+- Uploaded drawings pass through an explicit paper-board calibration workspace; draggable coral joints preserve the child’s artwork while making the local template model understandable.
+- Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
+- A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Motion is short, readable, object-specific, and fully reduced when requested.
-- The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px`.
+- The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px` with a two-row header and touch-safe controls.
 
 ## Colors
 
@@ -210,9 +213,11 @@ The palette behaves like bright craft paper drawn with a dark felt-tip pen.
 
 ## Layout
 
-The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
+The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. Its follow-on rig editor stays within `1220px`, pairing a `1.35fr / .65fr` image canvas and control column; the canvas remains dominant and the node inventory never becomes a separate dashboard. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
 
-The stage and desktop conversation card are fluid from `560px` to `760px` tall. At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, the header simplifies, the avatar grid becomes two columns, and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, large radii tighten to `20px`, the stage becomes a tall `600px` minimum viewport, the conversation card becomes `420px` high, quick-topic pills hold a `44px` minimum touch target, composer text yields to its arrow on the narrow send button, and horizontal actions remain touch-scrollable.
+The stage and desktop conversation card are fluid from `560px` to `760px` tall. The story task is a compact `270px` paper card inside the stage’s upper-left safe area, with a progress line and one obvious next action. At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, including the calibration workspace; the avatar grid becomes two columns and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, large radii tighten to `20px`, the stage becomes a tall `600px` minimum viewport, and the conversation card becomes `420px` high. The header becomes two rows: a centered wordmark first, then a horizontally scrollable utility rail. Mobile topics, dialog actions, editor confirmations, and other primary controls keep a `44px` minimum touch target; compact utility pills sit within a `44px` navigation row. Composer text yields to its arrow on the narrow send button, and horizontal actions remain touch-scrollable.
+
+Scene editing is a `420px` right drawer on desktop and a bottom sheet capped at `78dvh` on mobile. Export and parent safety use centered, scroll-safe dialogs with `24px` outer insets and a dark navy scrim; the break reminder uses the same modal plane. Only one such modal layer may be open at once, and destructive local-data actions stay visually separated from ordinary settings.
 
 Spacing follows the observed rhythm of `8px`, `12px`, `16px`, `24px`, `34px`, and `48px`. Preserve generous air around the stage and keep control internals dense and consistent.
 
@@ -231,6 +236,8 @@ Depth combines hard physical offsets with soft ambient lift. Touchable cards and
 - **Overlay Ambient** (`0 10px 30px rgba(23,50,77,.18)`): Command composer separation.
 - **Conversation Card Backing** (`8px 10px 0 #cbeef3`): Pale-blue physical offset beneath the desktop white paper chat card; compress to `6px 7px` on mobile.
 - **Sprite Lift** (`drop-shadow(0 12px 7px rgba(23,50,77,.18))`): Gentle cutout separation for the chosen companion.
+- **Dialog Ambient** (`0 22px 60px rgba(10,31,49,.28)`): Structural separation for export and parent-safety dialogs over the navy scrim.
+- **Drawer Ambient** (`-18px 0 48px rgba(10,31,49,.2)`): Directional depth for the desktop scene editor; remove the leftward bias when it becomes a mobile bottom sheet.
 
 **The Physical-Then-Ambient Rule.** Use hard offsets for touchable magnets and diffuse lift for frames, overlays, sprites, and scenery.
 
@@ -254,6 +261,8 @@ Status chips are compact green-on-pale-green pills. They report recognition or l
 
 Major cards have `3px` navy borders and `28px` corners. The living stage uses cyan sky over a green hill; white cards and overlays remain warm and opaque enough to read. Selected avatar cards add a pale-sky face and a `5px` pale-blue base, reinforced by `aria-pressed`.
 
+Calibration, story, and modal surfaces reuse the same inked-paper family at different scales: `28px` for the rig canvas and controls, `16px` for the story card, and `24px` for export, safety, and rest-reminder dialogs. The scene drawer keeps a square desktop edge against the viewport and changes to `22px 22px 0 0` when docked to the mobile bottom edge.
+
 ### Inputs / Fields
 
 Fields use Warm White, a `2px` muted blue-gray border, `11px`–`12px` corners, `50px`–`56px` height, and heavy rounded text. Focus uses the shared gold ring; disabled command submission becomes muted blue-gray and visibly unavailable.
@@ -274,6 +283,10 @@ Sun, tree, apple, house, door, clouds, stars, and ground are authored with CSS g
 
 The joint toggle is a small white pill at rest and coral when active. It reveals labeled coral-and-navy nodes positioned over the preserved sprite artwork plus a compact rig summary. During motion, nodes fade to reduce visual clutter; the overlay remains optional and diagnostic.
 
+### Joint Calibration Editor
+
+The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, navy-framed canvas with contained image scaling. Draggable `20px` coral nodes use a white inner border, navy outer ring, grab cursor, and adjacent navy label. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to coral and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and uses the mobile `20px` board radius.
+
 ### Command Composer & Feedback
 
 The composer is a white, navy-framed overlay attached to the stage bottom. It pairs a warm input with a coral send action and explicit offline reassurance. Speech feedback appears near the stage top as a white tailed bubble with a coral spark and short enter/exit motion.
@@ -283,6 +296,20 @@ The composer is a white, navy-framed overlay attached to the stage bottom. It pa
 The conversation is a `370px` desktop companion to the world, presented as one white paper card with a `3px` navy frame, `28px` corners, and a pale-blue physical backing. A compact character header leads into one continuous, vertically scrolling transcript; messages do not become separate cards or interrupt the reading flow with extra chrome.
 
 Assistant replies use pale-sky bubbles with a navy outline and a lower-left tail corner; user messages align right in coral bubbles with deep-coral outlines and the inverse lower-right corner. A three-dot typing bubble keeps the assistant voice visible while waiting. Below the transcript, up to three pill-shaped quick topics scroll horizontally, followed by a warm-white composer and coral send action. Suggested and freeform replies share the same send path, and action-linked assistant replies visibly trigger the matching world object so conversation and play remain one system. On mobile, each quick-topic pill keeps at least a `44px` touch target.
+
+When two companions are present, a compact speaker switch sits between the chat header and transcript. It uses `aria-pressed` buttons, changes the named assistant without clearing history, and keeps each assistant message attributed to its actual speaker. Never split companions into parallel chat columns.
+
+### Story Task Card
+
+Story mode is an optional stage overlay opened by a small pill. Its warm-paper card pairs a coral task label, count, green progress line, short title, one-sentence instruction, and a full-width action. Branching endings offer at most two vertically stacked choices; the secondary path may use gold, but the next step remains unmistakable. On mobile, the card stays within `10px` stage insets and suppresses overlapping speech feedback while open.
+
+### Scene, Export & Safety Layers
+
+Scene editing is a directional drawer with theme pills, clearly labeled horizontal and vertical ranges, and one full-width coral confirmation. Export is a centered paper dialog with a pale-sky preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions. Every dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit.
+
+### Mobile Utility Navigation
+
+Below `560px`, the world header is two rows: the centered wordmark occupies the first row and the utility actions form a horizontally scrollable pill rail on the second. Preserve the `44px` row and touch-safe target envelope, never wrap action labels, hide the scrollbar, and keep every function reachable without compressing the stage width.
 
 ### Action Icon Family
 
@@ -298,7 +325,11 @@ Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` str
 - **Do** use the same navy inline-SVG stroke style for every quick action.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
 - **Do** keep chat as one continuous transcript with pale-sky assistant bubbles, coral user bubbles, visible typing feedback, and action-linked replies.
-- **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, `44px` mobile topic targets, shared gold focus ring, and reduced-motion override.
+- **Do** keep human and animal calibration templates anatomy-aware, draggable, and honest about local processing.
+- **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
+- **Do** preserve speaker attribution when switching between two companions in one transcript.
+- **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
+- **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 
 ### Don't:
@@ -310,4 +341,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` str
 - **Don't** add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.
 - **Don't** show joint nodes permanently or force animal anatomy into human shoulder-and-hip terminology.
 - **Don't** fragment the conversation into a stack of heavy cards or detach it visually and behaviorally from the living world.
+- **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
+- **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
+- **Don't** shrink mobile actions below the touch-safe envelope merely to fit every utility label on one line.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.

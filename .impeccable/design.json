@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-23T15:34:18.3131875+08:00",
+  "generatedAt": "2026-08-23T18:30:00+08:00",
   "title": "Design System: My Living Drawing",
   "extensions": {
     "colorMeta": {
@@ -109,6 +109,14 @@
       { "name": "world-chat-stack", "value": "1050px" },
       { "name": "tablet", "value": "820px" },
       { "name": "mobile", "value": "560px" }
+    ],
+    "surfacePatterns": [
+      { "name": "rig-calibration", "layout": "1.35fr / .65fr desktop; stacked below 820px", "surface": "white contained-image canvas plus Story Sky controls", "behavior": "20px draggable coral nodes with navy labels; anatomy-aware human, dog, and rabbit templates" },
+      { "name": "story-task", "layout": "270px stage overlay within upper-left safe area", "surface": "Paper Cream card with navy frame", "behavior": "one progressive task, green progress line, and at most two ending choices" },
+      { "name": "dual-companion-chat", "layout": "single transcript with compact speaker switch", "surface": "white conversation paper card", "behavior": "aria-pressed speaker controls preserve history and per-message attribution" },
+      { "name": "scene-drawer", "layout": "420px right drawer; mobile bottom sheet capped at 78dvh", "surface": "Paper Cream with directional shadow", "behavior": "theme pills, labeled ranges, one primary confirmation" },
+      { "name": "export-safety-modal", "layout": "centered dialog with 24px viewport inset", "surface": "Paper Cream over rgba(23,50,77,.5) scrim", "behavior": "scroll-safe; close control; destructive safety action isolated from ordinary settings" },
+      { "name": "mobile-utility-nav", "layout": "two rows below 560px: centered wordmark then horizontal utility rail", "surface": "transparent header with white navy-framed pills", "behavior": "44px row and touch-safe target envelope; no wrapped labels; hidden scrollbar" }
     ]
   },
   "components": [
@@ -139,33 +147,30 @@
     {
       "name": "Conversation Paper Card",
       "kind": "custom",
-      "description": "The continuous world-side transcript with asymmetric bubbles, typing feedback, quick topics, and a compact composer.",
+      "description": "The continuous world-side transcript with asymmetric bubbles, a dual-companion speaker switch, typing feedback, quick topics, and a compact composer.",
       "html": "<aside class=\"ds-conversation\" aria-label=\"和角色聊聊天\"><header><span aria-hidden=\"true\">✦</span><div><h2>和小伙伴聊聊天</h2><p><i></i> 正在这个小世界里陪你</p></div></header><div class=\"ds-chat-log\" role=\"log\"><div class=\"ds-chat assistant\"><b>小伙伴</b><p>你好呀！我们一起去冒险吧。</p></div><div class=\"ds-chat user\"><p>门里有什么？</p></div><div class=\"ds-chat assistant typing\" aria-label=\"正在回复\"><b>小伙伴</b><p><i></i><i></i><i></i></p></div></div><div class=\"ds-topics\" aria-label=\"快捷话题\"><button type=\"button\">继续讲</button><button type=\"button\">带上小狗</button><button type=\"button\">让太阳升起来</button></div><form><input aria-label=\"对角色说\" placeholder=\"说点什么…\"><button type=\"button\" aria-label=\"发送消息\">发送 <b aria-hidden=\"true\">↑</b></button></form><small>本地对话 Demo · 回复也能触发场景动作</small></aside>",
       "css": ".ds-conversation { width:370px; height:560px; padding:18px; display:flex; flex-direction:column; overflow:hidden; border:3px solid #17324d; border-radius:28px; color:#17324d; background:#fff; box-shadow:8px 10px 0 #cbeef3; font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-conversation header { padding:2px 2px 15px; display:flex; gap:11px; align-items:center; border-bottom:2px dashed #c7d9df; } .ds-conversation header>span { width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center; border:2px solid #17324d; border-radius:50%; color:#fff; background:#e84133; box-shadow:3px 3px 0 #f7c9c5; } .ds-conversation h2 { margin:0 0 4px; font-size:1rem; } .ds-conversation header p { margin:0; color:#557284; font-size:.7rem; font-weight:800; } .ds-conversation header p i { width:7px; height:7px; display:inline-block; margin-right:4px; border-radius:50%; background:#55a85c; } .ds-chat-log { min-height:0; flex:1; padding:18px 3px 14px; display:flex; flex-direction:column; gap:13px; overflow-y:auto; } .ds-chat { max-width:88%; } .ds-chat>b { display:block; margin:0 0 4px 7px; color:#577485; font-size:.66rem; } .ds-chat p { margin:0; padding:10px 12px; border:2px solid #17324d; border-radius:15px 15px 15px 4px; background:#eaf8fb; font-size:.82rem; font-weight:750; line-height:1.55; } .ds-chat.user { align-self:flex-end; } .ds-chat.user p { color:#fff; border-color:#b92720; border-radius:15px 15px 4px 15px; background:#e84133; } .ds-chat.typing p { width:58px; display:flex; justify-content:center; gap:4px; } .ds-chat.typing i { width:6px; height:6px; border-radius:50%; background:#7892a1; animation:ds-typing 850ms infinite alternate; } .ds-chat.typing i:nth-child(2) { animation-delay:180ms; } .ds-chat.typing i:nth-child(3) { animation-delay:360ms; } .ds-topics { padding:12px 0 10px; display:flex; gap:7px; overflow-x:auto; border-top:2px dashed #d7e4e8; } .ds-topics button { min-width:max-content; min-height:34px; padding:0 10px; border:1.5px solid #a9c2cc; border-radius:999px; color:#315b75; background:#fffaf0; font-size:.7rem; font-weight:900; cursor:pointer; } .ds-topics button:hover { color:#fff; border-color:#17324d; background:#17324d; } .ds-conversation form { display:grid; grid-template-columns:1fr auto; gap:7px; } .ds-conversation input { min-width:0; height:48px; padding:0 12px; border:2px solid #abc1cb; border-radius:11px; color:#17324d; background:#fffdf8; font-weight:750; } .ds-conversation form button { min-width:68px; padding:0 8px; border:2px solid #17324d; border-radius:11px; color:#fff; background:#e84133; font-weight:900; cursor:pointer; } .ds-conversation form button b { margin-left:4px; color:#e84133; background:#fff; border-radius:50%; padding:2px 5px; } .ds-conversation button:focus-visible,.ds-conversation input:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; } .ds-conversation>small { margin-top:9px; color:#416b53; font-size:.65rem; font-weight:800; text-align:center; } @keyframes ds-typing { from { transform:translateY(1px); opacity:.35; } to { transform:translateY(-2px); opacity:1; } } @media (max-width:560px) { .ds-conversation { width:100%; height:420px; padding:14px; border-radius:20px; box-shadow:6px 7px 0 #cbeef3; } .ds-topics button { min-height:44px; } } @media (prefers-reduced-motion:reduce) { .ds-chat.typing i { animation-duration:1ms; animation-iteration-count:1; } }"
     },
     {
-      "name": "Recognition Status",
-      "kind": "chip",
-      "refersTo": "chip-status",
-      "description": "A reassuring non-interactive status for recognized scene friends.",
-      "html": "<div class=\"ds-chip-status\"><span aria-hidden=\"true\">●</span> 找到 6 个朋友</div>",
-      "css": ".ds-chip-status { width:max-content; padding:8px 14px; border-radius:999px; color:#32643c; background:#e4f5df; font:900 .83rem ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-chip-status span { color:#55a85c; }"
+      "name": "Joint Calibration Workspace",
+      "kind": "custom",
+      "description": "An honest local rig editor that keeps the uploaded drawing dominant and exposes anatomy-aware draggable nodes.",
+      "html": "<section class=\"ds-rig\"><div class=\"ds-rig-canvas\" aria-label=\"关节校准画布\"><button class=\"ds-rig-node\" style=\"left:50%;top:18%\" aria-label=\"拖动头部\"><b>头部</b></button></div><aside><h2>选择角色类型</h2><button class=\"is-active\" type=\"button\">人物 <small>10 个节点</small></button><button type=\"button\">小狗 <small>11 个节点</small></button></aside></section>",
+      "css": ".ds-rig { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr); gap:22px; color:#17324d; font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-rig-canvas { min-height:460px; position:relative; border:3px solid #17324d; border-radius:28px; background:#fff center/contain no-repeat; box-shadow:12px 14px 0 #cbeef3; } .ds-rig-node { position:absolute; width:20px; height:20px; border:3px solid #fff; border-radius:50%; background:#e84133; box-shadow:0 0 0 2px #17324d; transform:translate(-50%,-50%); cursor:grab; } .ds-rig-node b { position:absolute; left:24px; top:-5px; padding:3px 6px; border-radius:5px; color:#fff; background:#17324d; font-size:.66rem; white-space:nowrap; } .ds-rig aside { padding:24px; display:grid; align-content:start; gap:8px; border:3px solid #17324d; border-radius:28px; background:#79d8f2; } .ds-rig aside button { min-height:56px; padding:0 13px; display:flex; align-items:center; justify-content:space-between; border:2px solid #8eb5c5; border-radius:12px; background:#fff; font-weight:900; } .ds-rig aside button.is-active { color:#fff; border-color:#17324d; background:#e84133; } @media(max-width:820px){.ds-rig{grid-template-columns:1fr}.ds-rig-canvas,.ds-rig aside{border-radius:20px}}"
     },
     {
-      "name": "Creator Mode Switch",
-      "kind": "nav",
-      "refersTo": "mode-switch-active",
-      "description": "A compact segmented choice between the companion library and drawing upload.",
-      "html": "<div class=\"ds-mode-switch\" role=\"group\" aria-label=\"创作方式\"><button class=\"is-active\" type=\"button\">AI 角色库</button><button type=\"button\">上传我的画</button></div>",
-      "css": ".ds-mode-switch { width:max-content; padding:5px; display:flex; gap:4px; border:2px solid #17324d; border-radius:15px; background:#fff; } .ds-mode-switch button { min-height:46px; padding:0 17px; border:0; border-radius:10px; color:#17324d; background:transparent; font:900 .9rem ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; cursor:pointer; } .ds-mode-switch button.is-active { color:#fff; background:#e84133; } .ds-mode-switch button:hover:not(.is-active) { background:#fffaf0; } .ds-mode-switch button:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; } .ds-mode-switch button:active { transform:translateY(1px) scale(.985); }"
-    },
-    {
-      "name": "Selected Companion Card",
+      "name": "Story Task Card",
       "kind": "card",
-      "refersTo": "avatar-card-selected",
-      "description": "A selected authored-character tile with a clear state and node count.",
-      "html": "<button class=\"ds-avatar-card\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-avatar-art\"><svg viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M34 29 25 7q15-3 23 19M58 25Q67 4 80 8L67 31\" fill=\"#fff9e9\" stroke=\"#17324d\" stroke-width=\"4\"/><circle cx=\"52\" cy=\"40\" r=\"21\" fill=\"#fff9e9\" stroke=\"#17324d\" stroke-width=\"4\"/><rect x=\"31\" y=\"59\" width=\"43\" height=\"32\" rx=\"12\" fill=\"#e84133\" stroke=\"#17324d\" stroke-width=\"4\"/></svg></span><b>兔兔伙伴</b><small>动物 · 9 个节点</small></button>",
-      "css": ".ds-avatar-card { width:170px; padding:10px 10px 14px; display:block; border:2px solid #17324d; border-radius:16px; color:#17324d; background:#dff4fa; box-shadow:0 5px 0 #badfea; text-align:left; font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; cursor:pointer; transition:transform 180ms ease; } .ds-avatar-art { aspect-ratio:1; display:grid; place-items:center; margin-bottom:10px; overflow:hidden; border-radius:11px; background:#fff; } .ds-avatar-art svg { width:88%; height:88%; } .ds-avatar-card b,.ds-avatar-card small { display:block; } .ds-avatar-card b { margin-bottom:4px; font-size:.9rem; } .ds-avatar-card small { color:#5d7486; font-size:.7rem; font-weight:800; } .ds-avatar-card:hover { transform:translateY(-3px); } .ds-avatar-card:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; } .ds-avatar-card:active { transform:translateY(1px) scale(.985); }"
+      "description": "A compact progressive mission layer that stays visually subordinate to the living stage.",
+      "html": "<section class=\"ds-story-card\" aria-label=\"故事任务\"><header><div><b>故事任务</b><span>1 / 3</span></div><i style=\"--progress:33%\"></i></header><small>当前任务</small><h2>打开小屋的门</h2><p>伙伴听见里面有轻轻的声音。</p><button type=\"button\">打开门 <span aria-hidden=\"true\">→</span></button></section>",
+      "css": ".ds-story-card { width:270px; padding:15px; border:2px solid #17324d; border-radius:16px; color:#17324d; background:#fffaf0; box-shadow:0 10px 24px rgba(23,50,77,.17); font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-story-card header>div { display:flex; justify-content:space-between; } .ds-story-card header b { color:#e84133; } .ds-story-card header i { height:6px; margin-top:9px; display:block; overflow:hidden; border-radius:999px; background:#dce8ea; } .ds-story-card header i::after { content:''; width:var(--progress); height:100%; display:block; border-radius:inherit; background:#55a85c; } .ds-story-card small { display:block; margin:15px 0 4px; color:#60798b; font-weight:900; } .ds-story-card h2 { margin:0 0 6px; font-size:1.05rem; } .ds-story-card p { margin:0 0 13px; color:#48677f; font-size:.76rem; font-weight:750; line-height:1.5; } .ds-story-card button { width:100%; min-height:44px; padding:0 11px; display:flex; align-items:center; justify-content:space-between; border:2px solid #17324d; border-radius:10px; color:#fff; background:#e84133; font-weight:900; }"
+    },
+    {
+      "name": "Paper Workspace Dialog",
+      "kind": "dialog",
+      "description": "The shared centered shell for export and parent safety, with clear hierarchy and scroll-safe bounds.",
+      "html": "<div class=\"ds-dialog-backdrop\"><section class=\"ds-dialog\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"ds-dialog-title\"><header><div><h2 id=\"ds-dialog-title\">家长与安全</h2><p>所有设置只保存在当前浏览器。</p></div><button type=\"button\" aria-label=\"关闭\">×</button></header><label class=\"ds-setting\"><span><b>隐私保护</b><small>拦截电话、账号和详细地址</small></span><input type=\"checkbox\" checked></label></section></div>",
+      "css": ".ds-dialog-backdrop { position:fixed; inset:0; padding:24px; display:grid; place-items:center; background:rgba(23,50,77,.5); } .ds-dialog { width:min(520px,100%); max-height:calc(100dvh - 48px); padding:24px; overflow-y:auto; border:3px solid #17324d; border-radius:24px; color:#17324d; background:#fffaf0; box-shadow:0 22px 60px rgba(10,31,49,.28); font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-dialog>header { display:flex; justify-content:space-between; gap:20px; } .ds-dialog h2 { margin:0 0 5px; } .ds-dialog header p { margin:0; color:#60798b; font-size:.78rem; font-weight:750; } .ds-dialog header button { width:44px; height:44px; border:2px solid #17324d; border-radius:50%; background:#fff; font-size:1.3rem; font-weight:900; } .ds-setting { min-height:64px; margin-top:22px; padding:11px 13px; display:flex; align-items:center; justify-content:space-between; gap:18px; border:2px solid #c4d6dc; border-radius:12px; background:#fff; } .ds-setting span { display:grid; gap:3px; } .ds-setting small { color:#60798b; font-weight:750; } .ds-setting input { width:24px; height:24px; accent-color:#e84133; }"
     },
     {
       "name": "Paper-Cut Story Stage",
@@ -185,7 +190,7 @@
   ],
   "narrative": {
     "northStar": "The Living Paper Theater",
-    "overview": "My Living Drawing is a warm, low-density paper-cut theater: cream paper surrounds a framed cyan sky and green ground, while thick navy ink holds every silhouette together. Coral is the single action voice. Rounded cards, taped-paper cues, physical shadow bases, and deliberately authored scenery make the experience feel handmade and immediately playable rather than like an AI dashboard.\n\nThe same identity must survive from character choice to motion. Product-provided companions use authored selection art and dedicated, identity-consistent 2×2 motion sprite sheets for idle, wave, jump, and eat states; the dog has its own matching motion sheet. Houses, sun, tree, apple, clouds, stars, and ground are authored in CSS as paper-cut scenery. Optional joint overlays sit on top of the motion artwork for inspection without replacing or permanently technicalizing it.",
+    "overview": "My Living Drawing is a warm, low-density paper-cut theater: cream paper surrounds a framed cyan sky and green ground, while thick navy ink holds every silhouette together. Coral is the single action voice. Rounded cards, taped-paper cues, physical shadow bases, and deliberately authored scenery make the experience feel handmade and immediately playable rather than like an AI dashboard.\n\nThe same identity must survive from character choice to motion. Product-provided companions use authored selection art and dedicated, identity-consistent 2×2 motion sprite sheets for idle, wave, jump, and eat states; the dog has its own matching motion sheet. Uploaded drawings retain their original image inside an honest local joint-calibration workspace. Houses, sun, tree, apple, clouds, stars, and ground are authored in CSS as paper-cut scenery. Story tasks, dual-companion chat, scene editing, export, and parent safety remain compact layers around the stage rather than competing dashboards.",
     "keyCharacteristics": [
       "Warm cream paper, cyan sky, green ground, coral actions, and navy outlines form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
@@ -195,7 +200,9 @@
       "Motion is short, readable, object-specific, and fully reduced when requested.",
       "The living world and its white paper conversation card read as one responsive two-column play surface.",
       "Conversation stays continuous and lightweight through pale-sky assistant bubbles, coral user bubbles, typing dots, quick-topic pills, and one composer.",
-      "The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px`."
+      "Human and animal joint calibration uses anatomy-aware local templates over the preserved uploaded image.",
+      "A compact story task, a single transcript with speaker switching, and paper workspace layers extend the stage without replacing it.",
+      "The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px` with a two-row utility header and touch-safe controls."
     ],
     "rules": [
       { "name": "The One Coral Voice Rule", "body": "Coral signals action or deliberate emphasis; never scatter it as general decoration.", "section": "colors" },
@@ -211,7 +218,10 @@
       "Do use the same navy inline-SVG stroke style for every quick action.",
       "Do keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.",
       "Do keep chat as one continuous transcript with pale-sky assistant bubbles, coral user bubbles, visible typing feedback, and action-linked replies.",
-      "Do preserve the `1050px`, `820px`, and `560px` responsive behaviors, `44px` mobile topic targets, shared gold focus ring, and reduced-motion override.",
+      "Do preserve speaker attribution when switching between two companions in one transcript.",
+      "Do keep story tasks progressive and subordinate to the scene they control.",
+      "Do reuse the shared navy scrim and warm-paper shell for export, safety, and rest reminders; use a directional drawer for scene editing.",
+      "Do preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.",
       "Do keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable."
     ],
     "donts": [
@@ -222,6 +232,9 @@
       "Don't add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.",
       "Don't show joint nodes permanently or force animal anatomy into human shoulder-and-hip terminology.",
       "Don't fragment the conversation into a stack of heavy cards or detach it visually and behaviorally from the living world.",
+      "Don't reset the transcript when switching companions or duplicate the chat surface.",
+      "Don't stack story, editor, export, or safety layers into a competing control dashboard.",
+      "Don't compress mobile utility controls below the touch-safe envelope to force one-line navigation.",
       "Don't imply live AI capability or saved personal data when the shipped experience is local and replaceable."
     ]
   }

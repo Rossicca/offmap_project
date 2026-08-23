@@ -23,10 +23,12 @@ const rabbitNodes = [
   ["左前爪", 29, 53], ["右前爪", 72, 53], ["左后腿", 42, 78], ["右后腿", 59, 78], ["尾巴", 76, 65],
 ];
 
-function JointOverlay({ species }) {
-  const nodes = species === "rabbit" ? rabbitNodes : humanNodes;
+function JointOverlay({ species, calibratedNodes }) {
+  const nodes = calibratedNodes?.length
+    ? calibratedNodes.map((node) => [node.label, node.x, node.y])
+    : species === "rabbit" ? rabbitNodes : humanNodes;
   return (
-    <span className="image-joints" aria-hidden="true">
+    <span className={`image-joints ${calibratedNodes?.length ? "is-calibrated" : ""}`} aria-hidden="true">
       {nodes.map(([label, x, y]) => (
         <i key={label} style={{ left: `${x}%`, top: `${y}%` }}><b>{label}</b></i>
       ))}
@@ -38,12 +40,10 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
   const frame = frameByAction[action] || "0% 0%";
   return (
     <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
-      <span
-        className="motion-sprite"
-        style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }}
-        aria-hidden="true"
-      />
-      {showJoints && <JointOverlay species={avatar.species} />}
+      {avatar.isUploaded
+        ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" />
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
+      {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>
   );
