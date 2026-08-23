@@ -7,6 +7,7 @@ import { avatarCatalog } from "./data/avatarCatalog";
 import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
 
+
 export default function App() {
   const [userName, setUserNameState] = useState(() => localStorage.getItem("living-drawing-name") || "");
   const [analysis, setAnalysis] = useState(null);
@@ -22,8 +23,10 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem("living-drawing-safety")) || { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; } catch { return { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; }
   });
 
+
   useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem("living-drawing-safety", JSON.stringify(safety)); }, [safety]);
+
 
   const setUserName = (name) => {
     setUserNameState(name);
@@ -31,17 +34,23 @@ export default function App() {
     else localStorage.removeItem("living-drawing-name");
   };
 
-  useEffect(() => () => {
-    if (analysis?.previewUrl) URL.revokeObjectURL(analysis.previewUrl);
-  }, [analysis]);
+
+  useEffect(() => {
+    const previewUrl = analysis?.previewUrl;
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [analysis?.previewUrl]);
+
 
   const upload = async (file) => {
     setBusy(true);
     setError("");
     try {
       const result = await analyzeDrawing(file);
-      setSelectedAvatar(avatarCatalog[0]);
-      setCompanions([avatarCatalog[0]]);
+      const uploadAvatar = result.customAvatar || avatarCatalog[0];
+      setSelectedAvatar(uploadAvatar);
+      setCompanions([uploadAvatar]);
       setAnalysis({ ...result, needsRigSetup: true });
     } catch (uploadError) {
       setError(uploadError.message || "这张图片暂时打不开，请换一张试试。 ");
@@ -49,6 +58,7 @@ export default function App() {
       setBusy(false);
     }
   };
+
 
   const reset = () => {
     if (analysis?.previewUrl) URL.revokeObjectURL(analysis.previewUrl);
@@ -58,6 +68,7 @@ export default function App() {
     setError("");
     setCurrentProjectId(null);
   };
+
 
   const chooseAvatar = (selection) => {
     const selectedCompanions = Array.isArray(selection) ? selection.filter(Boolean) : [selection];
@@ -76,6 +87,7 @@ export default function App() {
     });
   };
 
+
   const saveProject = (snapshot) => {
     const id = currentProjectId || `project-${Date.now()}`;
     const now = new Date().toISOString();
@@ -87,6 +99,7 @@ export default function App() {
     setCurrentProjectId(id);
   };
 
+
   const openProject = (project) => {
     const restoredCompanions = (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
     const avatar = restoredCompanions[0] || avatarCatalog[0];
@@ -96,15 +109,18 @@ export default function App() {
     setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: "saved-project", previewUrl: null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints }, dog: { type: "小狗", joints: 7 } } });
   };
 
+
   const renameProject = (id) => {
     const current = projects.find((project) => project.id === id);
     const name = window.prompt("给作品取一个新名字", current?.name || "我的作品")?.trim();
     if (name) setProjects((items) => items.map((project) => project.id === id ? { ...project, name, updatedAt: new Date().toISOString() } : project));
   };
 
+
   const deleteProject = (id) => {
     if (window.confirm("确定删除这个本地作品吗？")) setProjects((items) => items.filter((project) => project.id !== id));
   };
+
 
   const clearLocalData = () => {
     if (!window.confirm("确定清除所有本地作品、聊天和语音设置吗？此操作无法撤销。")) return;
@@ -114,11 +130,22 @@ export default function App() {
     if (analysis) reset();
   };
 
+
   if (!userName) return <LoginScreen onLogin={setUserName} />;
+
 
   if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={setAnalysis} onCancel={reset} />;
 
+
   return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
+    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={selectedAvatar?.isCustom ? null : analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
     : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 }
+
+
+
+
+
+
+
+
