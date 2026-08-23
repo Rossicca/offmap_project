@@ -124,6 +124,8 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 .creator-header-actions, .world-header-actions { justify-self: end; display: flex; align-items: center; gap: 14px; }
 .creator-header-actions button, .world-header-actions button { border: 0; background: transparent; font-weight: 900; cursor: pointer; }
 .project-gallery { padding-top: 34px; }
+.project-gallery, .quick-actions { content-visibility: auto; contain-intrinsic-size: 1px 520px; }
+.motion-avatar, .motion-dog { contain: layout paint style; }
 .project-gallery > header { margin-bottom: 24px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
 .project-gallery h2 { margin: 0 0 5px; font-size: 2rem; }
 .project-gallery header p { margin: 0; color: #60798b; font-weight: 750; }

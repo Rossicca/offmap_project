@@ -8,7 +8,7 @@ import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
 
 export default function App() {
-  const [userName, setUserName] = useState("");
+  const [userName, setUserNameState] = useState(() => localStorage.getItem("living-drawing-name") || "");
   const [analysis, setAnalysis] = useState(null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [companions, setCompanions] = useState([]);
@@ -20,6 +20,12 @@ export default function App() {
   });
 
   useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
+
+  const setUserName = (name) => {
+    setUserNameState(name);
+    if (name) localStorage.setItem("living-drawing-name", name);
+    else localStorage.removeItem("living-drawing-name");
+  };
 
   useEffect(() => () => {
     if (analysis?.previewUrl) URL.revokeObjectURL(analysis.previewUrl);

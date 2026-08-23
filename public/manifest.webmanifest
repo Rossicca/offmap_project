@@ -1,0 +1,10 @@
+{
+  "name": "My Living Drawing",
+  "short_name": "Living Drawing",
+  "description": "让孩子画出来的世界活起来",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffaf0",
+  "theme_color": "#79d8f2",
+  "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
