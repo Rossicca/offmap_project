@@ -5,6 +5,7 @@ import ActionButtons from "./ActionButtons";
 import ConversationPanel from "./ConversationPanel";
 import SceneObject from "./SceneObject";
 import SpeechBubble from "./SpeechBubble";
+import StoryMode from "./StoryMode";
 
 export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName }) {
   const characterName = selectedAvatar?.name || "画中小伙伴";
@@ -22,6 +23,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   }]);
   const [suggestions, setSuggestions] = useState(["你好呀！", "你喜欢什么？", "我们去冒险吧"]);
   const [typing, setTyping] = useState(false);
+  const [storyActive, setStoryActive] = useState(false);
+  const [storyStep, setStoryStep] = useState(0);
+  const [storyEnding, setStoryEnding] = useState(null);
   const timers = useRef([]);
   const messageId = useRef(2);
 
@@ -35,6 +39,12 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const playAction = (objectId, action, customMessage) => {
     const object = sceneObjects.find((item) => item.id === objectId);
     if (!object || !object.actions.includes(action)) return;
+
+    if (storyActive && !storyEnding) {
+      if (storyStep === 0 && objectId === "house1" && action === "openDoor") setStoryStep(1);
+      if (storyStep === 1 && objectId === "dog1" && action === "move") setStoryStep(2);
+      if (storyStep === 2 && objectId === "sun1" && ["sunset", "sunrise"].includes(action)) setStoryEnding(action === "sunset" ? "night" : "morning");
+    }
 
     setActiveActions((current) => ({ ...current, [objectId]: action }));
     setMessage(customMessage || actionFeedback[action] || "世界动起来啦！");
@@ -107,6 +117,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
         </button>
+        <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />
         <div className="drawing-backdrop" style={{ backgroundImage: previewUrl ? `url(${previewUrl})` : "none" }} aria-hidden="true" />
         <div className="sky-wash" aria-hidden="true" />
         <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
