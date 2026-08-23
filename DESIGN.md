@@ -112,6 +112,25 @@ components:
     rounded: "{rounded.pill}"
     padding: "0 11px"
     height: "34px"
+  chat-assistant-bubble:
+    backgroundColor: "#eaf8fb"
+    textColor: "{colors.ink-navy}"
+    typography: "{typography.body}"
+    rounded: "{rounded.control}"
+    padding: "10px 12px"
+  chat-user-bubble:
+    backgroundColor: "{colors.action-coral}"
+    textColor: "{colors.clean-white}"
+    typography: "{typography.body}"
+    rounded: "{rounded.control}"
+    padding: "10px 12px"
+  chip-quick-topic:
+    backgroundColor: "{colors.paper-cream}"
+    textColor: "{colors.ink-navy}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    padding: "0 10px"
+    height: "34px"
 ---
 
 # Design System: My Living Drawing
@@ -131,8 +150,10 @@ The same identity must survive from character choice to motion. Product-provided
 - AI-authored character identities remain recognizable across dedicated motion frames.
 - CSS scenery and paper-cut props replace decorative emoji in the living world.
 - All quick actions use one navy inline-SVG stroke family.
+- The living world and its white paper conversation card read as one responsive two-column play surface.
+- Conversation stays continuous and lightweight through pale-sky assistant bubbles, coral user bubbles, typing dots, quick-topic pills, and one composer.
 - Motion is short, readable, object-specific, and fully reduced when requested.
-- Desktop layouts collapse deliberately at `820px`; compact mobile treatment begins at `560px`.
+- The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px`.
 
 ## Colors
 
@@ -189,9 +210,9 @@ The palette behaves like bright craft paper drawn with a dark felt-tip pen.
 
 ## Layout
 
-The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. The living world and quick-action rail share a `1260px` maximum width.
+The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
 
-The stage is fluid from `560px` to `760px` tall on desktop. At `820px`, two-column surfaces become one column, the header simplifies, the avatar grid becomes two columns, and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, large radii tighten to `20px`, the stage becomes a tall `600px` minimum viewport, the composer anchors `10px` above its bottom edge, labels compact, and horizontal actions remain touch-scrollable.
+The stage and desktop conversation card are fluid from `560px` to `760px` tall. At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, the header simplifies, the avatar grid becomes two columns, and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, large radii tighten to `20px`, the stage becomes a tall `600px` minimum viewport, the conversation card becomes `420px` high, quick-topic pills hold a `44px` minimum touch target, composer text yields to its arrow on the narrow send button, and horizontal actions remain touch-scrollable.
 
 Spacing follows the observed rhythm of `8px`, `12px`, `16px`, `24px`, `34px`, and `48px`. Preserve generous air around the stage and keep control internals dense and consistent.
 
@@ -208,6 +229,7 @@ Depth combines hard physical offsets with soft ambient lift. Touchable cards and
 - **Primary Press Base** (`0 6px 0 #b92720`): Coral button depth.
 - **Quick Action Base** (`0 5px 0 #dce8ea`): Pale base beneath white action magnets.
 - **Overlay Ambient** (`0 10px 30px rgba(23,50,77,.18)`): Command composer separation.
+- **Conversation Card Backing** (`8px 10px 0 #cbeef3`): Pale-blue physical offset beneath the desktop white paper chat card; compress to `6px 7px` on mobile.
 - **Sprite Lift** (`drop-shadow(0 12px 7px rgba(23,50,77,.18))`): Gentle cutout separation for the chosen companion.
 
 **The Physical-Then-Ambient Rule.** Use hard offsets for touchable magnets and diffuse lift for frames, overlays, sprites, and scenery.
@@ -256,6 +278,12 @@ The joint toggle is a small white pill at rest and coral when active. It reveals
 
 The composer is a white, navy-framed overlay attached to the stage bottom. It pairs a warm input with a coral send action and explicit offline reassurance. Speech feedback appears near the stage top as a white tailed bubble with a coral spark and short enter/exit motion.
 
+### Conversation Panel
+
+The conversation is a `370px` desktop companion to the world, presented as one white paper card with a `3px` navy frame, `28px` corners, and a pale-blue physical backing. A compact character header leads into one continuous, vertically scrolling transcript; messages do not become separate cards or interrupt the reading flow with extra chrome.
+
+Assistant replies use pale-sky bubbles with a navy outline and a lower-left tail corner; user messages align right in coral bubbles with deep-coral outlines and the inverse lower-right corner. A three-dot typing bubble keeps the assistant voice visible while waiting. Below the transcript, up to three pill-shaped quick topics scroll horizontally, followed by a warm-white composer and coral send action. Suggested and freeform replies share the same send path, and action-linked assistant replies visibly trigger the matching world object so conversation and play remain one system. On mobile, each quick-topic pill keeps at least a `44px` touch target.
+
 ### Action Icon Family
 
 Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` strokes, rounded caps, and rounded joins. Hand, jump arrow, door, sun, tree, dog, and apple all follow this one visual grammar.
@@ -269,7 +297,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` str
 - **Do** author scene props as simple paper-cut CSS forms with navy edges and restrained shadows.
 - **Do** use the same navy inline-SVG stroke style for every quick action.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
-- **Do** preserve the `820px` and `560px` responsive behaviors, shared gold focus ring, and reduced-motion override.
+- **Do** keep chat as one continuous transcript with pale-sky assistant bubbles, coral user bubbles, visible typing feedback, and action-linked replies.
+- **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, `44px` mobile topic targets, shared gold focus ring, and reduced-motion override.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 
 ### Don't:
@@ -280,4 +309,5 @@ Quick-action icons are unified `24px` inline SVGs with no fill, navy `1.9px` str
 - **Don't** mix icon libraries, filled glyphs, or emoji into the unified quick-action SVG family.
 - **Don't** add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.
 - **Don't** show joint nodes permanently or force animal anatomy into human shoulder-and-hip terminology.
+- **Don't** fragment the conversation into a stack of heavy cards or detach it visually and behaviorally from the living world.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.

@@ -54,6 +54,6 @@ export default function App() {
   if (!userName) return <LoginScreen onLogin={setUserName} />;
 
   return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} rigAnalysis={analysis.rigAnalysis} />
+    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} />
     : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} />;
 }

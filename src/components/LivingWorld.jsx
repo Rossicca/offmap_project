@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { actionDurations, actionFeedback } from "../utils/actions";
-import { parseCommand } from "../utils/parseCommand";
+import { createCharacterReply } from "../utils/conversation";
 import ActionButtons from "./ActionButtons";
-import CommandBox from "./CommandBox";
+import ConversationPanel from "./ConversationPanel";
 import SceneObject from "./SceneObject";
 import SpeechBubble from "./SpeechBubble";
 
-export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis }) {
+export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName }) {
+  const characterName = selectedAvatar?.name || "画中小伙伴";
   const [activeActions, setActiveActions] = useState({});
   const [persistentState, setPersistentState] = useState({ night: false, doorOpen: false, appleHidden: false, dogMoved: false });
   const [message, setMessage] = useState(() => selectedAvatar
@@ -14,7 +15,15 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     : "Demo 已找到 6 个朋友，点点它们试试看！");
   const [bubbleVisible, setBubbleVisible] = useState(true);
   const [showJoints, setShowJoints] = useState(false);
+  const [messages, setMessages] = useState(() => [{
+    id: 1,
+    role: "assistant",
+    text: `你好，${userName || "小小创作者"}！我是${characterName}。现在不只可以让我动起来，也可以和我聊天啦！`,
+  }]);
+  const [suggestions, setSuggestions] = useState(["你好呀！", "你喜欢什么？", "我们去冒险吧"]);
+  const [typing, setTyping] = useState(false);
   const timers = useRef([]);
+  const messageId = useRef(2);
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
 
@@ -49,14 +58,37 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     later(() => setBubbleVisible(false), action === "feed" ? 2800 : 2300);
   };
 
-  const handleCommand = (text) => {
-    const command = parseCommand(text, sceneObjects);
-    if (command?.target) playAction(command.target, command.action, command.message);
-    else {
-      setMessage(command?.message || "告诉我想让谁做什么吧！");
+  const appendMessage = (role, text) => {
+    setMessages((current) => [...current, { id: messageId.current++, role, text }]);
+  };
+
+  const handleConversation = (text) => {
+    appendMessage("user", text);
+    setTyping(true);
+    setSuggestions([]);
+
+    later(() => {
+      const reply = createCharacterReply(text, {
+        name: characterName,
+        turn: messages.length,
+        sceneObjects,
+        persistentState,
+      });
+      setTyping(false);
+      appendMessage("assistant", reply.text);
+      setSuggestions(reply.suggestions || []);
+      setMessage(reply.text);
       setBubbleVisible(true);
-      later(() => setBubbleVisible(false), 3000);
-    }
+      if (reply.target && reply.action) playAction(reply.target, reply.action, reply.text);
+      later(() => setBubbleVisible(false), 2800);
+    }, 560);
+  };
+
+  const handleDirectAction = (objectId, action) => {
+    playAction(objectId, action);
+    const reply = actionFeedback[action] || "世界动起来啦！";
+    appendMessage("assistant", reply);
+    setSuggestions(["跟我挥挥手", "你喜欢什么？", "给我讲个故事"]);
   };
 
   return (
@@ -69,6 +101,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         <button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button>
       </header>
 
+      <div className="world-experience">
       <section className={`world-stage ${persistentState.night ? "is-night" : ""}`} aria-label="互动世界">
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
@@ -88,7 +121,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
               object={object}
               action={activeActions[object.id]}
               persistentState={persistentState}
-              onInteract={playAction}
+              onInteract={handleDirectAction}
               selectedAvatar={selectedAvatar}
               showJoints={showJoints}
             />
@@ -101,10 +134,18 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
             <span>小狗 · {rigAnalysis?.dog?.joints || 7} 节点</span>
           </div>
         )}
-        <CommandBox onCommand={handleCommand} />
       </section>
 
-      <ActionButtons onAction={playAction} persistentState={persistentState} />
+      <ConversationPanel
+        characterName={characterName}
+        messages={messages}
+        suggestions={suggestions}
+        typing={typing}
+        onSend={handleConversation}
+      />
+      </div>
+
+      <ActionButtons onAction={handleDirectAction} persistentState={persistentState} />
     </main>
   );
 }

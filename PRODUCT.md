@@ -40,6 +40,7 @@ This is a three-day hackathon demo used on a presentation device where network o
 - Trigger actions through one `playAction(objectId, action)` interface.
 - Support person wave/jump/eat, door open/close, sunset/sunrise, tree shake, dog move/jump, and apple feed.
 - Parse common Chinese commands locally with `parseCommand(text, sceneObjects)`.
+- Hold short, contextual character conversations about greetings, feelings, hobbies, animals, and simple branching adventures; selected replies can trigger matching scene actions.
 - Prefer CSS transforms and transitions over complex animation or backend systems.
 - Do not fabricate live AI capability; mock analysis must be communicated honestly.
 
