@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import CreatorHub from "./components/CreatorHub";
 import LoginScreen from "./components/LoginScreen";
 import LivingWorld from "./components/LivingWorld";
+import RigEditor from "./components/RigEditor";
 import { avatarCatalog } from "./data/avatarCatalog";
 import { demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
@@ -23,7 +24,7 @@ export default function App() {
     try {
       const result = await analyzeDrawing(file);
       setSelectedAvatar(avatarCatalog[0]);
-      setAnalysis(result);
+      setAnalysis({ ...result, needsRigSetup: true });
     } catch (uploadError) {
       setError(uploadError.message || "这张图片暂时打不开，请换一张试试。 ");
     } finally {
@@ -52,6 +53,8 @@ export default function App() {
   };
 
   if (!userName) return <LoginScreen onLogin={setUserName} />;
+
+  if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={setAnalysis} onCancel={reset} />;
 
   return analysis
     ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} />
