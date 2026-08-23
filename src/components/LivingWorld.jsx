@@ -7,16 +7,16 @@ import SceneObject from "./SceneObject";
 import SpeechBubble from "./SpeechBubble";
 import StoryMode from "./StoryMode";
 
-export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName }) {
+export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName, initialState, onSave }) {
   const characterName = selectedAvatar?.name || "画中小伙伴";
   const [activeActions, setActiveActions] = useState({});
-  const [persistentState, setPersistentState] = useState({ night: false, doorOpen: false, appleHidden: false, dogMoved: false });
+  const [persistentState, setPersistentState] = useState(() => initialState?.persistentState || { night: false, doorOpen: false, appleHidden: false, dogMoved: false });
   const [message, setMessage] = useState(() => selectedAvatar
     ? `${selectedAvatar.name}已经进入互动世界啦！`
     : "Demo 已找到 6 个朋友，点点它们试试看！");
   const [bubbleVisible, setBubbleVisible] = useState(true);
   const [showJoints, setShowJoints] = useState(false);
-  const [messages, setMessages] = useState(() => [{
+  const [messages, setMessages] = useState(() => initialState?.messages || [{
     id: 1,
     role: "assistant",
     text: `你好，${userName || "小小创作者"}！我是${characterName}。现在不只可以让我动起来，也可以和我聊天啦！`,
@@ -24,8 +24,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [suggestions, setSuggestions] = useState(["你好呀！", "你喜欢什么？", "我们去冒险吧"]);
   const [typing, setTyping] = useState(false);
   const [storyActive, setStoryActive] = useState(false);
-  const [storyStep, setStoryStep] = useState(0);
-  const [storyEnding, setStoryEnding] = useState(null);
+  const [storyStep, setStoryStep] = useState(initialState?.storyStep || 0);
+  const [storyEnding, setStoryEnding] = useState(initialState?.storyEnding || null);
   const timers = useRef([]);
   const messageId = useRef(2);
 
@@ -108,7 +108,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
           <span aria-hidden="true">✦</span><b>My Living Drawing</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 找到 {sceneObjects.length} 个朋友</div>
-        <button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button>
+        <div className="world-header-actions"><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding })}>保存作品</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
       </header>
 
       <div className="world-experience">

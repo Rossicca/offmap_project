@@ -1,18 +1,22 @@
 import { useRef, useState } from "react";
 import { avatarCatalog, characterSprite } from "../data/avatarCatalog";
+import ProjectGallery from "./ProjectGallery";
 
-export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout }) {
+export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
   const [mode, setMode] = useState("avatar");
   const [selected, setSelected] = useState(avatarCatalog[0]);
+  const [showGallery, setShowGallery] = useState(false);
 
   return (
     <main className="creator-page">
       <header className="creator-header">
         <div className="wordmark"><span aria-hidden="true">✦</span><b>My Living Drawing</b></div>
         <p>你好，{userName}</p>
-        <button type="button" onClick={onLogout}>退出</button>
+        <div className="creator-header-actions"><button type="button" onClick={() => setShowGallery(true)}>我的作品{projects.length ? ` (${projects.length})` : ""}</button><button type="button" onClick={onLogout}>退出</button></div>
       </header>
+
+      {showGallery ? <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setShowGallery(false)} /> : <>
 
       <section className="creator-intro">
         <div>
@@ -73,6 +77,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
           </div>
         </section>
       )}
+      </>}
     </main>
   );
 }
