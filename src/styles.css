@@ -29,7 +29,7 @@ button:focus-visible, input:focus-visible {
   outline-offset: 3px;
 }
 
-button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
+button:active:not(:disabled):not(.scene-object) { transform: translateY(1px) scale(0.985); }
 
 .visually-hidden {
   position: absolute;
@@ -930,7 +930,9 @@ html, body {
   touch-action: none;
   user-select: none;
   transition: filter 160ms ease, opacity 160ms ease;
+  will-change: left, top;
 }
+.scene-object:active:not(:disabled) { transform: translate(-50%, -50%); }
 .scene-object:hover { filter: contrast(1.03) drop-shadow(0 7px 8px rgba(54, 48, 39, .16)); }
 .scene-object.is-dragging { z-index: 30; cursor: grabbing; filter: contrast(1.04) drop-shadow(0 15px 13px rgba(54, 48, 39, .2)); }
 .scene-object.is-dragging::after { content: ""; position: absolute; inset: -8px; border: 1px dashed rgba(76, 119, 148, .8); border-radius: 8px; pointer-events: none; }
