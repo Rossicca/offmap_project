@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import { avatarCatalog } from "../data/avatarCatalog";
 import ProjectGallery from "./ProjectGallery";
 import DrawingCanvas from "./DrawingCanvas";
+import WorldDrawingEditor from "./WorldDrawingEditor";
 
 
-export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
+export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreateBackground, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
   const [mode, setMode] = useState("avatar");
   const [selected, setSelected] = useState(avatarCatalog[0]);
@@ -33,6 +34,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
           <button type="button" className={mode === "avatar" ? "is-active" : ""} onClick={() => setMode("avatar")}>AI 角色库</button>
           <button type="button" className={mode === "drawing" ? "is-active" : ""} onClick={() => setMode("drawing")}>上传我的画</button>
           <button type="button" className={mode === "canvas" ? "is-active" : ""} onClick={() => setMode("canvas")}>现在就画</button>
+          <button type="button" className={mode === "background" ? "is-active" : ""} onClick={() => setMode("background")}>画游戏背景</button>
         </div>
       </section>
 
@@ -86,8 +88,16 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
             {error && <p className="inline-error" role="alert">{error}</p>}
           </div>
         </section>
-      ) : (
+      ) : mode === "canvas" ? (
         <DrawingCanvas onComplete={onUpload} busy={busy} error={error} />
+      ) : (
+        <WorldDrawingEditor
+          initialArt={{ house: null, background: null }}
+          initialMode="background"
+          embedded
+          backgroundOnly
+          onApply={(art) => art.background && onCreateBackground(art.background)}
+        />
       )}
       </>}
     </main>
