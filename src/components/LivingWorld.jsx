@@ -6,6 +6,7 @@ import ConversationPanel from "./ConversationPanel";
 import SceneObject from "./SceneObject";
 import SpeechBubble from "./SpeechBubble";
 import StoryMode from "./StoryMode";
+import ExportPanel from "./ExportPanel";
 
 export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, rigAnalysis, userName, initialState, onSave }) {
   const characterName = selectedAvatar?.name || "画中小伙伴";
@@ -26,6 +27,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [storyActive, setStoryActive] = useState(false);
   const [storyStep, setStoryStep] = useState(initialState?.storyStep || 0);
   const [storyEnding, setStoryEnding] = useState(initialState?.storyEnding || null);
+  const [showExport, setShowExport] = useState(false);
   const timers = useRef([]);
   const messageId = useRef(2);
 
@@ -108,8 +110,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
           <span aria-hidden="true">✦</span><b>My Living Drawing</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 找到 {sceneObjects.length} 个朋友</div>
-        <div className="world-header-actions"><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding })}>保存作品</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
+        <div className="world-header-actions"><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
       </header>
+      {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
 
       <div className="world-experience">
       <section className={`world-stage ${persistentState.night ? "is-night" : ""}`} aria-label="互动世界">
