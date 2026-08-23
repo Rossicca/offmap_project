@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { avatarCatalog, characterSprite } from "../data/avatarCatalog";
 import ProjectGallery from "./ProjectGallery";
+import DrawingCanvas from "./DrawingCanvas";
+
 
 export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
@@ -8,6 +10,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
   const [selected, setSelected] = useState(avatarCatalog[0]);
   const [partnerId, setPartnerId] = useState("");
   const [showGallery, setShowGallery] = useState(false);
+
 
   return (
     <main className="creator-page">
@@ -17,7 +20,9 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
         <div className="creator-header-actions"><button type="button" onClick={() => setShowGallery(true)}>我的作品{projects.length ? ` (${projects.length})` : ""}</button><button type="button" onClick={onLogout}>退出</button></div>
       </header>
 
+
       {showGallery ? <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setShowGallery(false)} /> : <>
+
 
       <section className="creator-intro">
         <div>
@@ -27,8 +32,10 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
         <div className="mode-switch" aria-label="创作方式">
           <button type="button" className={mode === "avatar" ? "is-active" : ""} onClick={() => setMode("avatar")}>AI 角色库</button>
           <button type="button" className={mode === "drawing" ? "is-active" : ""} onClick={() => setMode("drawing")}>上传我的画</button>
+          <button type="button" className={mode === "canvas" ? "is-active" : ""} onClick={() => setMode("canvas")}>现在就画</button>
         </div>
       </section>
+
 
       {mode === "avatar" ? (
         <section className="avatar-studio" aria-labelledby="avatar-title">
@@ -53,6 +60,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
             </div>
           </div>
 
+
           <aside className="rig-preview">
             <div className="selected-character">
               <i style={{ backgroundImage: `url(${characterSprite})`, backgroundPosition: selected.spritePosition }} />
@@ -67,7 +75,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
             <button className="primary-button" type="button" onClick={() => onChooseAvatar([selected, ...(partnerId ? [avatarCatalog.find((avatar) => avatar.id === partnerId)] : [])])}>{partnerId ? "和搭档一起进入世界" : "带原角色进入世界"} <span aria-hidden="true">→</span></button>
           </aside>
         </section>
-      ) : (
+      ) : mode === "drawing" ? (
         <section className="drawing-uploader">
           <div className="upload-illustration" aria-hidden="true"><span>🖍️</span><b>你的画</b><i>＋</i><span>关节</span></div>
           <div>
@@ -78,6 +86,8 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, e
             {error && <p className="inline-error" role="alert">{error}</p>}
           </div>
         </section>
+      ) : (
+        <DrawingCanvas onComplete={onUpload} busy={busy} error={error} />
       )}
       </>}
     </main>
