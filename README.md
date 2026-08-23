@@ -9,6 +9,8 @@ npm install
 npm run dev
 ```
 
+`npm run dev` 会同时启动 Vite 前端和本地 API 后端。复制 `.env.example` 为 `.env.local`，填写方舟 API Key 与视觉/聊天 Endpoint ID；`.env.local` 不会提交到 Git。
+
 生产构建：
 
 ```bash

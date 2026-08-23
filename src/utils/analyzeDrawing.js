@@ -1,5 +1,6 @@
 import { demoScene } from "../data/demoScene";
 import { analyzeAnimalRig } from "../data/animalRigProfiles";
+import { analyzeDrawingWithArk } from "./api";
 
 
 function createLocalPreview(file) {
@@ -42,15 +43,21 @@ export async function analyzeDrawing(image) {
   }
 
 
-  // Demo fallback: keep this boundary stable so a real Vision API can replace it later.
-  await new Promise((resolve) => window.setTimeout(resolve, 850));
   const previewUrl = await createLocalPreview(image);
+  let vision = null;
+  try {
+    vision = await analyzeDrawingWithArk(previewUrl);
+  } catch (error) {
+    console.warn("Vision API unavailable; using local rig fallback:", error.message);
+  }
+  const type = vision?.characterType || "人物";
+  const movable = vision?.movable?.length ? vision.movable : ["头", "身体", "双臂", "双腿"];
   return {
     sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: "uploaded-character" } : { ...object }),
-    source: "mock",
+    source: vision ? "ark-vision" : "mock",
     previewUrl,
     rigAnalysis: {
-      person: { type: "人物", joints: 10, movable: ["头", "身体", "双臂", "双腿"] },
+      person: { type, joints: vision?.joints?.length || 10, movable, nodes: vision?.joints || undefined, pose: vision?.pose, confidence: vision?.confidence, notes: vision?.notes },
       dog: analyzeAnimalRig("dog"),
     },
   };

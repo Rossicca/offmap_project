@@ -3,3 +3,6 @@ dist/
 artifacts/
 .DS_Store
 *.local
+.env
+.env.*
+!.env.example
