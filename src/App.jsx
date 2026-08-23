@@ -18,8 +18,12 @@ export default function App() {
   const [projects, setProjects] = useState(() => {
     try { return JSON.parse(localStorage.getItem("living-drawing-projects") || "[]"); } catch { return []; }
   });
+  const [safety, setSafety] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("living-drawing-safety")) || { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; } catch { return { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }; }
+  });
 
   useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
+  useEffect(() => { localStorage.setItem("living-drawing-safety", JSON.stringify(safety)); }, [safety]);
 
   const setUserName = (name) => {
     setUserNameState(name);
@@ -102,11 +106,19 @@ export default function App() {
     if (window.confirm("确定删除这个本地作品吗？")) setProjects((items) => items.filter((project) => project.id !== id));
   };
 
+  const clearLocalData = () => {
+    if (!window.confirm("确定清除所有本地作品、聊天和语音设置吗？此操作无法撤销。")) return;
+    setProjects([]);
+    setCurrentProjectId(null);
+    localStorage.removeItem("living-drawing-voice");
+    if (analysis) reset();
+  };
+
   if (!userName) return <LoginScreen onLogin={setUserName} />;
 
   if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={setAnalysis} onCancel={reset} />;
 
   return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} />
+    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
     : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 }

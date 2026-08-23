@@ -177,6 +177,35 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 .object-position-list label { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 7px; color: #60798b; font-size: .7rem; font-weight: 800; }
 .object-position-list input { width: 100%; accent-color: var(--red); }
 .scene-editor > .primary-button { width: 100%; justify-content: space-between; margin-top: 18px; }
+.parent-backdrop, .break-reminder { position: fixed; z-index: 110; inset: 0; padding: 24px; display: grid; place-items: center; background: rgba(23,50,77,.5); }
+.parent-controls { width: min(520px, 100%); max-height: calc(100dvh - 48px); padding: 24px; overflow-y: auto; border: 3px solid var(--ink); border-radius: 24px; background: #fffaf0; box-shadow: 0 22px 60px rgba(10,31,49,.28); }
+.parent-controls > header { display: flex; justify-content: space-between; gap: 20px; }
+.parent-controls h2 { margin: 0 0 5px; }
+.parent-controls header p { margin: 0; color: #60798b; font-size: .78rem; font-weight: 750; }
+.parent-controls header button { width: 40px; height: 40px; border: 2px solid var(--ink); border-radius: 50%; background: #fff; font-size: 1.3rem; font-weight: 900; cursor: pointer; }
+.parent-gate { margin-top: 24px; display: grid; gap: 10px; }
+.parent-gate label { font-weight: 900; }
+.parent-gate input { height: 52px; padding: 0 14px; border: 2px solid #abc1cb; border-radius: 11px; background: #fff; font-size: 1.1rem; font-weight: 900; letter-spacing: .25em; text-align: center; }
+.parent-gate .primary-button { justify-content: center; }
+.parent-gate p { margin: 0; color: #a12a23; font-size: .75rem; font-weight: 800; }
+.parent-settings { margin-top: 22px; display: grid; gap: 10px; }
+.parent-settings > label { min-height: 64px; padding: 11px 13px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 2px solid #c4d6dc; border-radius: 12px; background: #fff; }
+.parent-settings label span { display: grid; gap: 3px; }
+.parent-settings label b { font-size: .86rem; }
+.parent-settings label small { color: #60798b; font-size: .68rem; font-weight: 750; }
+.parent-settings input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--red); }
+.parent-time select { height: 40px; padding: 0 8px; border: 2px solid var(--ink); border-radius: 9px; background: #fffaf0; font-weight: 800; }
+.privacy-summary { padding: 13px; border: 2px solid var(--ink); border-radius: 12px; background: #e4f5df; }
+.privacy-summary b { color: #32643c; }
+.privacy-summary p { margin: 5px 0 0; color: #416b53; font-size: .72rem; font-weight: 750; line-height: 1.5; }
+.clear-local-data { min-height: 46px; border: 2px solid #a12a23; border-radius: 11px; color: #a12a23; background: #fff; font-weight: 900; cursor: pointer; }
+.break-reminder section { width: min(440px, 100%); padding: 30px; border: 3px solid var(--ink); border-radius: 24px; background: #fffaf0; text-align: center; }
+.break-reminder section > span { color: var(--red); font-size: 1.7rem; }
+.break-reminder h2 { margin: 10px 0 8px; }
+.break-reminder p { margin: 0 0 22px; color: #60798b; font-weight: 750; line-height: 1.6; }
+.break-reminder section > div { display: flex; gap: 8px; }
+.break-reminder button { min-height: 48px; flex: 1; border: 2px solid var(--ink); border-radius: 11px; background: #fff; font-weight: 900; cursor: pointer; }
+.break-reminder button:last-child { color: #fff; background: var(--red); }
 .creator-intro { padding: 34px 0 40px; display: flex; align-items: end; justify-content: space-between; gap: 40px; }
 .creator-intro h1 { font-size: clamp(3rem, 6vw, 5.2rem); }
 .creator-intro > div > p { margin-bottom: 0; }

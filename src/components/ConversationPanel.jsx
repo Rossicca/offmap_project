@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 const defaultSuggestions = ["你好呀！", "你喜欢什么？", "我们去冒险吧"];
 
-export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend }) {
+export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend, voiceAllowed = true }) {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
-  const [voiceReply, setVoiceReply] = useState(() => localStorage.getItem("living-drawing-voice") === "on");
+  const [voiceReply, setVoiceReply] = useState(() => voiceAllowed && localStorage.getItem("living-drawing-voice") === "on");
   const [voiceNotice, setVoiceNotice] = useState("");
   const logRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -31,6 +31,8 @@ export default function ConversationPanel({ characterName, companions = [], acti
     recognitionRef.current?.abort();
     window.speechSynthesis?.cancel();
   }, []);
+
+  useEffect(() => { if (!voiceAllowed) { setVoiceReply(false); recognitionRef.current?.abort(); window.speechSynthesis?.cancel(); } }, [voiceAllowed]);
 
   const send = (value) => {
     const next = value.trim();
@@ -69,7 +71,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
       <header className="conversation-header">
         <span className="conversation-avatar" aria-hidden="true">✦</span>
         <div><h2 id="conversation-title">和{characterName}聊聊天</h2><p><i /> 正在这个小世界里陪你</p></div>
-        <button className={`voice-reply-toggle ${voiceReply ? "is-active" : ""}`} type="button" onClick={toggleVoiceReply} aria-pressed={voiceReply} aria-label={voiceReply ? "关闭角色朗读" : "开启角色朗读"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path d="M17 9c1.5 1.5 1.5 4.5 0 6M19.5 6.5c3 3 3 8 0 11"/></svg></button>
+        {voiceAllowed && <button className={`voice-reply-toggle ${voiceReply ? "is-active" : ""}`} type="button" onClick={toggleVoiceReply} aria-pressed={voiceReply} aria-label={voiceReply ? "关闭角色朗读" : "开启角色朗读"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path d="M17 9c1.5 1.5 1.5 4.5 0 6M19.5 6.5c3 3 3 8 0 11"/></svg></button>}
       </header>
       {companions.length > 1 && <div className="conversation-people" aria-label="选择聊天对象">{companions.map((avatar) => <button type="button" key={avatar.id} className={activeCompanionId === avatar.id ? "is-active" : ""} onClick={() => onCompanionChange(avatar.id)} aria-pressed={activeCompanionId === avatar.id}>{avatar.name}</button>)}</div>}
 
@@ -90,7 +92,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
       <form className="conversation-composer" onSubmit={(event) => { event.preventDefault(); send(text); }}>
         <label className="visually-hidden" htmlFor="character-chat">对{characterName}说</label>
         <input id="character-chat" value={text} onChange={(event) => setText(event.target.value)} placeholder={`对${characterName}说点什么…`} autoComplete="off" maxLength={100} />
-        <button className={`voice-input-button ${listening ? "is-listening" : ""}`} type="button" onClick={startListening} disabled={typing || listening} aria-label={listening ? "正在听你说" : "语音输入"}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7"/></svg></button>
+        {voiceAllowed && <button className={`voice-input-button ${listening ? "is-listening" : ""}`} type="button" onClick={startListening} disabled={typing || listening} aria-label={listening ? "正在听你说" : "语音输入"}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7"/></svg></button>}
         <button type="submit" disabled={!text.trim() || typing} aria-label="发送消息"><span>发送</span><b aria-hidden="true">↑</b></button>
       </form>
       {voiceNotice && <p className="voice-notice" role="status">{voiceNotice}</p>}

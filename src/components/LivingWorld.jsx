@@ -8,8 +8,10 @@ import SpeechBubble from "./SpeechBubble";
 import StoryMode from "./StoryMode";
 import ExportPanel from "./ExportPanel";
 import SceneEditor from "./SceneEditor";
+import ParentControls from "./ParentControls";
+import { screenChildMessage } from "../utils/safety";
 
-export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave }) {
+export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
@@ -34,10 +36,17 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [storyEnding, setStoryEnding] = useState(initialState?.storyEnding || null);
   const [showExport, setShowExport] = useState(false);
   const [showSceneEditor, setShowSceneEditor] = useState(false);
+  const [showParentControls, setShowParentControls] = useState(false);
+  const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
   const messageId = useRef(2);
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+  useEffect(() => {
+    if (!safety.sessionMinutes) return undefined;
+    const timer = window.setTimeout(() => setTimeUp(true), safety.sessionMinutes * 60 * 1000);
+    return () => window.clearTimeout(timer);
+  }, [safety.sessionMinutes]);
 
   const later = (callback, delay) => {
     const timer = window.setTimeout(callback, delay);
@@ -81,7 +90,16 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   };
 
   const handleConversation = (text) => {
-    appendMessage("user", text);
+    const screened = screenChildMessage(text, safety.safeChat);
+    appendMessage("user", screened.text);
+    if (!screened.safe) {
+      appendMessage("assistant", screened.reply);
+      setSuggestions(["聊聊画画", "给我讲个故事", "看看小狗"]);
+      setMessage(screened.reply);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 3200);
+      return;
+    }
     setTyping(true);
     setSuggestions([]);
 
@@ -117,10 +135,12 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
           <span aria-hidden="true">✦</span><b>My Living Drawing</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 找到 {objects.length} 个朋友</div>
-        <div className="world-header-actions"><button type="button" onClick={() => setShowSceneEditor(true)}>编辑场景</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
+        <div className="world-header-actions"><button type="button" onClick={() => setShowParentControls(true)}>家长设置</button><button type="button" onClick={() => setShowSceneEditor(true)}>编辑场景</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
       </header>
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
       {showSceneEditor && <SceneEditor objects={objects} theme={sceneTheme} onThemeChange={setSceneTheme} onObjectChange={(id, axis, value) => setObjects((current) => current.map((object) => object.id === id ? { ...object, [axis]: value } : object))} onClose={() => setShowSceneEditor(false)} />}
+      {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
+      {timeUp && <div className="break-reminder" role="dialog" aria-modal="true" aria-labelledby="break-title"><section><span aria-hidden="true">✦</span><h2 id="break-title">让眼睛休息一下吧</h2><p>已经创作了一段时间。看看远处、活动一下，准备好后再回来。</p><div><button type="button" onClick={onReset}>回到作品库</button><button type="button" onClick={() => setTimeUp(false)}>再创作一会儿</button></div></section></div>}
 
       <div className="world-experience">
       <section className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""}`} aria-label="互动世界">
@@ -167,6 +187,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         suggestions={suggestions}
         typing={typing}
         onSend={handleConversation}
+        voiceAllowed={safety.voiceAllowed}
       />
       </div>
 
