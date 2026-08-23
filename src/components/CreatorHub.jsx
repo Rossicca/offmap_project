@@ -3,93 +3,121 @@ import { avatarCatalog } from "../data/avatarCatalog";
 import ProjectGallery from "./ProjectGallery";
 import DrawingCanvas from "./DrawingCanvas";
 
+const DoodleIcon = ({ name }) => {
+  const paths = {
+    move: <path d="M8 5.5c0-1.8 2.5-1.8 2.5 0v4-5c0-1.8 2.5-1.8 2.5 0v5-4c0-1.8 2.5-1.8 2.5 0v4.5-2.6c0-1.7 2.5-1.7 2.5 0V13c0 4.4-2.7 7-6.7 7-3.2 0-4.9-2-6.4-4.4L3.2 14c-1-1.6 1.2-3 2.3-1.5L8 15.2Z" />,
+    chat: <><path d="M4 5.5h16v11H9l-5 3v-14Z" /><path d="M8 10h.01M12 10h.01M16 10h.01" /></>,
+    save: <><path d="M5 4h12l2 2v14H5Z" /><path d="M8 4v6h8V4M8 20v-6h8v6" /></>,
+  };
+  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
+};
 
 export default function CreatorHub({ userName, onUpload, onChooseAvatar, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
-  const [mode, setMode] = useState("avatar");
-  const [selected, setSelected] = useState(avatarCatalog[0]);
-  const [partnerId, setPartnerId] = useState("");
+  const [selected, setSelected] = useState(avatarCatalog[2]);
   const [showGallery, setShowGallery] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [dreamMode, setDreamMode] = useState(false);
+  const [friendship, setFriendship] = useState(() => Number(localStorage.getItem("living-drawing-friendship") || 0));
+  const [toolNotice, setToolNotice] = useState("");
 
+  const showToolNotice = (message) => {
+    setToolNotice(message);
+    window.clearTimeout(showToolNotice.timer);
+    showToolNotice.timer = window.setTimeout(() => setToolNotice(""), 1800);
+  };
+
+  const addFriendship = () => {
+    const next = friendship + 1;
+    setFriendship(next);
+    localStorage.setItem("living-drawing-friendship", String(next));
+    showToolNotice(`${selected.name} 收到爱心啦 · 亲密度 ${next}`);
+  };
+
+  const toggleDreamMode = () => {
+    setDreamMode((current) => {
+      showToolNotice(current ? "回到晴朗的白天" : "进入云朵梦境");
+      return !current;
+    });
+  };
+
+  const playMusicHint = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const notes = [523.25, 659.25, 783.99];
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0, context.currentTime + index * .13);
+      gain.gain.linearRampToValueAtTime(.12, context.currentTime + index * .13 + .02);
+      gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + index * .13 + .32);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(context.currentTime + index * .13);
+      oscillator.stop(context.currentTime + index * .13 + .34);
+    });
+    setMusicPlaying(true);
+    showToolNotice("伙伴音乐播放中 ♫");
+    window.setTimeout(() => { setMusicPlaying(false); context.close(); }, 900);
+  };
+
+  if (showGallery) return <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setShowGallery(false)} />;
+  if (showCanvas) return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setShowCanvas(false)}>← 返回伙伴主页</button><DrawingCanvas onComplete={onUpload} busy={busy} error={error} /></main>;
 
   return (
-    <main className="creator-page">
-      <header className="creator-header">
-        <div className="wordmark"><span aria-hidden="true">✦</span><b>My Living Drawing</b></div>
-        <p>你好，{userName}</p>
-        <div className="creator-header-actions"><button type="button" onClick={() => setShowGallery(true)}>我的作品{projects.length ? ` (${projects.length})` : ""}</button><button type="button" onClick={onLogout}>退出</button></div>
-      </header>
-
-
-      {showGallery ? <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setShowGallery(false)} /> : <>
-
-
-      <section className="creator-intro">
-        <div>
-          <h1>今天想让谁<br /><em>活起来？</em></h1>
-          <p>从你的画开始，或者直接挑选一个已经做好关节的 AI 小伙伴。</p>
-        </div>
-        <div className="mode-switch" aria-label="创作方式">
-          <button type="button" className={mode === "avatar" ? "is-active" : ""} onClick={() => setMode("avatar")}>AI 角色库</button>
-          <button type="button" className={mode === "drawing" ? "is-active" : ""} onClick={() => setMode("drawing")}>上传我的画</button>
-          <button type="button" className={mode === "canvas" ? "is-active" : ""} onClick={() => setMode("canvas")}>现在就画</button>
+    <main className={`companion-home${dreamMode ? " is-dreaming" : ""}`}>
+      <div className="side-doodles left">
+        <button className="doodle-tile blue side-tool" type="button" onClick={() => setShowCanvas(true)} aria-label="打开画板" title="现在就画">✎</button>
+        <i aria-hidden="true">〰</i>
+        <button className="doodle-tile blue side-tool" type="button" onClick={() => setShowGallery(true)} aria-label="打开收藏作品" title="收藏作品">★</button>
+        <button className={`doodle-tile yellow music-tile side-tool${musicPlaying ? " is-playing" : ""}`} type="button" onClick={playMusicHint} aria-label="播放伙伴音乐" title="伙伴音乐">♫</button>
+        <i aria-hidden="true">➰</i>
+      </div>
+      <section className="companion-window" aria-labelledby="companion-title">
+        <header className="companion-titlebar">
+          <div className="window-dots" aria-hidden="true"><i /><i /></div>
+          <div><span>MY LIVING DRAWING</span><h1 id="companion-title">AI 画伴</h1></div>
+          <button type="button" onClick={onLogout} aria-label="退出当前用户">{userName.slice(0, 1)}</button>
+        </header>
+        <div className="companion-content">
+          <section className="companion-hero">
+            <div className="character-showcase">
+              <span className="spark s1">★</span><span className="spark s2">✦</span><span className="spark s3">〰</span>
+              <div className="character-frame" style={{ backgroundImage: `url(${selected.motionSprite})` }} role="img" aria-label={selected.name} />
+              <div className="character-caption"><b>{selected.name}</b><span>今天也想陪你一起玩！</span></div>
+            </div>
+            <div className="companion-actions">
+              <p>你好，{userName}！<br /><b>今天想做什么？</b></p>
+              <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" disabled={busy} onChange={(event) => event.target.files[0] && onUpload(event.target.files[0])} />
+              <button className="companion-action coral" type="button" disabled={busy} onClick={() => inputRef.current?.click()}><span><DoodleIcon name="move" /></span>{busy ? "正在唤醒…" : "让画动起来"}</button>
+              <button className="companion-action sunshine" type="button" onClick={() => onChooseAvatar(selected)}><span><DoodleIcon name="chat" /></span>和我聊天</button>
+              <button className="companion-action leaf" type="button" onClick={() => setShowGallery(true)}><span><DoodleIcon name="save" /></span>我的小伙伴{projects.length ? ` · ${projects.length}` : ""}</button>
+              <button className="draw-own-button" type="button" onClick={() => setShowCanvas(true)}>✎ 或者，现在就画一个</button>
+              {error && <p className="companion-error" role="alert">{error}</p>}
+            </div>
+          </section>
+          <section className="friend-message" aria-label="伙伴留言">
+            <div className="message-avatar" style={{ backgroundImage: `url(${selected.motionSprite})` }} />
+            <div><b>{selected.name}</b><p>今天也想陪你玩呀！</p><span aria-label="三个爱心">♥ ♥ ♥</span></div>
+            <div className="mini-character" style={{ backgroundImage: `url(${selected.motionSprite})` }} aria-hidden="true" />
+          </section>
+          <section className="companion-picker" aria-label="选择小伙伴">
+            <span>换个伙伴</span>
+            {avatarCatalog.map((avatar) => <button key={avatar.id} type="button" className={selected.id === avatar.id ? "is-selected" : ""} onClick={() => setSelected(avatar)} aria-label={`选择${avatar.name}`}><i style={{ backgroundImage: `url(${avatar.motionSprite})` }} /></button>)}
+          </section>
         </div>
       </section>
-
-
-      {mode === "avatar" ? (
-        <section className="avatar-studio" aria-labelledby="avatar-title">
-          <div className="avatar-list">
-            <div className="section-copy">
-              <h2 id="avatar-title">选择一个小伙伴</h2>
-              <p>每个角色都已经拆分成可动关节。</p>
-            </div>
-            <div className="avatar-grid">
-              {avatarCatalog.map((avatar) => (
-                <button
-                  key={avatar.id}
-                  type="button"
-                  className={selected.id === avatar.id ? "avatar-card is-selected" : "avatar-card"}
-                  onClick={() => setSelected(avatar)}
-                  aria-pressed={selected.id === avatar.id}
-                >
-                  <span className="sprite-window"><i style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: "0% 0%" }} /></span>
-                  <b>{avatar.name}</b><small>{avatar.kind} · {avatar.joints.length} 个节点</small>
-                </button>
-              ))}
-            </div>
-          </div>
-
-
-          <aside className="rig-preview">
-            <div className="selected-character">
-              <i style={{ backgroundImage: `url(${selected.motionSprite})`, backgroundPosition: "0% 0%" }} />
-            </div>
-            <div className="rig-preview-copy">
-              <span>{selected.kind}骨架已就绪</span>
-              <h2>{selected.name}</h2>
-              <div className="joint-tags">{selected.joints.map((joint) => <em key={joint}>{joint}</em>)}</div>
-              <p className="avatar-conversion-note">进入世界后保留同一个角色外观，并切换它的专属动作帧；关节节点可以单独打开查看。</p>
-              <label className="partner-picker">邀请一位搭档<select value={partnerId} onChange={(event) => setPartnerId(event.target.value)}><option value="">暂时不邀请</option>{avatarCatalog.filter((avatar) => avatar.id !== selected.id).map((avatar) => <option key={avatar.id} value={avatar.id}>{avatar.name}</option>)}</select></label>
-            </div>
-            <button className="primary-button" type="button" onClick={() => onChooseAvatar([selected, ...(partnerId ? [avatarCatalog.find((avatar) => avatar.id === partnerId)] : [])])}>{partnerId ? "和搭档一起进入世界" : "带原角色进入世界"} <span aria-hidden="true">→</span></button>
-          </aside>
-        </section>
-      ) : mode === "drawing" ? (
-        <section className="drawing-uploader">
-          <div className="upload-illustration" aria-hidden="true"><span>🖍️</span><b>你的画</b><i>＋</i><span>关节</span></div>
-          <div>
-            <h2>{busy ? "正在分析角色和动物…" : "上传人物或动物画"}</h2>
-            <p>Demo 提供人物与动物关节模板，由你选择并校准位置；真实 Vision 模型之后可以接入同一个分析接口。</p>
-            <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" disabled={busy} onChange={(event) => event.target.files[0] && onUpload(event.target.files[0])} />
-            <button className="primary-button" type="button" disabled={busy} onClick={() => inputRef.current?.click()}>{busy ? "正在生成骨架…" : "选择人物或动物画"} <span aria-hidden="true">↗</span></button>
-            {error && <p className="inline-error" role="alert">{error}</p>}
-          </div>
-        </section>
-      ) : (
-        <DrawingCanvas onComplete={onUpload} busy={busy} error={error} />
-      )}
-      </>}
+      <div className="side-doodles right">
+        <button className="doodle-tile yellow side-tool heart-tool" type="button" onClick={addFriendship} aria-label={`送爱心，当前亲密度${friendship}`} title="送给伙伴爱心">♥<small>{friendship || ""}</small></button>
+        <i aria-hidden="true">✦</i>
+        <button className={`doodle-tile blue side-tool${dreamMode ? " is-active" : ""}`} type="button" onClick={toggleDreamMode} aria-label="切换云朵梦境" title="云朵梦境">☁</button>
+        <button className="doodle-tile green side-tool camera-tool" type="button" onClick={() => inputRef.current?.click()} aria-label="上传画作" title="上传画作"><span aria-hidden="true" /></button>
+        <i aria-hidden="true">〰</i>
+      </div>
+      {toolNotice && <div className="side-tool-notice" role="status">{toolNotice}</div>}
     </main>
   );
 }

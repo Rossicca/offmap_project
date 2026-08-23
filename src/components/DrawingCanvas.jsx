@@ -177,7 +177,7 @@ export default function DrawingCanvas({ onComplete, busy, error }) {
   return (
     <section className="drawing-canvas-studio" aria-labelledby="drawing-canvas-title" data-history-version={historyVersion}>
       <header className="drawing-canvas-heading">
-        <div><span>自由画板</span><h2 id="drawing-canvas-title">画出你的新朋友</h2></div>
+        <div><span>AI 画伴 · 自由画板</span><h2 id="drawing-canvas-title">画出你的新朋友</h2></div>
         <p>用画笔、颜色和橡皮擦完成作品，然后直接送进互动世界。</p>
       </header>
 

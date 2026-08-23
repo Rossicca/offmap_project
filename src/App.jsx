@@ -12,7 +12,7 @@ const releasePreview = (url) => { if (url?.startsWith("blob:")) URL.revokeObject
 
 
 export default function App() {
-  const [userName, setUserNameState] = useState(() => localStorage.getItem("living-drawing-name") || "");
+  const [userName, setUserNameState] = useState(() => localStorage.getItem("living-drawing-name") || "小小创作者");
   const [analysis, setAnalysis] = useState(null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [companions, setCompanions] = useState([]);

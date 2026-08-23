@@ -1,4 +1,5 @@
 import { useState } from "react";
+import robotMotion from "../assets/robot-motion-paper.png";
 
 export default function LoginScreen({ onLogin }) {
   const [name, setName] = useState("");
@@ -9,33 +10,41 @@ export default function LoginScreen({ onLogin }) {
   };
 
   return (
-    <main className="login-page">
-      <section className="login-story" aria-labelledby="login-title">
-        <div className="brand-mark" aria-hidden="true">✦</div>
-        <h1 id="login-title">欢迎来到<br /><em>会动的画里</em></h1>
-        <p>上传你的画，或挑选一个 AI 小伙伴。每个角色都有自己的关节和动作。</p>
-        <div className="login-figures" aria-hidden="true">
-          <i className="mini-figure one" /><i className="mini-figure two" /><i className="mini-figure three" />
+    <main className="companion-login-page">
+      <span className="login-doodle login-pencil" aria-hidden="true">✎</span>
+      <span className="login-doodle login-star" aria-hidden="true">★</span>
+      <span className="login-doodle login-heart" aria-hidden="true">♥</span>
+      <span className="login-doodle login-cloud" aria-hidden="true">☁</span>
+
+      <section className="companion-login-window" aria-labelledby="login-title">
+        <header>
+          <div className="window-dots" aria-hidden="true"><i /><i /></div>
+          <div><span>MY LIVING DRAWING</span><b>AI 画伴</b></div>
+          <i className="login-header-spark" aria-hidden="true">✦</i>
+        </header>
+
+        <div className="companion-login-body">
+          <section className="login-character-side">
+            <div className="login-character-art" style={{ backgroundImage: `url(${robotMotion})` }} role="img" aria-label="挥手欢迎你的波波机器人" />
+            <i className="login-spark-one" aria-hidden="true">★</i>
+            <i className="login-spark-two" aria-hidden="true">〰</i>
+            <div className="login-speech">嗨！我一直在等你呀</div>
+          </section>
+
+          <form className="companion-login-form" onSubmit={submit}>
+            <span className="login-eyebrow">WELCOME, LITTLE CREATOR</span>
+            <h1 id="login-title">欢迎来到<br /><em>会动的画里</em></h1>
+            <p>告诉伙伴怎么称呼你，一起让画动起来、聊天和冒险吧！</p>
+            <label htmlFor="creator-name">你叫什么名字？</label>
+            <div className="companion-name-field">
+              <span aria-hidden="true">☺</span>
+              <input id="creator-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：乐乐" autoFocus autoComplete="nickname" />
+            </div>
+            <button type="submit">认识我的新伙伴 <span aria-hidden="true">→</span></button>
+            <small><span aria-hidden="true">✓</span> 仅保存在你的设备上 · 无需密码</small>
+          </form>
         </div>
       </section>
-
-      <form className="login-card" onSubmit={submit}>
-        <div className="login-card-top"><span aria-hidden="true">●</span> Demo 创作空间</div>
-        <h2>先告诉我怎么称呼你</h2>
-        <p>这里只是比赛演示登录，不会上传或保存个人信息。</p>
-        <label htmlFor="creator-name">你的名字</label>
-        <input
-          id="creator-name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="例如：乐乐"
-          autoFocus
-        />
-        <button className="primary-button login-submit" type="submit">
-          进入创作空间 <span aria-hidden="true">→</span>
-        </button>
-        <small><span aria-hidden="true">✓</span> 本地 Demo · 无需密码</small>
-      </form>
     </main>
   );
 }

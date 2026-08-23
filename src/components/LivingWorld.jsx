@@ -269,7 +269,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     <main className="world-page">
       <header className="world-header">
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
-          <span aria-hidden="true">✦</span><b>My Living Drawing</b>
+          <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 找到 {visibleObjects.length + customObjects.length} 个朋友</div>
         <div className="world-header-actions"><button type="button" onClick={() => setWorldDrawingMode("background")}>画背景</button><button type="button" onClick={() => setShowObjectDrawing(true)}>添加画作</button><button type="button" onClick={() => setShowParentControls(true)}>家长设置</button><button type="button" onClick={openSceneEditor}>编辑场景</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme, worldArt, customObjects, replacedTypes })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
