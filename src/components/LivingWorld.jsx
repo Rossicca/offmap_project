@@ -76,7 +76,7 @@ const loadAvatarGrowth = (savedGrowth) => {
 };
 
 
-export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], onAvatarChange, rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
+export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], onAvatarChange, rigAnalysis, userName, initialState, onSave, editingProjectName = "", safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
@@ -965,6 +965,9 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     cloudDrift,
     foodGrowth,
     });
+    setMessage(editingProjectName ? `《${editingProjectName}》的修改已经保存啦！` : "作品已经保存到我的作品啦！");
+    setBubbleVisible(true);
+    later(() => setBubbleVisible(false), 2200);
   };
 
 
@@ -975,6 +978,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
+        {editingProjectName && <div className="editing-project-status" title={editingProjectName}><span aria-hidden="true">✎</span><em>正在修改</em><b>{editingProjectName}</b></div>}
         <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
         <button className="world-growth-status" type="button" onClick={() => setShowAvatarWardrobe(true)} aria-label="查看伙伴成长"><AvatarGrowthCard growth={avatarGrowth} compact /></button>
         <KidToolDock
@@ -984,6 +988,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           onDraw={() => setShowObjectDrawing(true)}
           onDrawBackground={() => setWorldDrawingMode("background")}
           onSave={saveWorld}
+          saveLabel={editingProjectName ? "保存修改" : "保存"}
           onArrange={openSceneEditor}
           onExport={() => setShowExport(true)}
           onParent={() => setShowParentControls(true)}

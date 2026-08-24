@@ -2598,3 +2598,35 @@ html, body {
   .rps-round > div { min-width:72px; }.rps-round > div span { font-size:2.7rem; }.rps-result { min-width:82px; }
   .rps-choices button { min-height:86px; border-radius:18px; }
 }
+
+/* Saved-project editing state, kept compact in the one-line world toolbar. */
+.editing-project-status {
+  min-width:0;
+  max-width:210px;
+  min-height:38px;
+  padding:0 11px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  border:2px solid rgba(255,255,255,.82);
+  border-radius:999px;
+  color:#397b91;
+  background:rgba(255,253,243,.74);
+  box-shadow:0 3px 0 rgba(72,154,182,.1);
+}
+.editing-project-status span { color:#ef8e78; font-weight:950; }
+.editing-project-status em { flex:0 0 auto; font-size:.66rem; font-style:normal; font-weight:900; }
+.editing-project-status b { min-width:0; overflow:hidden; font-size:.7rem; text-overflow:ellipsis; white-space:nowrap; }
+.project-card-actions { flex-wrap:wrap; }
+.project-card-actions .edit-artwork-button { color:#fff; border-color:#f49279; background:#f49279; }
+.project-card-actions .edit-artwork-button + button { color:#5a91a3; border-color:#c3e2ea; background:#f4fbfb; }
+
+@media (max-width:1120px) {
+  .editing-project-status { max-width:130px; }
+  .editing-project-status em { display:none; }
+}
+
+@media (max-width:900px) {
+  .editing-project-status { width:36px; min-width:36px; padding:0; justify-content:center; }
+  .editing-project-status b { display:none; }
+}

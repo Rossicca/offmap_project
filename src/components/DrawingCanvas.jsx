@@ -61,7 +61,7 @@ function exportCharacter(canvas, onComplete) {
   }, "image/png");
 }
 
-export default function DrawingCanvas({ onComplete, busy, error }) {
+export default function DrawingCanvas({ onComplete, busy, error, initialImageUrl = "", editingName = "" }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
   const historyRef = useRef([]);
@@ -85,12 +85,38 @@ export default function DrawingCanvas({ onComplete, busy, error }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-    context.fillStyle = paperColor;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    historyRef.current = [{ image: canvas.toDataURL("image/png"), blank: true }];
-    historyIndexRef.current = 0;
-    setHistoryVersion(1);
-  }, []);
+    const resetPaper = () => {
+      context.fillStyle = paperColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    };
+    const rememberInitialImage = (blank) => {
+      historyRef.current = [{ image: canvas.toDataURL("image/png"), blank }];
+      historyIndexRef.current = 0;
+      setHasDrawing(!blank);
+      setHistoryVersion(1);
+    };
+
+    resetPaper();
+    if (!initialImageUrl) {
+      rememberInitialImage(true);
+      return undefined;
+    }
+
+    let active = true;
+    const image = new Image();
+    image.onload = () => {
+      if (!active) return;
+      resetPaper();
+      const scale = Math.min(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+      const width = image.naturalWidth * scale;
+      const height = image.naturalHeight * scale;
+      context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+      rememberInitialImage(false);
+    };
+    image.onerror = () => { if (active) rememberInitialImage(true); };
+    image.src = initialImageUrl;
+    return () => { active = false; };
+  }, [initialImageUrl]);
 
   const pointFromEvent = (event) => {
     const canvas = canvasRef.current;
@@ -177,8 +203,8 @@ export default function DrawingCanvas({ onComplete, busy, error }) {
   return (
     <section className="drawing-canvas-studio" aria-labelledby="drawing-canvas-title" data-history-version={historyVersion}>
       <header className="drawing-canvas-heading">
-        <div><span>绘梦伙伴 · 自由画板</span><h2 id="drawing-canvas-title">画出你的新朋友</h2></div>
-        <p>用画笔、颜色和橡皮擦完成作品，然后直接送进互动世界。</p>
+        <div><span>绘梦伙伴 · {editingName ? "修改画作" : "自由画板"}</span><h2 id="drawing-canvas-title">{editingName ? `继续修改《${editingName}》` : "画出你的新朋友"}</h2></div>
+        <p>{editingName ? "原画已经放回画板，可以继续绘制、擦除或调整颜色。完成后会更新原作品。" : "用画笔、颜色和橡皮擦完成作品，然后直接送进互动世界。"}</p>
       </header>
 
       <div className="drawing-toolbar" aria-label="绘画工具">
@@ -201,7 +227,7 @@ export default function DrawingCanvas({ onComplete, busy, error }) {
 
       <footer className="drawing-canvas-footer">
         <p>{hasDrawing ? "画好以后，可以先保存 PNG，也可以直接让作品活起来。" : "在白纸上画几笔，完成按钮就会亮起来。"}</p>
-        <div><button type="button" onClick={download}>保存 PNG</button><button className="primary-button" type="button" disabled={!hasDrawing || busy} onClick={finish}>{busy ? "正在生成骨架…" : "完成绘画，让它活起来"} <span aria-hidden="true">→</span></button></div>
+        <div><button type="button" onClick={download}>保存 PNG</button><button className="primary-button" type="button" disabled={!hasDrawing || busy} onClick={finish}>{busy ? "正在生成骨架…" : editingName ? "完成修改，重新生成" : "完成绘画，让它活起来"} <span aria-hidden="true">→</span></button></div>
         {error && <p className="inline-error" role="alert">{error}</p>}
       </footer>
     </section>
