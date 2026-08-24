@@ -39,6 +39,7 @@ const defaultDogToyObject = { id: "dogToy1", type: "dogToy", x: 57, y: 76, layer
 const defaultFetchBallObject = { id: "fetchBall1", type: "fetchBall", x: 45, y: 75, layer: 17, actions: ["ballBounce"], label: "狗狗捡的小球" };
 const defaultToyBasketObject = { id: "toyBasket1", type: "toyBasket", x: 35, y: 76, layer: 18, actions: ["basketHello"], label: "玩具篮子" };
 const removedDefaultObjectIds = new Set(["tree2", "tree3", "tree4", "tree5", "distantHouse1", "distantHouse2", "distantHouse3", "distantHouse4", "villager1", "villager2", "villager3", "villager4"]);
+const initialSceneTypes = new Set(["person", "house", "dog"]);
 const defaultPositionByKind = {
   house: { x: 76, y: 43 },
   animal: { x: 64, y: 64 },
@@ -80,19 +81,16 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
   const [objects, setObjects] = useState(() => {
-    const initialObjects = (initialState?.sceneObjects || sceneObjects).filter((object) => !removedDefaultObjectIds.has(object.id));
-    const withApple = initialObjects.some((object) => object.id === "apple1") ? initialObjects : [...initialObjects, defaultAppleObject];
-    const withDoghouse = withApple.some((object) => object.id === "doghouse1") ? withApple : [...withApple, defaultDoghouseObject];
-    const withDogToy = withDoghouse.some((object) => object.id === "dogToy1") ? withDoghouse : [...withDoghouse, defaultDogToyObject];
-    const withFetchBall = withDogToy.some((object) => object.id === "fetchBall1") ? withDogToy : [...withDogToy, defaultFetchBallObject];
-    return withFetchBall.some((object) => object.id === "toyBasket1") ? withFetchBall : [...withFetchBall, defaultToyBasketObject];
+    const hasSavedScene = Array.isArray(initialState?.sceneObjects);
+    const initialObjects = (hasSavedScene ? initialState.sceneObjects : sceneObjects || []).filter((object) => !removedDefaultObjectIds.has(object.id));
+    return hasSavedScene ? initialObjects : initialObjects.filter((object) => initialSceneTypes.has(object.type));
   });
   const [sceneTheme, setSceneTheme] = useState(initialState?.sceneTheme || "meadow");
   const [activeActions, setActiveActions] = useState({});
   const [persistentState, setPersistentState] = useState(() => initialState?.persistentState || { night: false, doorOpen: false, appleHidden: false, dogMoved: false, restingCharacters: [] });
   const [message, setMessage] = useState(() => selectedAvatar
     ? `${selectedAvatar.name}已经进入互动世界啦！`
-    : "Demo 已找到 6 个朋友，点点它们试试看！");
+    : "世界准备好啦，点点房子、人物或狗狗试试看！");
   const [bubbleVisible, setBubbleVisible] = useState(true);
   const [showJoints, setShowJoints] = useState(false);
   const [messages, setMessages] = useState(() => initialState?.messages || [{
@@ -544,6 +542,39 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       grantGrowth(`material-${material.id}`, 4, "布置了新的世界背景");
       return;
     }
+    if (material.category === "doghouse") {
+      setDoghouseDecor(material);
+      setObjects((current) => current.some((object) => object.id === defaultDoghouseObject.id) ? current : [...current, defaultDoghouseObject]);
+      setPersistentState((state) => ({ ...state, dogInHouse: false }));
+      setShowMaterialLibrary(false);
+      setMessage(`${material.name}放进来啦，点小窝还能继续换样子！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2400);
+      grantGrowth(`material-${material.id}`, 4, "给狗狗布置了小窝");
+      return;
+    }
+    if (material.sceneObject) {
+      const sceneObject = material.sceneObject;
+      if (objects.some((object) => object.id === sceneObject.id)) {
+        setShowMaterialLibrary(false);
+        setMessage(`${material.name}已经在世界里啦，可以直接拖动它！`);
+        setBubbleVisible(true);
+        later(() => setBubbleVisible(false), 2200);
+        return;
+      }
+      setObjects((current) => [...current, { ...sceneObject }]);
+      setPersistentState((state) => ({
+        ...state,
+        ...(sceneObject.type === "food" ? { appleHidden: false } : {}),
+        ...(["dogToy", "fetchBall", "toyBasket"].includes(sceneObject.type) ? { toysStored: false, toysBeingCarried: false, fetchBallHeld: false } : {}),
+      }));
+      setShowMaterialLibrary(false);
+      setMessage(`${material.name}放进来啦，点一下就能互动！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2200);
+      grantGrowth(`material-${material.id}`, 4, "加入了新的互动元素");
+      return;
+    }
     const index = libraryObjects.length;
     const object = {
       id: `library-object-${Date.now()}`,
@@ -777,6 +808,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const handleDirectAction = (objectId, action) => {
+    if (objectId === "world" && ["sunset", "sunrise"].includes(action)) {
+      setPersistentState((state) => ({ ...state, night: action === "sunset" }));
+      setMessage(action === "sunset" ? "天空慢慢暗下来，星光亮起来啦！" : "清晨到了，世界又亮起来啦！");
+      setBubbleVisible(true);
+      if (storyActive && storyStep === 2 && !storyEnding) {
+        setStoryEnding(action === "sunset" ? "night" : "morning");
+        grantGrowth("story-first-ending", 25, "完成第一个互动故事");
+      }
+      later(() => setBubbleVisible(false), 3000);
+      return;
+    }
     if (action === "wind") {
       if (windActive) return;
       setWindActive(true);
@@ -899,6 +941,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type));
+  const visibleObjectIds = new Set(["world", ...visibleObjects.map((object) => object.id), ...customObjects.map((object) => object.id), ...libraryObjects.map((object) => object.id)]);
   const saveWorld = () => {
     const nextGrowth = grantGrowth("save-first-project", 15, "保存了自己的作品") || avatarGrowth;
     onSave?.({
@@ -965,15 +1008,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       <div className="world-experience">
       <section ref={stageRef} style={backgroundStyleFor(materialBackground)} className={`world-stage theme-${sceneTheme} ${materialBackground ? "has-library-background" : ""} ${worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""} ${windActive ? "is-windy" : ""}`} aria-label="可拖动的互动世界">
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
-        <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住任意角色或物件直接拖动；位置会跟随作品保存</div>
+        <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住画中物体即可移动</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
         </button>
         <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />
         <div className="sky-wash" aria-hidden="true" />
         <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
-        <div className="cloud cloud-one" style={{ "--cloud-drift": `${cloudDrift}%` }} aria-hidden="true" />
-        <div className="cloud cloud-two" style={{ "--cloud-drift": `${cloudDrift * .65}%` }} aria-hidden="true" />
         <div className="ground" aria-hidden="true" />
         {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
         <div className="background-grass" aria-hidden="true">
@@ -1066,7 +1107,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       </div>
 
 
-      <ActionButtons onAction={handleDirectAction} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} />
+      <ActionButtons onAction={handleDirectAction} visibleObjectIds={visibleObjectIds} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} />
     </main>
   );
 }
