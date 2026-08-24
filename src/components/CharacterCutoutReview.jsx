@@ -11,6 +11,7 @@ function loadImage(source) {
 
 const CharacterCutoutReview = forwardRef(function CharacterCutoutReview({ result, onReady }, ref) {
   const canvasRef = useRef(null);
+  const stageRef = useRef(null);
   const restoreImageRef = useRef(null);
   const historyRef = useRef([]);
   const drawingRef = useRef(false);
@@ -18,6 +19,27 @@ const CharacterCutoutReview = forwardRef(function CharacterCutoutReview({ result
   const [tool, setTool] = useState("erase");
   const [brushSize, setBrushSize] = useState(28);
   const [canUndo, setCanUndo] = useState(false);
+  const [displaySize, setDisplaySize] = useState(null);
+
+  const fitWholeCharacter = () => {
+    const stage = stageRef.current;
+    if (!stage || !result.size?.width || !result.size?.height) return;
+    const style = window.getComputedStyle(stage);
+    const availableWidth = stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const availableHeight = stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    if (availableWidth <= 0 || availableHeight <= 0) return;
+    const scale = Math.min(availableWidth / result.size.width, availableHeight / result.size.height, 2);
+    setDisplaySize({ width: Math.max(1, Math.floor(result.size.width * scale)), height: Math.max(1, Math.floor(result.size.height * scale)) });
+  };
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+    const observer = new ResizeObserver(fitWholeCharacter);
+    observer.observe(stage);
+    fitWholeCharacter();
+    return () => observer.disconnect();
+  }, [result]);
 
   const resetCanvas = async () => {
     const [foreground, restore] = await Promise.all([loadImage(result.url), loadImage(result.restoreUrl)]);
@@ -31,6 +53,7 @@ const CharacterCutoutReview = forwardRef(function CharacterCutoutReview({ result
     context.drawImage(foreground, 0, 0, canvas.width, canvas.height);
     historyRef.current = [];
     setCanUndo(false);
+    fitWholeCharacter();
     onReady?.();
   };
 
@@ -102,7 +125,7 @@ const CharacterCutoutReview = forwardRef(function CharacterCutoutReview({ result
 
   return (
     <div className="cutout-review">
-      <div className="cutout-review-canvas"><canvas ref={canvasRef} onPointerDown={startPaint} onPointerMove={movePaint} onPointerUp={finishPaint} onPointerCancel={finishPaint} role="img" aria-label="人物透明背景修正画布" /></div>
+      <div className="cutout-review-canvas" ref={stageRef}><span className="cutout-fit-status" aria-hidden="true">✓ 完整人物</span><canvas ref={canvasRef} style={displaySize ? { width: `${displaySize.width}px`, height: `${displaySize.height}px` } : undefined} onPointerDown={startPaint} onPointerMove={movePaint} onPointerUp={finishPaint} onPointerCancel={finishPaint} role="img" aria-label="已完整显示人物的透明背景修正画布" /></div>
       <div className="cutout-review-tools" aria-label="人物边缘修正工具">
         <div className="cutout-tool-switch"><button type="button" className={tool === "erase" ? "is-active" : ""} onClick={() => setTool("erase")} aria-pressed={tool === "erase"}>擦掉多余</button><button type="button" className={tool === "restore" ? "is-active" : ""} onClick={() => setTool("restore")} aria-pressed={tool === "restore"}>补回人物</button></div>
         <label>笔刷大小 <input type="range" min="10" max="72" step="2" value={brushSize} onChange={(event) => setBrushSize(Number(event.target.value))} /></label>
