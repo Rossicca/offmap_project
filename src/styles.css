@@ -780,9 +780,9 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .kid-more-menu button { min-height: 44px; border: 0; border-radius: 10px; color: #6b432c; background: transparent; text-align: left; font-weight: 900; cursor: pointer; }
 .kid-more-menu button:hover { background: #fff3bd; }
 
-.play-library-backdrop, .house-decor-backdrop { position: fixed; z-index: 140; inset: 0; padding: 24px; display: grid; place-items: center; background: rgba(45,70,78,.55); }
+.play-library-backdrop, .house-decor-backdrop { position: fixed; z-index: 140; inset: 0; padding: clamp(8px,2.5vmin,24px); display: grid; place-items: center; background: rgba(45,70,78,.55); }
 .play-library, .house-decorator { width: min(1080px,100%); max-height: calc(100dvh - 48px); padding: 24px; display: flex; flex-direction: column; overflow: hidden; border: 4px solid #82c4d8; border-radius: 28px; color: #6b432c; background: #fffef8; box-shadow: 0 24px 70px rgba(31,76,91,.28); }
-.play-library > header, .house-decorator > header { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.play-library > header, .house-decorator-top header { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
 .play-library h2, .house-decorator h2 { margin: 0 0 4px; font-family: KaiTi,STKaiti,"Microsoft YaHei",sans-serif; font-size: clamp(1.8rem,4vw,2.5rem); color: #a8543e; }
 .play-library header p, .house-decorator header p { margin: 0; color: #568294; font-weight: 800; }
 .round-close { flex: 0 0 auto; width: 46px; height: 46px; border: 3px solid #8fc8d8; border-radius: 50%; color: #578b9d; background: white; font-size: 1.5rem; font-weight: 900; cursor: pointer; }
@@ -941,6 +941,46 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .house-choice-copy b { display:-webkit-box; overflow:hidden; font-size:.78rem; line-height:1.25; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .house-choice-copy small { color:#6d95a1; font-size:.66rem; font-weight:900; }
 .house-decor-done { width:100%; min-height:50px; margin-top:10px; justify-content:center; }
+.house-decorator { width:min(980px,calc(100vw - clamp(16px,5vmin,48px))); height:min(760px,calc(100dvh - clamp(16px,5vmin,48px))); max-height:none; padding:clamp(13px,2.4vmin,24px); container-type:inline-size; }
+.house-decorator-top { flex:0 0 auto; min-height:164px; display:grid; grid-template-columns:minmax(0,1fr) minmax(126px,230px); align-items:center; gap:24px; position:relative; z-index:2; }
+.house-decorator-copy { min-width:0; align-self:stretch; display:flex; flex-direction:column; justify-content:center; }
+.house-decorator .house-pattern-tabs { position:relative; z-index:2; flex:0 0 auto; width:100%; margin:16px 0 0; padding:7px 8px; overflow-x:auto; border:2px solid rgba(130,196,216,.34); border-radius:18px; background:#fffef8; box-shadow:0 5px 14px rgba(57,123,145,.08); isolation:isolate; }
+.house-decorator .house-pattern-tabs button { position:relative; z-index:1; }
+.decor-house-preview { position:relative; flex:0 1 auto; width:clamp(126px,min(22vw,24dvh),210px); height:auto; max-height:clamp(98px,19dvh,164px); aspect-ratio:210 / 164; margin:0 auto; }
+.decor-preview-roof { position:absolute; top:0; left:0; width:100%; height:52%; clip-path:polygon(50% 0,100% 100%,0 100%); background:var(--house-roof); filter:drop-shadow(0 4px 0 rgba(83,61,48,.18)); }
+.decor-preview-body { position:absolute; left:10%; right:10%; bottom:0; height:68%; border:3px solid #654938; border-radius:8px 8px 14px 14px; background-color:var(--house-wall); }
+.decor-preview-body b { position:absolute; top:22%; width:24%; aspect-ratio:1; border:3px solid #654938; border-radius:4px; background:var(--house-accent); }.decor-preview-body b:first-child { left:10%; }.decor-preview-body b:last-child { right:10%; }
+.decor-preview-door { position:absolute; left:41%; bottom:0; width:19%; height:45%; border:3px solid #654938; border-radius:7px 7px 0 0; background:var(--house-door); }
+.decor-house-preview.pattern-dots .decor-preview-body,.house-decor-grid .pattern-dots .decor-choice-body { background-image:radial-gradient(circle,var(--house-trim) 0 4px,transparent 4.5px); background-size:22px 22px; }
+.decor-house-preview.pattern-stripes .decor-preview-body,.house-decor-grid .pattern-stripes .decor-choice-body { background-image:repeating-linear-gradient(90deg,transparent 0 11px,color-mix(in srgb,var(--house-trim) 70%,transparent) 11px 18px); }
+.decor-house-preview.pattern-checks .decor-preview-body,.house-decor-grid .pattern-checks .decor-choice-body { background-image:linear-gradient(90deg,color-mix(in srgb,var(--house-trim) 60%,transparent) 50%,transparent 50%),linear-gradient(color-mix(in srgb,var(--house-trim) 60%,transparent) 50%,transparent 50%); background-size:18px 18px; }
+.decor-house-preview.pattern-petals .decor-preview-body,.house-decor-grid .pattern-petals .decor-choice-body { background-image:radial-gradient(ellipse at 50% 30%,var(--house-trim) 0 3px,transparent 3.5px),radial-gradient(ellipse at 50% 70%,var(--house-trim) 0 3px,transparent 3.5px); background-size:18px 18px; }
+.decor-house-preview.pattern-stars .decor-preview-body,.house-decor-grid .pattern-stars .decor-choice-body { background-image:radial-gradient(circle at 50% 20%,var(--house-trim) 0 2px,transparent 2.5px),radial-gradient(circle at 30% 65%,var(--house-trim) 0 2px,transparent 2.5px); background-size:18px 18px; }
+.house-decor-grid { position:relative; z-index:1; min-height:132px; flex:1 1 auto; margin-top:12px; padding:3px 5px 16px 3px; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(205px,100%),1fr)); grid-auto-rows:minmax(clamp(96px,15vh,120px),auto); align-content:start; gap:clamp(7px,1.2vmin,10px); overflow-y:auto; overscroll-behavior:contain; scroll-padding-bottom:16px; }
+.house-decor-grid button { min-height:clamp(96px,15vh,120px); padding:clamp(7px,1.2vmin,10px); display:grid; grid-template-columns:clamp(68px,10cqw,88px) 1fr; grid-template-rows:1fr auto; align-items:center; gap:2px clamp(6px,1vw,9px); border:3px solid #cee2e5; border-radius:16px; color:#6b432c; background:#fffdf4; text-align:left; cursor:pointer; }
+.house-decor-grid button.is-active { border-color:#ed8c74; background:#fff1ca; }
+.decor-choice-house { position:relative; grid-row:1 / 3; width:clamp(68px,10cqw,88px); aspect-ratio:88 / 76; height:auto; display:block; transform-origin:center; }
+.decor-choice-roof { position:absolute; left:2px; right:2px; top:0; height:40px; clip-path:polygon(50% 0,100% 100%,0 100%); background:var(--house-roof); }
+.decor-choice-body { position:absolute; left:9px; right:9px; bottom:0; height:50px; border:2px solid #654938; border-radius:4px 4px 8px 8px; background-color:var(--house-wall); }
+.decor-choice-door { position:absolute; left:36px; bottom:0; width:18px; height:30px; border:2px solid #654938; border-bottom:0; border-radius:4px 4px 0 0; background:var(--house-door); }
+.decor-choice-windows { position:absolute; left:16px; right:16px; top:40px; display:flex; justify-content:space-between; }
+.decor-choice-windows em { width:13px; height:13px; display:block; border:2px solid #654938; border-radius:2px; background:var(--house-accent); }
+.house-decor-grid button b { align-self:end; }.house-decor-grid button span { align-self:start; color:#6d95a1; font-size:.72rem; font-weight:900; }
+.house-decor-done { flex:0 0 auto; width:100%; margin-top:10px; justify-content:center; }
+
+@container (max-width:620px) {
+  .house-decor-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .house-decor-grid button { grid-template-columns:1fr; grid-template-rows:auto auto auto; place-items:center; text-align:center; }
+  .decor-choice-house { grid-row:auto; width:74px; }
+}
+
+@media (max-height:650px) and (min-width:701px) {
+  .house-decorator-top header p { display:none; }
+  .house-decorator .house-pattern-tabs { margin-block:8px 6px; padding-block:4px; }
+  .house-decorator .house-pattern-tabs button { min-height:38px; }
+  .decor-house-preview { width:min(132px,20dvh); }
+  .house-decor-done { min-height:42px; margin-top:5px; }
+}
 
 
 @media (max-width: 1050px) {
@@ -948,6 +988,10 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
   .kid-tool-dock { width:100%; min-width:0; overflow-x:auto; justify-self:stretch; justify-content:flex-start; scrollbar-width:none; }
   .kid-tool-dock > button,.kid-more-wrap > button { flex:0 0 auto; }
   .play-library-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+@media (max-width: 880px) {
+  .house-decor-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 700px) {
@@ -962,13 +1006,14 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
   .play-library-grid .material-art.is-small { width:88px; height:88px; transform:none; }
   .play-library-grid > button > b { margin-top:4px; line-height:1.2; }
   .play-library-grid > button > span:last-child { line-height:1.2; }
-  .house-decor-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .house-decorator-top { min-height:132px; grid-template-columns:minmax(0,1fr) 160px; gap:12px; }.house-decorator-copy { justify-content:flex-start; }.house-decorator .house-pattern-tabs { margin-top:10px; }.house-decor-grid { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:10px; }
   .house-decor-grid button { min-height:112px; grid-template-columns:72px 1fr; }
   .decor-choice-house { width:72px; transform:scale(.82); transform-origin:left center; }
-  .decor-house-preview { width:160px; height:124px; }
+  .decor-house-preview { width:150px; height:116px; }
 }
 
 @media (max-width: 560px) {
+  .house-decorator-top { min-height:116px; grid-template-columns:minmax(0,1fr) 112px; gap:8px; }.house-decorator-top header { gap:8px; }.house-decorator-top .round-close { width:42px; height:42px; }.house-decorator .house-pattern-tabs { margin-top:8px; }.decor-house-preview { width:108px; height:84px; }
   .world-header { min-height:112px; grid-template-rows:44px 60px; }
   .kid-tool-dock { grid-column:1 / -1; padding-block:4px 7px; }
   .kid-tool-dock > button,.kid-more-wrap > button { min-height:44px; padding:0 12px; border-radius:999px; }
@@ -2058,4 +2103,105 @@ html, body {
   .object-quick-toolbar::-webkit-scrollbar { display:none; }
   .object-quick-toolbar > b { flex:0 0 auto; }
   .object-quick-toolbar button { flex:0 0 auto; min-width:44px; min-height:44px; }
+}
+
+/* Keep the complete world/chat window inside the desktop viewport. */
+@media (min-width:761px) {
+  .world-page {
+    width:100%;
+    height:100dvh;
+    min-height:0;
+    max-height:100dvh;
+    padding-bottom:10px;
+    display:grid;
+    grid-template-rows:60px minmax(0,1fr) auto;
+    overflow:hidden;
+    box-sizing:border-box;
+  }
+
+  .world-header {
+    min-height:60px;
+    height:60px;
+    margin-bottom:0;
+  }
+
+  .world-experience {
+    width:min(1440px,100%);
+    min-width:0;
+    min-height:0;
+    height:100%;
+    padding-top:12px;
+    overflow:hidden;
+    box-sizing:border-box;
+  }
+
+  .world-stage,
+  .conversation-panel {
+    min-width:0;
+    min-height:0;
+    height:100%;
+    max-height:100%;
+  }
+
+  .conversation-panel {
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .conversation-header,
+  .learning-companion,
+  .conversation-suggestions,
+  .conversation-composer,
+  .conversation-panel > small {
+    flex:0 0 auto;
+  }
+
+  .conversation-log {
+    min-height:0;
+    flex:1 1 auto;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+
+  .quick-actions {
+    min-height:0;
+    margin-top:10px;
+  }
+}
+
+/* At narrower desktop widths the scene sits above chat, but both still fit. */
+@media (min-width:761px) and (max-width:1050px) {
+  .world-experience {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:minmax(145px,30%) minmax(0,1fr);
+    gap:12px;
+  }
+
+  .world-stage,
+  .conversation-panel {
+    min-height:0;
+    height:100%;
+  }
+}
+
+@media (min-width:1051px) {
+  .world-experience {
+    grid-template-columns:minmax(0,1fr) minmax(320px,370px);
+    grid-template-rows:minmax(0,1fr);
+  }
+}
+
+/* Preserve the controls on short laptop/browser windows. */
+@media (min-width:761px) and (max-height:760px) {
+  .world-experience { padding-top:8px; gap:9px; }
+  .world-experience:not(:has(.conversation-panel)) { grid-template-rows:minmax(0,1fr); }
+  .conversation-panel { padding:11px 14px; border-width:4px; }
+  .conversation-header { padding-bottom:7px; }
+  .learning-companion { margin-top:6px; }
+  .learning-companion-toggle { min-height:40px; padding-block:4px; }
+  .conversation-suggestions { padding-block:6px; }
+  .conversation-panel > small { margin-top:4px; }
+  .quick-actions { margin-top:7px; }
+  .quick-actions-toggle { min-height:42px; }
 }
