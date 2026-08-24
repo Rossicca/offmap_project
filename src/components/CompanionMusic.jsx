@@ -59,7 +59,7 @@ export default function CompanionMusic({ variant = "tile" }) {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [trackIndex, setTrackIndex] = useState(() => Number(localStorage.getItem("living-drawing-music-track") || 0) % tracks.length);
-  const [volume, setVolume] = useState(() => Math.max(0, Math.min(1, Number(localStorage.getItem("living-drawing-music-volume") || .28))));
+  const [volume, setVolume] = useState(() => Math.max(0, Math.min(1, Number(localStorage.getItem("living-drawing-music-volume") || .16))));
   const audioRef = useRef({ context: null, master: null, timer: null, generation: 0 });
   const triggerRef = useRef(null);
   const dragRef = useRef(null);
@@ -102,7 +102,7 @@ export default function CompanionMusic({ variant = "tile" }) {
     if (!AudioContext) return;
     const context = new AudioContext();
     const master = context.createGain();
-    master.gain.value = volume;
+    master.gain.value = volume * .55;
     master.connect(context.destination);
     await context.resume();
     const generation = audioRef.current.generation;
@@ -148,7 +148,7 @@ export default function CompanionMusic({ variant = "tile" }) {
     setVolume(nextVolume);
     localStorage.setItem("living-drawing-music-volume", String(nextVolume));
     const { master, context } = audioRef.current;
-    if (master && context) master.gain.setTargetAtTime(nextVolume, context.currentTime, .04);
+    if (master && context) master.gain.setTargetAtTime(nextVolume * .55, context.currentTime, .04);
   };
 
   useEffect(() => () => stopAudio(), []);

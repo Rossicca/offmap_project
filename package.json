@@ -14,7 +14,7 @@
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
     "@vitejs/plugin-react": "latest",
-    "onnxruntime-web": "^1.21.0",
+    "onnxruntime-web": "1.21.0",
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"

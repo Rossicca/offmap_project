@@ -285,15 +285,20 @@ function trimForeground(foreground, sourceCanvas, bounds, nodes, sourceSize) {
 
 async function runLocalSegmentation(blob, onProgress) {
   const progress = (key, current, total) => onProgress?.({ key, percent: total > 0 ? clamp(Math.round(current / total * 100), 0, 100) : 0 });
-  const baseConfig = { model: "isnet_fp16", proxyToWorker: true, output: { format: "image/png", quality: 1 }, progress };
+  const baseConfig = { model: "isnet_fp16", output: { format: "image/png", quality: 1 }, progress };
   if (navigator.gpu) {
     try {
-      return await removeBackground(blob, { ...baseConfig, device: "gpu" });
+      return await removeBackground(blob, { ...baseConfig, device: "gpu", proxyToWorker: true });
     } catch (error) {
       console.warn("WebGPU segmentation unavailable; retrying on CPU:", error.message);
     }
   }
-  return removeBackground(blob, { ...baseConfig, device: "cpu" });
+  try {
+    // IMG.LY documents that worker proxying is not supported by the WASM/CPU backend.
+    return await removeBackground(blob, { ...baseConfig, device: "cpu", proxyToWorker: false });
+  } catch (error) {
+    throw new Error(`本机人物识别没有成功启动：${error.message || "模型加载失败"}`);
+  }
 }
 
 export async function extractCharacterForeground(imageUrl, nodes, { onProgress } = {}) {
