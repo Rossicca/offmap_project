@@ -34,11 +34,12 @@ export default function useSceneDrag({ object, onMove, onMoveEnd }) {
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) <= dragThreshold) return;
     drag.moved = true;
     setDragging(true);
+    const visibleBounds = event.currentTarget.getBoundingClientRect();
     onMove?.(
       object.id,
       event.clientX - drag.offsetX,
       event.clientY - drag.offsetY,
-      { width: event.currentTarget.offsetWidth, height: event.currentTarget.offsetHeight },
+      { width: visibleBounds.width, height: visibleBounds.height },
     );
   };
 

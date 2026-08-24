@@ -3,7 +3,8 @@ const actions = [
   { target: "person1", action: "jump", icon: "jump", label: "跳一下" },
   { target: "person1", action: "dance", icon: "dance", label: "跳个舞" },
   { target: "person1", action: "cheer", icon: "cheer", label: "一起欢呼" },
-  { target: "person1", action: "rest", icon: "rest", label: "休息一下" },
+  { target: "person1", action: "rest", icon: "rest", label: "进入房间休息" },
+  { target: "person1", action: "leaveRoom", icon: "outside", label: "出去活动" },
   { target: "house1", action: "openDoor", icon: "door", label: "打开门" },
   { target: "sun1", action: "sunset", icon: "sun", label: "看日落" },
   { target: "sun1", action: "sunrise", icon: "sunrise", label: "看日出" },
@@ -20,6 +21,7 @@ function ActionIcon({ name }) {
     dance: <><circle cx="12" cy="5" r="2"/><path d="M12 7v6M12 9 7 12M12 9l5-2M12 13l-4 7M12 13l5 6"/></>,
     cheer: <><path d="M7 21v-8l-4-5M17 21v-8l4-5M7 13l5 3 5-3"/><circle cx="12" cy="7" r="3"/></>,
     rest: <><path d="M4 17h16M6 17V9h10a4 4 0 0 1 4 4v4M6 13h5"/><path d="M7 20v1M18 20v1"/></>,
+    outside: <><path d="M4 21V3h10v18M8 12h12M16 8l4 4-4 4"/><circle cx="11" cy="12" r=".7"/></>,
     door: <><path d="M6 21V3h12v18M9 21V6h7v15" /><circle cx="13.5" cy="13" r=".8" /></>,
     sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" /></>,
     sunrise: <><path d="M3 18h18M5 14h14M7.5 14a4.5 4.5 0 0 1 9 0M12 3v4M5.6 6.6 8 9M18.4 6.6 16 9" /><path d="m9.5 5 2.5-2 2.5 2" /></>,
@@ -32,7 +34,13 @@ function ActionIcon({ name }) {
 
 
 export default function ActionButtons({ onAction, persistentState, visibleObjectIds }) {
-  const visibleActions = visibleObjectIds ? actions.filter((item) => visibleObjectIds.has(item.target)) : actions;
+  const restingCharacters = persistentState.restingCharacters || [];
+  const visibleActions = actions.filter((item) => {
+    if (visibleObjectIds && !visibleObjectIds.has(item.target)) return false;
+    if (item.action === "leaveRoom") return restingCharacters.includes(item.target);
+    if (item.action === "rest") return !restingCharacters.includes(item.target);
+    return true;
+  });
   return (
     <section className="quick-actions" aria-labelledby="quick-actions-title">
       <div className="quick-heading">

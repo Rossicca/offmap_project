@@ -19,7 +19,7 @@ export default function LoginScreen({ onLogin }) {
       <section className="companion-login-window" aria-labelledby="login-title">
         <header>
           <div className="window-dots" aria-hidden="true"><i /><i /></div>
-          <div><span>MY LIVING DRAWING</span><b>AI 画伴</b></div>
+          <div><span>DREAM DRAWING COMPANION</span><b>绘梦伙伴</b></div>
           <i className="login-header-spark" aria-hidden="true">✦</i>
         </header>
 
