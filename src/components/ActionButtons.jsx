@@ -60,6 +60,13 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
     if (visibleObjectIds && !visibleObjectIds.has(item.target)) return false;
+    if (visibleObjectIds && item.action === "enterDoghouse" && !visibleObjectIds.has("doghouse1")) return false;
+    if (visibleObjectIds && item.action === "exitDoghouse" && !visibleObjectIds.has("doghouse1")) return false;
+    if (visibleObjectIds && item.action === "dogEat" && !visibleObjectIds.has("doghouse1")) return false;
+    if (visibleObjectIds && item.action === "dogEatApple" && !visibleObjectIds.has("apple1")) return false;
+    if (visibleObjectIds && item.action === "dogPlay" && !visibleObjectIds.has("dogToy1")) return false;
+    if (visibleObjectIds && item.action === "dogFetch" && !visibleObjectIds.has("fetchBall1")) return false;
+    if (visibleObjectIds && ["tidyToys", "takeToys"].includes(item.action) && !visibleObjectIds.has("toyBasket1")) return false;
     if (item.action === "leaveRoom") return restingCharacters.includes(item.target);
     if (item.action === "rest") return !restingCharacters.includes(item.target);
     if (item.action === "rpsGame") return !restingCharacters.includes(item.target);

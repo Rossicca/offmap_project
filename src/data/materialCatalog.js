@@ -28,9 +28,19 @@ export const doghouseCatalog = [
 export const materialCategories = [
   { id: "character", name: "伙伴", shortName: "伙伴" },
   { id: "background", name: "背景", shortName: "背景" },
+  { id: "interactive", name: "互动元素", shortName: "互动" },
   { id: "nature", name: "草地自然", shortName: "自然" },
   { id: "prop", name: "家具与摆件", shortName: "摆件" },
   { id: "doghouse", name: "狗狗小窝", shortName: "狗窝" },
+];
+
+const interactiveSceneMaterials = [
+  { id: "interactive-sun", category: "interactive", name: "暖阳", variant: 0, color: "#ffd761", accent: "#f4a95e", sceneObject: { id: "sun1", type: "sun", x: 79, y: 16, actions: ["sunset", "sunrise"], label: "太阳" } },
+  { id: "interactive-tree", category: "interactive", name: "故事树", variant: 1, color: "#78a56e", accent: "#d6ad65", sceneObject: { id: "tree1", type: "tree", x: 19, y: 48, actions: ["shake"], label: "大树" } },
+  { id: "interactive-apple", category: "interactive", name: "红苹果", variant: 2, color: "#d86658", accent: "#78a56e", sceneObject: { id: "apple1", type: "food", x: 51, y: 69, actions: ["feed"], label: "苹果" } },
+  { id: "interactive-dog-toy", category: "interactive", name: "骨头玩具", variant: 3, color: "#efb85a", accent: "#88a8c1", sceneObject: { id: "dogToy1", type: "dogToy", x: 57, y: 76, layer: 16, actions: ["toyBounce"], label: "狗狗的玩具球" } },
+  { id: "interactive-fetch-ball", category: "interactive", name: "彩色小球", variant: 4, color: "#ef8e77", accent: "#7fb2c6", sceneObject: { id: "fetchBall1", type: "fetchBall", x: 45, y: 75, layer: 17, actions: ["ballBounce"], label: "狗狗捡的小球" } },
+  { id: "interactive-toy-basket", category: "interactive", name: "玩具篮", variant: 5, color: "#d49b64", accent: "#79a77c", sceneObject: { id: "toyBasket1", type: "toyBasket", x: 35, y: 76, layer: 18, actions: ["basketHello"], label: "玩具篮子" } },
 ];
 
 export const materialCatalog = [
@@ -39,6 +49,7 @@ export const materialCatalog = [
   { id: "character-rabbit", category: "character", name: "兔兔朋友", variant: 2, motionSprite: rabbitMotion, frame: "0% 0%" },
   { id: "character-dog", category: "character", name: "小狗伙伴", variant: 3, motionSprite: dogMotion, frame: "0% 0%" },
   ...makeItems("background", ["晴天草坡", "森林小路", "海边沙滩", "星空营地", "雨后彩虹", "秋日公园", "雪地木屋", "花园午后", "山谷日出", "月亮湖边"], ["#b9d8e4", "#bed7a3", "#e7c98c", "#8c94bd", "#d5b8d8"]),
+  ...interactiveSceneMaterials,
   ...makeItems("nature", ["小草丛", "蒲公英", "向日葵", "蘑菇堆", "圆石头", "小池塘", "灌木球", "落叶堆"], ["#78a56e", "#d5b44b", "#d98763", "#7998ad"]),
   ...makeItems("prop", ["野餐篮", "小风筝", "故事书", "画板", "小帐篷", "玩具船", "气球束", "路牌", "小灯笼", "音乐盒"], pencilColors),
   ...doghouseCatalog.map((item) => ({ ...item, category: "doghouse", color: item.wall, accent: item.roof })),

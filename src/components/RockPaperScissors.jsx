@@ -1,6 +1,7 @@
 import { useState } from "react";
 import victoryIcon from "../assets/rps-victory.svg";
 import defeatIcon from "../assets/rps-defeat.svg";
+import useDialogFocus from "../hooks/useDialogFocus";
 
 
 const choices = [
@@ -17,6 +18,7 @@ export default function RockPaperScissors({ characterName, onRound, onClose }) {
   const [round, setRound] = useState(null);
   const [score, setScore] = useState({ player: 0, character: 0 });
   const [countdown, setCountdown] = useState(false);
+  const dialogRef = useDialogFocus(onClose);
 
 
   const play = (playerChoice) => {
@@ -38,13 +40,13 @@ export default function RockPaperScissors({ characterName, onRound, onClose }) {
 
 
   const choiceById = (id) => choices.find((choice) => choice.id === id);
-  const resultText = round?.result === "win" ? "小人输了！" : round?.result === "lose" ? "小人赢了！" : "平局，再来一次！";
+  const resultText = round?.result === "win" ? `${characterName}输了！` : round?.result === "lose" ? `${characterName}赢了！` : "平局，再来一次！";
   const resultIcon = round?.result === "win" ? defeatIcon : round?.result === "lose" ? victoryIcon : null;
 
 
   return (
-    <div className="rps-overlay" role="dialog" aria-modal="true" aria-labelledby="rps-title">
-      <section className="rps-game-card">
+    <div className="rps-overlay" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section ref={dialogRef} className="rps-game-card" role="dialog" aria-modal="true" aria-labelledby="rps-title">
         <button className="rps-close" type="button" onClick={onClose} aria-label="关闭石头剪刀布">×</button>
         <header>
           <span aria-hidden="true">✊ ✌️ ✋</span>
