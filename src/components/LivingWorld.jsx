@@ -120,7 +120,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     ? `${selectedAvatar.name}已经进入互动世界啦！`
     : "世界准备好啦，点点房子、人物或狗狗试试看！");
   const [bubbleVisible, setBubbleVisible] = useState(true);
-  const [showJoints, setShowJoints] = useState(false);
   const [messages, setMessages] = useState(() => initialState?.messages || [{
     id: 1,
     role: "assistant",
@@ -1107,7 +1106,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       if (event.detail === "arrange") openSceneEditor();
       if (event.detail === "materials") setShowMaterialLibrary(true);
       if (event.detail === "house") setShowHouseDecorator(true);
-      if (event.detail === "joints") setShowJoints((value) => !value);
     };
     window.addEventListener("living-drawing-open-world-tool", openWorldTool);
     return () => window.removeEventListener("living-drawing-open-world-tool", openWorldTool);
@@ -1254,9 +1252,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span aria-hidden="true">{currentSceneId === SCENE_IDS.ROOM ? "←" : "⌂"}</span>
           {sceneTransition ? "正在切换…" : currentSceneId === SCENE_IDS.ROOM ? "去室外" : "进入房间"}
         </button>
-        <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
-          <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
-        </button>
         {currentSceneId === SCENE_IDS.OUTDOOR && <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />}
         {currentSceneId === SCENE_IDS.OUTDOOR ? <>
           <div className="sky-wash" aria-hidden="true" />
@@ -1309,7 +1304,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               onMoveEnd={finishMovingObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
               avatarLook={avatarLooks[(companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar)?.id] || defaultAvatarLook}
-              showJoints={showJoints}
               houseArt={worldArt.house}
               houseDecor={houseDecor}
               doghouseDecor={doghouseDecor}
@@ -1336,13 +1330,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
             <MaterialSceneObject key={object.id} object={object} editable={editMode} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMoveStart={rememberEdit} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
-        {showJoints && (
-          <div className="rig-summary" role="status">
-            <b>骨架分析</b>
-            <span>{selectedAvatar?.kind || rigAnalysis?.person?.type || "人物"} · {selectedAvatar?.joints.length || rigAnalysis?.person?.joints || 10} 节点</span>
-            <span>小狗 · {rigAnalysis?.dog?.joints || 7} 节点</span>
-          </div>
-        )}
       </section>
 
 

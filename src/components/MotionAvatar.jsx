@@ -32,32 +32,6 @@ const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太
 const rpsGestureByAction = { rpsRock: "✊", rpsScissors: "✌️", rpsPaper: "✋" };
 
 
-const humanNodes = [
-  ["头", 50, 25], ["身体", 50, 54],
-  ["左肩", 35, 45], ["左肘", 25, 58], ["右肩", 65, 45], ["右肘", 76, 58],
-  ["左髋", 43, 67], ["左膝", 40, 80], ["右髋", 57, 67], ["右膝", 60, 80],
-];
-
-
-const rabbitNodes = [
-  ["头", 50, 31], ["身体", 50, 60], ["左耳", 39, 12], ["右耳", 61, 12],
-  ["左前爪", 29, 53], ["右前爪", 72, 53], ["左后腿", 42, 78], ["右后腿", 59, 78], ["尾巴", 76, 65],
-];
-
-
-function JointOverlay({ species, calibratedNodes }) {
-  const nodes = calibratedNodes?.length
-    ? calibratedNodes.map((node) => [node.label, node.x, node.y])
-    : species === "rabbit" ? rabbitNodes : humanNodes;
-  return (
-    <span className={`image-joints ${calibratedNodes?.length ? "is-calibrated" : ""}`} aria-hidden="true">
-      {nodes.map(([label, x, y]) => (
-        <i key={label} style={{ left: `${x}%`, top: `${y}%` }}><b>{label}</b></i>
-      ))}
-    </span>
-  );
-}
-
 function SegmentedCharacter({ avatar }) {
   const rig = avatar.armRig;
   if (!rig?.arms?.length) return <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />;
@@ -84,7 +58,7 @@ function SegmentedCharacter({ avatar }) {
 }
 
 
-export default function MotionAvatar({ avatar, action, activity, showJoints, look }) {
+export default function MotionAvatar({ avatar, action, activity, look }) {
   const poseAction = action || actionByActivity[activity] || "idle";
   const activityFrame = activityFrameByAction[poseAction];
   const frame = activityFrame || frameByAction[poseAction] || "0% 0%";
@@ -107,11 +81,10 @@ export default function MotionAvatar({ avatar, action, activity, showJoints, loo
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
   return (
-    <div className={`motion-avatar motion-${poseAction} ${useArmRig ? "has-segmented-rig has-manual-arm-rig" : ""} ${canSegment ? "arm-rig-ready" : ""} ${avatar.isUploaded ? "preserve-art-colors" : ""} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
+    <div className={`motion-avatar motion-${poseAction} ${useArmRig ? "has-segmented-rig has-manual-arm-rig" : ""} ${canSegment ? "arm-rig-ready" : ""} ${avatar.isUploaded ? "preserve-art-colors" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? useArmRig ? <SegmentedCharacter avatar={avatar} /> : <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${displayedSprite})`, backgroundPosition: frame, ...(displayedSprite === outfitSprite ? outfitMask : {}) }} aria-hidden="true" />}
-      {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {action === "carryToy" && <span className="person-carry-toy" aria-hidden="true"><i /><b /><small /></span>}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
       {rpsGestureByAction[action] && <span className="rps-world-gesture" aria-hidden="true">{rpsGestureByAction[action]}</span>}
@@ -120,15 +93,13 @@ export default function MotionAvatar({ avatar, action, activity, showJoints, loo
 }
 
 
-export function MotionDog({ action, showJoints }) {
+export function MotionDog({ action }) {
   const dogFrames = { idle: "0% 0%", move: "100% 0%", jump: "0% 100%", sit: "100% 100%", dogEat: "100% 0%", dogPlay: "100% 0%", dogChase: "100% 0%", dogCarry: "100% 0%" };
   const frame = dogFrames[action] || dogFrames.idle;
-  const dogNodes = [["头",35,33],["躯干",57,52],["左前腿",39,72],["右前腿",50,74],["左后腿",66,73],["右后腿",77,72],["尾巴",82,45]];
   return (
-    <div className={`motion-dog motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
+    <div className={`motion-dog motion-${action || "idle"}`}>
       <span className="motion-sprite" style={{ backgroundImage: `url(${dogMotion})`, backgroundPosition: frame }} aria-hidden="true" />
       {action === "dogCarry" && <span className="dog-mouth-fetch-ball" aria-hidden="true" />}
-      {showJoints && <span className="image-joints dog-joints" aria-hidden="true">{dogNodes.map(([label,x,y]) => <i key={label} style={{left:`${x}%`,top:`${y}%`}}><b>{label}</b></i>)}</span>}
     </div>
   );
 }

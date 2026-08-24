@@ -24,7 +24,7 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, activity, editable = false, persistentState, onInteract, onSelect, selected, onMoveStart, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
+export default function SceneObject({ object, action, activity, editable = false, persistentState, onInteract, onSelect, selected, onMoveStart, onMove, onMoveEnd, avatar, avatarLook, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMoveStart, onMove, onMoveEnd, enabled: editable });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const isDeskActivity = object.type === "person" && ["studying", "working"].includes(activity);
@@ -88,9 +88,9 @@ export default function SceneObject({ object, action, activity, editable = false
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} activity={activity} showJoints={showJoints} look={avatarLook} />
+        ? <MotionAvatar avatar={avatar} action={action} activity={activity} look={avatarLook} />
         : isRiggedDog
-          ? <MotionDog action={action} showJoints={showJoints} />
+          ? <MotionDog action={action} />
           : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
     </button>
   );
