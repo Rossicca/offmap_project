@@ -20,7 +20,7 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate, foodGrowth, currentFood }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, foodGrowth, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -39,10 +39,11 @@ export default function SceneObject({ object, action, persistentState, onInterac
           ...(object.layer ? { zIndex: object.layer } : {}),
         }}
         type="button"
-        aria-label={`${object.label}，可拖动；点击装饰房子。${doorOpen ? "门已打开" : "门已关闭"}`}
+        aria-label={`${object.label}，可拖动；单击选中，双击${doorOpen ? "关门" : "开门"}。${doorOpen ? "门已打开" : "门已关闭"}`}
         aria-describedby="drag-help"
         data-object-id={object.id}
-        onClick={() => activate(() => { onSelect?.(object.id); onDecorate?.(); })}
+        onClick={() => activate(() => onSelect?.(object.id))}
+        onDoubleClick={() => activate(() => onInteract?.(object.id, doorOpen ? "closeDoor" : "openDoor"))}
         {...dragHandlers}
       >
         {houseArt
