@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DrawingEnhancementPicker from "./DrawingEnhancementPicker";
 import CharacterCutoutReview from "./CharacterCutoutReview";
+import ArmRigEditor from "./ArmRigEditor";
 import { enhanceDrawing } from "../utils/enhanceDrawing";
 import { extractCharacterForeground } from "../utils/extractCharacterForeground";
 
@@ -14,6 +15,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const originalPreviewUrl = analysis.originalPreviewUrl || analysis.previewUrl;
   const boardRef = useRef(null);
   const cutoutReviewRef = useRef(null);
+  const armRigRef = useRef(null);
   const dragRef = useRef(null);
   const enhancementRequestRef = useRef(0);
   const enhancementAbortRef = useRef(null);
@@ -41,6 +43,9 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const [cutoutBusy, setCutoutBusy] = useState(false);
   const [cutoutProgress, setCutoutProgress] = useState("");
   const [cutoutError, setCutoutError] = useState("");
+  const [armRigging, setArmRigging] = useState(false);
+  const [armRigSourceUrl, setArmRigSourceUrl] = useState("");
+  const [armRigReady, setArmRigReady] = useState(false);
   const template = useMemo(() => templates[species], [species]);
   const [boardSize, setBoardSize] = useState({ width: 1, height: 1 });
   const imageAspect = analysis.imageSize ? analysis.imageSize.width / analysis.imageSize.height : null;
@@ -160,13 +165,14 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const finishRig = ({ foregroundUrl = null, cutoutSize = null, finalNodes = nodes, foregroundPrepared = false, cutoutApplied = false } = {}) => onConfirm({
+  const finishRig = ({ foregroundUrl = null, cutoutSize = null, finalNodes = nodes, foregroundPrepared = false, cutoutApplied = false, armRig = null } = {}) => onConfirm({
     ...analysis,
     originalPreviewUrl,
     previewUrl,
     foregroundUrl,
     foregroundPrepared,
     cutoutApplied,
+    armRig,
     cutoutSize,
     enhancementLevel,
     enhancementStyleLock: styleLock,
@@ -208,6 +214,9 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     if (!enabled) {
       setCutoutResult(null);
       setCutoutReviewReady(false);
+      setArmRigging(false);
+      setArmRigSourceUrl("");
+      setArmRigReady(false);
     }
   };
 
@@ -218,25 +227,51 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     cutoutApplied: false,
   });
 
+  const openArmRigEditor = () => {
+    const reviewedUrl = cutoutReviewRef.current?.exportPng() || cutoutResult?.url;
+    if (!reviewedUrl) return;
+    setCutoutResult((current) => current ? { ...current, url: reviewedUrl } : current);
+    setArmRigSourceUrl(reviewedUrl);
+    setArmRigReady(false);
+    setArmRigging(true);
+  };
+
+  const useCutoutWithoutArmRig = () => finishRig({
+    foregroundUrl: armRigSourceUrl || cutoutReviewRef.current?.exportPng() || cutoutResult?.url,
+    cutoutSize: cutoutResult?.size,
+    finalNodes: cutoutResult?.nodes || nodes,
+    foregroundPrepared: true,
+    cutoutApplied: true,
+    armRig: null,
+  });
+
   const confirm = async () => {
     if (!cutoutEnabled) {
       useOriginal();
+      return;
+    }
+    if (armRigging) {
+      const armRig = armRigRef.current?.exportRig();
+      if (!armRig) return;
+      finishRig({ foregroundUrl: armRigSourceUrl, cutoutSize: cutoutResult.size, finalNodes: cutoutResult.nodes, foregroundPrepared: true, cutoutApplied: true, armRig });
       return;
     }
     if (!cutoutResult) {
       await prepareCutout();
       return;
     }
-    finishRig({ foregroundUrl: cutoutReviewRef.current?.exportPng() || cutoutResult.url, cutoutSize: cutoutResult.size, finalNodes: cutoutResult.nodes, foregroundPrepared: true, cutoutApplied: true });
+    openArmRigEditor();
   };
 
   return (
     <main className="rig-editor-page">
-      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
-      <section className="rig-editor-intro"><div><h1>{cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : usingTemplateFallback ? "这次自动识别没有得到足够关节点，已自动换成可拖动模板。把红点放到角色对应位置即可继续。" : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
+      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>绘梦伙伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
+      <section className="rig-editor-intro"><div><h1>{armRigging ? "描出小手臂" : cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{armRigging ? "让手肘自然动" : cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{armRigging ? "从手肘圆点涂到小手，只涂要转动的小手臂。动作会限制在自然角度，人物原图不会被改色。" : cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : usingTemplateFallback ? "这次自动识别没有得到足够关节点，已自动换成可拖动模板。把红点放到角色对应位置即可继续。" : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
-        <div className={`rig-canvas ${cutoutResult ? "is-cutout-review" : ""}`} ref={boardRef} style={{ backgroundImage: cutoutResult ? "none" : `url(${previewUrl})` }} aria-label={cutoutResult ? "人物透明背景检查画布" : "关节校准画布"}>
-          {cutoutResult
+        <div className={`rig-canvas ${cutoutResult ? "is-cutout-review" : ""} ${armRigging ? "is-arm-rig-review" : ""}`} ref={boardRef} style={{ backgroundImage: cutoutResult ? "none" : `url(${previewUrl})` }} aria-label={armRigging ? "小手臂动作标记画布" : cutoutResult ? "人物透明背景检查画布" : "关节校准画布"}>
+          {armRigging
+            ? <ArmRigEditor ref={armRigRef} imageUrl={armRigSourceUrl} nodes={cutoutResult.nodes} onChange={({ hasAny }) => setArmRigReady(hasAny)} />
+            : cutoutResult
             ? <CharacterCutoutReview ref={cutoutReviewRef} result={cutoutResult} onReady={() => setCutoutReviewReady(true)} />
             : nodes.map((node, index) => { const point = displayNode(node); return <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${point.x}%`, top: `${point.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>; })}
           {cutoutBusy && <div className="cutout-processing" role="status"><i aria-hidden="true" /><b>{cutoutProgress}</b><span>首次使用需要下载约 80MB 模型，之后会从浏览器缓存读取。</span></div>}
@@ -251,14 +286,16 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
             </label>
           </div>
           {!cutoutResult && <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy || cutoutBusy} error={enhancementError} styleLock={styleLock} onStyleLockChange={chooseStyleLock} onChange={chooseEnhancement} />}
-          <div className={`cutout-status ${cutoutResult ? "is-ready" : cutoutEnabled ? "is-enabled" : ""}`} role="status"><h2>{cutoutResult ? "人物边缘检查" : cutoutEnabled ? "等待手动开始" : "使用原图"}</h2><p>{cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : cutoutEnabled ? "开关只启用功能，不会自动处理。确认关节点后，再点击按钮开始抠图。" : "保留当前画面的全部内容和颜色，不执行人物提取。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
+          <div className={`cutout-status ${cutoutResult ? "is-ready" : cutoutEnabled ? "is-enabled" : ""}`} role="status"><h2>{armRigging ? "标记手肘动作" : cutoutResult ? "人物边缘检查" : cutoutEnabled ? "等待手动开始" : "使用原图"}</h2><p>{armRigging ? "涂色只用来告诉程序哪一块是小手臂。转动角度最多 38°，手肘处有接缝保护，不会整圈旋转。" : cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : cutoutEnabled ? "开关只启用功能，不会自动处理。确认关节点后，再点击按钮开始抠图。" : "保留当前画面的全部内容和颜色，不执行人物提取。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
           {!cutoutResult && <><div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
           <p className="rig-hint"><b>操作提示</b> 红点范围会帮助模型避开周围的房子、云朵和其他物件。</p></>}
-          {cutoutResult && <button className="cutout-retry" type="button" onClick={() => { setCutoutResult(null); setCutoutReviewReady(false); setCutoutProgress(""); }}>重新定位关节</button>}
+          {armRigging && <button className="cutout-retry" type="button" onClick={() => { setArmRigging(false); setArmRigReady(false); }}>返回人物修边</button>}
+          {cutoutResult && !armRigging && <button className="cutout-retry" type="button" onClick={() => { setCutoutResult(null); setCutoutReviewReady(false); setCutoutProgress(""); }}>重新定位关节</button>}
+          {cutoutResult && <button className="cutout-fallback" type="button" onClick={useCutoutWithoutArmRig} disabled={!armRigging && !cutoutReviewReady}>暂时不要手肘动作</button>}
           {cutoutError && !cutoutResult && <button className="cutout-fallback" type="button" onClick={useOriginal}>关闭抠图，使用原图</button>}
-          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用抠图人物，继续画背景" : cutoutEnabled ? "开始抠图并检查" : "使用原图，继续画背景"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
+          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !armRigging && !cutoutReviewReady) || (armRigging && !armRigReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !armRigging && !cutoutReviewReady ? "正在生成预览…" : armRigging ? armRigReady ? "保存手肘动作，继续画背景" : "先涂一条小手臂" : cutoutResult ? "下一步：标记小手臂" : cutoutEnabled ? "开始抠图并检查" : "使用原图，继续画背景"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && (!armRigging || armRigReady) && <span aria-hidden="true">→</span>}</button>
         </aside>
       </section>
     </main>

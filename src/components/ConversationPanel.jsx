@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { formatCountdown, formatStudyTotal, studySubjects } from "../data/studyRewards";
+import StudyFocus from "./StudyFocus";
 
 const defaultSuggestions = ["你好呀！", "你喜欢什么？", "我们去冒险吧"];
-const learningTopics = [
-  { id: "math", name: "数学" },
-  { id: "reading", name: "阅读" },
-  { id: "english", name: "英语" },
-  { id: "discovery", name: "自由探索" },
-];
 
-export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend, voiceAllowed = true, learningState, onLearningAction }) {
+export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend, voiceAllowed = true, learningState, onLearningAction, onLearningTopicChange, study }) {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   const [voiceReply, setVoiceReply] = useState(() => voiceAllowed && localStorage.getItem("living-drawing-voice") === "on");
@@ -84,15 +80,13 @@ export default function ConversationPanel({ characterName, companions = [], acti
 
       {learningState && <section className={`learning-companion ${learningOpen ? "is-open" : ""}`} aria-label="陪伴学习">
         <button className="learning-companion-toggle" type="button" onClick={() => setLearningOpen((value) => !value)} aria-expanded={learningOpen}>
-          <span aria-hidden="true">✎</span>
+          <span aria-hidden="true">◷</span>
           <b>陪我学习</b>
-          <small>{learningTopics.find((item) => item.id === learningState.topic)?.name || "自由探索"} · {learningState.stars || 0} 颗星</small>
+          <small>{study?.activeSession ? `${studySubjects.find((item) => item.id === study.activeSession.subjectId)?.name || "学习"} · ${formatCountdown(study.remainingSeconds)}` : `累计 ${formatStudyTotal(study?.progress.totalSeconds || 0)} · ${learningState.stars || 0} 颗星`}</small>
           <i aria-hidden="true">{learningOpen ? "−" : "+"}</i>
         </button>
         {learningOpen && <div className="learning-companion-body">
-          <div className="learning-topic-list" aria-label="选择学习方向">
-            {learningTopics.map((topic) => <button key={topic.id} type="button" className={learningState.topic === topic.id ? "is-active" : ""} onClick={() => onLearningAction("start", topic.id)} aria-pressed={learningState.topic === topic.id}>{topic.name}</button>)}
-          </div>
+          {study && <StudyFocus topic={learningState.topic} onTopicChange={onLearningTopicChange} study={study} />}
           <div className="learning-progress" aria-label={`已获得 ${learningState.stars || 0} 颗学习星`}>
             {Array.from({ length: 5 }, (_, index) => <i key={index} aria-hidden="true" className={index < (learningState.stars || 0) ? "is-earned" : ""}>★</i>)}
           </div>

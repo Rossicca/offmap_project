@@ -18,6 +18,8 @@ npm run build
 npm run preview
 ```
 
+生产部署时由 Node 轻后端同时托管构建后的前端和 `/api/*` 接口。通用 Node 平台与 Docker 的完整参数见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
+
 ## Demo 路径
 
 1. 输入昵称进入本地 Demo 创作空间，无需密码。

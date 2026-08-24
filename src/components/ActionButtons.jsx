@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isStudyRewardUnlocked, remainingStudyMinutes, studyRewardForAction } from "../data/studyRewards";
 
 const actions = [
   { target: "person1", action: "wave", icon: "wave", label: "挥挥手" },
@@ -63,7 +64,7 @@ function ActionIcon({ name }) {
 }
 
 
-export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false, currentFood = { name: "苹果" }, currentSceneId = "outdoor", activeCharacterId = "person1", transitioning = false }) {
+export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false, currentFood = { name: "苹果" }, currentSceneId = "outdoor", activeCharacterId = "person1", transitioning = false, studyTotalSeconds = 0 }) {
   const [open, setOpen] = useState(false);
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
@@ -105,9 +106,12 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
           const target = item.target === "person1" ? activeCharacterId : item.target;
           const actualAction = item.target === "house1" && persistentState.doorOpen ? "closeDoor" : item.action;
           const label = actualAction === "closeDoor" ? "关上门" : item.action === "wind" && windActive ? "风正在吹" : item.action === "feed" ? `喂${currentFood.name}` : item.action === "dogEatApple" ? `狗狗吃${currentFood.name}` : item.label;
+          const reward = studyRewardForAction(item.action);
+          const locked = reward && !isStudyRewardUnlocked(item.action, studyTotalSeconds);
+          const lockHint = locked ? `再专注 ${remainingStudyMinutes(reward, studyTotalSeconds)} 分钟解锁` : "";
           return (
-            <button key={`${target}-${item.action}`} type="button" disabled={transitioning || (item.action === "wind" && windActive)} onClick={() => onAction(target, actualAction)}>
-              <ActionIcon name={item.icon} />{label}
+            <button key={`${target}-${item.action}`} type="button" className={locked ? "is-study-locked" : ""} disabled={transitioning || locked || (item.action === "wind" && windActive)} title={lockHint || label} aria-label={locked ? `${label}，${lockHint}` : label} onClick={() => onAction(target, actualAction)}>
+              <ActionIcon name={item.icon} /><span>{label}</span>{locked && <small><b aria-hidden="true">锁</b>{reward.minutes} 分钟</small>}
             </button>
           );
         })}

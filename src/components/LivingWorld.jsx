@@ -31,6 +31,8 @@ import { backgroundStyleFor, defaultDoghouseDecor, defaultHouseDecor } from "../
 import { ACTION_IDS, ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS, isActionId } from "../data/companionSystem";
 import { migrateCompanionSnapshot, normalizeCharacterStates, normalizeSceneId } from "../utils/companionState";
 import { executeCompanionAction } from "../utils/executeCompanionAction";
+import { formatStudyTotal, isStudyRewardUnlocked, remainingStudyMinutes, studyRewardForAction, studySubjects } from "../data/studyRewards";
+import useStudyFocus from "../hooks/useStudyFocus";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -151,6 +153,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
   const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
+  const study = useStudyFocus();
   const [avatarGrowth, setAvatarGrowth] = useState(() => loadAvatarGrowth(initialState?.avatarGrowth));
   const [growthNotice, setGrowthNotice] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -178,6 +181,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const toyBasketReturnPositions = useRef({ person: null, toys: {} });
   const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
   const avatarGrowthRef = useRef(avatarGrowth);
+  const handledStudyCompletion = useRef(null);
 
   const grantGrowth = (eventId, xp, reason) => {
     const result = awardGrowth(avatarGrowthRef.current, eventId, xp);
@@ -238,8 +242,49 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   };
 
 
+  useEffect(() => {
+    const completion = study.lastCompletion;
+    if (!completion || handledStudyCompletion.current === completion.id) return;
+    handledStudyCompletion.current = completion.id;
+    const subjectName = studySubjects.find((item) => item.id === completion.subjectId)?.name || "学习";
+    if (completion.creditedSeconds <= 0) {
+      setMessage("这次还没开始计时，不着急，准备好再来一次吧！");
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2800);
+      return;
+    }
+    setLearningState((state) => ({ ...state, topic: completion.subjectId }));
+    grantGrowth(`study-session-${completion.id}`, completion.completed ? 18 : 8, completion.completed ? "完成一次专注学习" : "记录了本次学习时间");
+    const reward = completion.newRewards[0];
+    const person = objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person");
+    const studiedFor = completion.creditedSeconds < 60 ? `${completion.creditedSeconds} 秒` : formatStudyTotal(completion.creditedSeconds);
+    const completionMessage = reward
+      ? `${subjectName}专注完成！记录了 ${studiedFor}，新解锁：${reward.label}！`
+      : `${subjectName}学习记录好了：${studiedFor}。先活动一下眼睛和身体吧！`;
+    if (person) {
+      const celebrationAction = ["dance", "cheer"].includes(reward?.action) ? reward.action : isStudyRewardUnlocked("cheer", completion.afterSeconds) ? "cheer" : "wave";
+      playAction(person.id, celebrationAction, completionMessage);
+    } else {
+      setMessage(completionMessage);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 3600);
+    }
+  }, [study.lastCompletion]);
+
+
+  const blockLockedStudyAction = (action) => {
+    const reward = studyRewardForAction(action);
+    if (!reward || isStudyRewardUnlocked(action, study.progress.totalSeconds)) return false;
+    setMessage(`这是学习奖励！再专注 ${remainingStudyMinutes(reward, study.progress.totalSeconds)} 分钟，就能解锁“${reward.label}”啦。`);
+    setBubbleVisible(true);
+    later(() => setBubbleVisible(false), 3400);
+    return true;
+  };
+
+
   const playAction = (objectId, action, customMessage) => {
     if (sceneTransition && [ACTION_IDS.ENTER_ROOM, ACTION_IDS.LEAVE_ROOM].includes(action)) return;
+    if (blockLockedStudyAction(action)) return;
     const object = objects.find((item) => item.id === objectId);
     const feedTarget = action === "feed"
       ? objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person")
@@ -952,7 +997,24 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   };
 
 
+  const chooseLearningTopic = (topic) => {
+    if (!studySubjects.some((item) => item.id === topic) || study.activeSession) return;
+    setLearningState((state) => ({ ...state, topic, currentAnswer: null, lastResult: "neutral" }));
+  };
+
+
+  const startStudySession = (topic, minutes) => {
+    chooseLearningTopic(topic);
+    study.startStudy(topic, minutes);
+    const subjectName = studySubjects.find((item) => item.id === topic)?.name || "学习";
+    setMessage(`${subjectName}专注开始啦！我会安静地陪你 ${minutes} 分钟。`);
+    setBubbleVisible(true);
+    later(() => setBubbleVisible(false), 3000);
+  };
+
+
   const handleDirectAction = (objectId, action) => {
+    if (blockLockedStudyAction(action)) return;
     if (objectId === "world" && ["sunset", "sunrise"].includes(action)) {
       setPersistentState((state) => ({ ...state, night: action === "sunset" }));
       setMessage(action === "sunset" ? "天空慢慢暗下来，星光亮起来啦！" : "清晨到了，世界又亮起来啦！");
@@ -1144,7 +1206,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     <main className="world-page">
       <header className="world-header">
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
-          <span aria-hidden="true">✦</span><b>AI 画伴</b>
+          <span aria-hidden="true">✦</span><b>绘梦伙伴</b>
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         {editingProjectName && <div className="editing-project-status" title={editingProjectName}><span aria-hidden="true">✎</span><em>正在修改</em><b>{editingProjectName}</b></div>}
@@ -1296,11 +1358,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         voiceAllowed={safety.voiceAllowed}
         learningState={learningState}
         onLearningAction={handleLearningAction}
+        onLearningTopicChange={chooseLearningTopic}
+        study={{ ...study, startStudy: startStudySession }}
       />
       </div>
 
 
-      <ActionButtons onAction={handleDirectAction} visibleObjectIds={visibleObjectIds} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} currentSceneId={currentSceneId} activeCharacterId={scenePerson?.id || travelPerson?.id} transitioning={Boolean(sceneTransition)} />
+      <ActionButtons onAction={handleDirectAction} visibleObjectIds={visibleObjectIds} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} currentSceneId={currentSceneId} activeCharacterId={scenePerson?.id || travelPerson?.id} transitioning={Boolean(sceneTransition)} studyTotalSeconds={study.progress.totalSeconds} />
     </main>
   );
 }

@@ -113,6 +113,7 @@ export default function App() {
       foregroundExtracted: Boolean(nextAnalysis.cutoutApplied),
       preserveSourceArt: !nextAnalysis.cutoutApplied,
       cutoutApplied: Boolean(nextAnalysis.cutoutApplied),
+      armRig: nextAnalysis.armRig || null,
       inputOrigin: nextAnalysis.inputOrigin || "upload",
       editableImageUrl: nextAnalysis.editableImageUrl || "",
       isUploaded: true,
@@ -263,6 +264,7 @@ export default function App() {
     localStorage.removeItem("living-drawing-projects");
     localStorage.removeItem("living-drawing-voice");
     localStorage.removeItem("living-drawing-avatar-growth");
+    localStorage.removeItem("living-drawing-study-focus");
     if (analysis) reset();
   };
 
