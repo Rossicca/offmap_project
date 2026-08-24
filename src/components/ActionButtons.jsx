@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const actions = [
   { target: "person1", action: "wave", icon: "wave", label: "挥挥手" },
   { target: "person1", action: "jump", icon: "jump", label: "跳一下" },
@@ -34,6 +36,7 @@ function ActionIcon({ name }) {
 
 
 export default function ActionButtons({ onAction, persistentState, visibleObjectIds }) {
+  const [open, setOpen] = useState(false);
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
     if (visibleObjectIds && !visibleObjectIds.has(item.target)) return false;
@@ -42,13 +45,13 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
     return true;
   });
   return (
-    <section className="quick-actions" aria-labelledby="quick-actions-title">
-      <div className="quick-heading">
-        <h2 id="quick-actions-title">快速互动</h2>
-        <p className="desktop-hint">点一下，马上有惊喜</p>
-        <p className="scroll-hint">左右滑动查看更多 →</p>
-      </div>
-      <div className="action-scroll">
+    <section className={`quick-actions${open ? " is-open" : ""}`} aria-labelledby="quick-actions-title">
+      <button className="quick-actions-toggle" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="quick-actions-list">
+        <ActionIcon name="wave" /><span id="quick-actions-title">{open ? "收起互动" : "打开互动"}</span><b aria-hidden="true">{open ? "×" : "+"}</b>
+      </button>
+      <div className="quick-actions-panel" id="quick-actions-list" hidden={!open}>
+        <div className="quick-heading"><h2>想让谁动起来？</h2><p>也可以直接单击或双击画面里的朋友</p></div>
+        <div className="action-scroll">
         {visibleActions.map((item) => {
           const actualAction = item.target === "house1" && persistentState.doorOpen ? "closeDoor" : item.action;
           const label = actualAction === "closeDoor" ? "关上门" : item.label;
@@ -58,6 +61,7 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
             </button>
           );
         })}
+        </div>
       </div>
     </section>
   );
