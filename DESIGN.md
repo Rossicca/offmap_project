@@ -141,7 +141,7 @@ components:
 
 My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing and calibration tools; the finished living world stays free of grids, fold lines, ghost drawings, and wireframe clouds.
 
-The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, trees, backgrounds, sun, apple, stars, and ground use layered hand-drawn geometry with warm texture and coherent outlines. Scene objects are direct-manipulation pieces: pointer and touch dragging moves them inside measured stage bounds, while the scene editor provides labeled range controls as the keyboard-accessible alternative.
+The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, trees, backgrounds, sun, apple, stars, and ground use layered hand-drawn geometry with warm texture and coherent outlines. Scene objects default to interaction-only clicks so play never causes accidental movement. The ordinary-sized `调整画面` switch explicitly enables pointer and touch selection, bounded dragging, resizing, copying, undo, redo, and deletion; `完成调整` clears selection and returns every stage click to interaction. The scene editor remains the labeled keyboard-accessible alternative.
 
 **Key Characteristics:**
 
@@ -163,6 +163,8 @@ The same identity survives from character choice to motion. Product-provided com
 - A focused material library uses six plain-language categories—伙伴, 背景, 互动, 自然, 摆件, and 狗窝—plus a 120-preset house decoration studio. Scene thumbnails depict recognizable illustrated places rather than abstract color swatches.
 - A new world begins with only the background, one house, the primary person, and the dog. Sun, tree, food, toys, basket, and doghouse remain optional, fully interactive additions instead of forced defaults; saved projects retain everything their creator added.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
+- Each person keeps an independent saved location and activity (`idle`, `playing`, `studying`, `working`, or `resting`), while `wave`, `jump`, `study`, `work`, `play`, and `rest` remain short interruptible animations. Entering and leaving the room use the same `playAction` path as direct controls.
+- Outdoor-only play and room-only study, creation, and rest are enforced before animation. Invalid requests explain the needed scene; jumping from rest first restores the person to idle, and an older animation timer never clears a newer action.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
 - The companion music control is a precisely draggable floating button whose position survives reloads and is re-clamped after resize or mobile layout changes.
 - Motion is short, readable, object-specific, and fully reduced when requested.
@@ -272,6 +274,7 @@ The form language uses lightly worn paper rectangles with `1px`–`1.5px` graphi
 - **Primary:** Muted red-pencil face, white heavy label, `58px` minimum height, `22px` horizontal padding, `7px` corners, and a fine graphite border without a hard press base.
 - **Quick Action:** Tracing-paper face, graphite inline SVG plus label, `52px` minimum height, `7px` corners, and a `1.5px` graphite border.
 - **Quick Interaction Toggle:** One ordinary-sized `打开互动` / `收起互动` button with `aria-expanded`; it replaces the formerly large always-visible quick-action block without removing any action.
+- **World Edit Toggle:** A `44px`-minimum `调整画面` / `完成调整` button with `aria-pressed`; off is interaction-only, on reveals selection feedback and object tools. Turning it off clears the active selection.
 - **Hover / Focus / Active:** Hover increases contrast or adds a slight warm lift; focus uses a `4px` gold ring with `3px` offset; active shifts down `1px` and scales to `0.985`.
 
 ### Chips
@@ -418,7 +421,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
 - **Do** give the music launcher exact-offset pointer capture, a `5px` drag threshold, viewport clamping, persisted position, and resize/mobile re-clamping; keep the SceneEditor size control intact behind `位置和大小`.
 - **Do** use the same quiet return button in both world- and background-drawing steps.
-- **Do** keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
+- **Do** keep play safe by default: only the explicit `调整画面` mode may drag or resize stage objects, and keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
 - **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
 - **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.

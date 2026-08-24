@@ -87,10 +87,10 @@ export const DEFAULT_CHARACTER_STATE = Object.freeze({
 });
 
 export const ROOM_SCENE_OBJECTS = Object.freeze([
-  Object.freeze({ id: "room-bed-1", type: "roomBed", label: "小床", x: 24, y: 67, layer: 8, sceneId: SCENE_IDS.ROOM, actions: [] }),
-  Object.freeze({ id: "room-desk-1", type: "roomDesk", label: "书桌", x: 64, y: 61, layer: 10, sceneId: SCENE_IDS.ROOM, actions: [] }),
-  Object.freeze({ id: "room-chair-1", type: "roomChair", label: "椅子", x: 74, y: 72, layer: 12, sceneId: SCENE_IDS.ROOM, actions: [] }),
-  Object.freeze({ id: "room-bookshelf-1", type: "roomBookshelf", label: "书架", x: 88, y: 42, layer: 6, sceneId: SCENE_IDS.ROOM, actions: [] }),
+  Object.freeze({ id: "room-bed-1", type: "roomBed", label: "小床", x: 22, y: 68, layer: 8, sceneId: SCENE_IDS.ROOM, actions: [] }),
+  Object.freeze({ id: "room-desk-1", type: "roomDesk", label: "书桌", x: 72, y: 69, layer: 14, sceneId: SCENE_IDS.ROOM, actions: [] }),
+  Object.freeze({ id: "room-chair-1", type: "roomChair", label: "椅子", x: 72, y: 64, layer: 8, sceneId: SCENE_IDS.ROOM, actions: [] }),
+  Object.freeze({ id: "room-bookshelf-1", type: "roomBookshelf", label: "书架", x: 90, y: 43, layer: 6, sceneId: SCENE_IDS.ROOM, actions: [] }),
 ]);
 
 export const isSceneId = (value) => Object.hasOwn(SCENE_DEFINITIONS, value);

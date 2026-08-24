@@ -24,17 +24,19 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
-  const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
+export default function SceneObject({ object, action, activity, editable = false, persistentState, onInteract, onSelect, selected, onMoveStart, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
+  const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMoveStart, onMove, onMoveEnd, enabled: editable });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
-  const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
+  const isDeskActivity = object.type === "person" && ["studying", "working"].includes(activity);
+  const isBedActivity = object.type === "person" && activity === "resting";
+  const objectLayer = isDeskActivity ? 11 : isBedActivity ? 9 : isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
 
 
   if (object.type === "house") {
     const doorOpen = persistentState.doorOpen;
     return (
       <button
-        className={`scene-object house-object action-${action || "idle"} ${selected ? "is-selected" : ""} ${dragging ? "is-dragging" : ""}`}
+        className={`scene-object house-object action-${action || "idle"} ${editable ? "is-editable" : ""} ${selected ? "is-selected" : ""} ${dragging ? "is-dragging" : ""}`}
         style={{
           "--x": `${object.x}%`,
           "--y": `${object.y}%`,
@@ -43,11 +45,10 @@ export default function SceneObject({ object, action, persistentState, onInterac
           ...(object.layer ? { zIndex: object.layer } : {}),
         }}
         type="button"
-        aria-label={`${object.label}，可拖动；单击选中，双击${doorOpen ? "关门" : "开门"}。${doorOpen ? "门已打开" : "门已关闭"}`}
-        aria-describedby="drag-help"
+        aria-label={editable ? `${object.label}，点击选中后可移动或调整大小` : `${object.label}，点击${doorOpen ? "关门" : "开门"}。${doorOpen ? "门已打开" : "门已关闭"}`}
+        aria-describedby={editable ? "drag-help" : undefined}
         data-object-id={object.id}
-        onClick={() => activate(() => onSelect?.(object.id))}
-        onDoubleClick={() => activate(() => onInteract?.(object.id, doorOpen ? "closeDoor" : "openDoor"))}
+        onClick={() => activate(() => editable ? onSelect?.(object.id) : onInteract?.(object.id, doorOpen ? "closeDoor" : "openDoor"))}
         {...dragHandlers}
       >
         {houseArt
@@ -76,18 +77,18 @@ export default function SceneObject({ object, action, persistentState, onInterac
     : "点击选中";
   return (
     <button
-      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${editable ? "is-editable" : ""} ${isDeskActivity ? "is-desk-activity" : ""} ${isBedActivity ? "is-bed-activity" : ""} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
-      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : interactionLabel}`}
-      aria-describedby="drag-help"
+      aria-label={editable ? `${object.label}，点击选中后可移动或调整大小，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%` : `${object.label}，${interactionLabel}`}
+      aria-describedby={editable ? "drag-help" : undefined}
       data-object-id={object.id}
-      onClick={() => activate(() => { onSelect?.(object.id); object.type === "doghouse" ? onDoghouseDecorate?.() : primaryAction && onInteract?.(object.id, primaryAction); })}
+      onClick={() => activate(() => editable ? onSelect?.(object.id) : primaryAction && onInteract?.(object.id, primaryAction))}
       {...dragHandlers}
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />
+        ? <MotionAvatar avatar={avatar} action={action} activity={activity} showJoints={showJoints} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}

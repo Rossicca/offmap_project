@@ -2,6 +2,8 @@ import explorerMotion from "../assets/explorer-motion-paper.png";
 import rabbitMotion from "../assets/rabbit-motion-paper.png";
 import heroMotion from "../assets/hero-motion-paper.png";
 import girlMotion from "../assets/girl-coral-motion-transparent.png";
+import explorerActivityMotion from "../assets/explorer-activity-motion.png";
+import girlActivityMotion from "../assets/girl-activity-motion.png";
 
 export const avatarCatalog = [
   {
@@ -12,6 +14,7 @@ export const avatarCatalog = [
     gender: "男生",
     spritePosition: "0% 0%",
     motionSprite: explorerMotion,
+    activitySprite: explorerActivityMotion,
     colors: { accent: "#f2be38", secondary: "#3e9b62", skin: "#ffd6b1", hair: "#6a3f28" },
     joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
   },
@@ -23,6 +26,7 @@ export const avatarCatalog = [
     gender: "女生",
     spritePosition: "0% 0%",
     motionSprite: girlMotion,
+    activitySprite: girlActivityMotion,
     colors: { accent: "#df7864", secondary: "#78949a", skin: "#ffd3ad", hair: "#5f4638" },
     joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
   },

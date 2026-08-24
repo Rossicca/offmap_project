@@ -28,8 +28,9 @@ import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { playDogBark } from "../utils/soundEffects";
 import { backgroundStyleFor, defaultDoghouseDecor, defaultHouseDecor } from "../data/materialCatalog";
-import { ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS } from "../data/companionSystem";
+import { ACTION_IDS, ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS, isActionId } from "../data/companionSystem";
 import { migrateCompanionSnapshot, normalizeCharacterStates, normalizeSceneId } from "../utils/companionState";
+import { executeCompanionAction } from "../utils/executeCompanionAction";
 import { formatStudyTotal, isStudyRewardUnlocked, remainingStudyMinutes, studyRewardForAction, studySubjects } from "../data/studyRewards";
 import useStudyFocus from "../hooks/useStudyFocus";
 
@@ -63,6 +64,11 @@ const learningPrompts = {
   hint: { math: "这道题我还没想明白，请只给我一步提示，不要直接说答案。", reading: "请提示我应该回到哪句话找线索，不要直接说答案。", english: "请给我一个联想或首字母提示，不要直接说答案。", discovery: "请给我一个观察提示，让我自己发现答案。" },
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
+const ROOM_ACTIVITY_SPOTS = Object.freeze({
+  [ACTION_IDS.STUDY]: { x: 72, y: 62 },
+  [ACTION_IDS.WORK]: { x: 72, y: 62 },
+  [ACTION_IDS.REST]: { x: 22, y: 62 },
+});
 
 const prepareCompanionSnapshot = (initialState, sceneObjects) => {
   const hasSavedScene = Array.isArray(initialState?.sceneObjects);
@@ -150,6 +156,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const study = useStudyFocus();
   const [avatarGrowth, setAvatarGrowth] = useState(() => loadAvatarGrowth(initialState?.avatarGrowth));
   const [growthNotice, setGrowthNotice] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [selectedObjectId, setSelectedObjectId] = useState(null);
   const undoHistory = useRef([]);
   const redoHistory = useRef([]);
@@ -163,6 +170,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [cloudDrift, setCloudDrift] = useState(() => initialState?.cloudDrift || 0);
   const [foodGrowth, setFoodGrowth] = useState(() => initialState?.foodGrowth || { level: 0, points: 0 });
   const timers = useRef([]);
+  const companionActionTokens = useRef({});
   const stageRef = useRef(null);
   const roomReturnPositions = useRef({});
   const feedReturnPositions = useRef({});
@@ -190,6 +198,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
   useEffect(() => { setSelectedObjectId(null); }, [currentSceneId]);
+  useEffect(() => { if (!editMode) setSelectedObjectId(null); }, [editMode]);
   useEffect(() => { localStorage.setItem("living-drawing-avatar-growth", JSON.stringify(avatarGrowth)); }, [avatarGrowth]);
   useEffect(() => {
     if (!safety.sessionMinutes) return undefined;
@@ -274,16 +283,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const playAction = (objectId, action, customMessage) => {
-    if (sceneTransition && ["rest", "leaveRoom"].includes(action)) return;
+    if (sceneTransition && [ACTION_IDS.ENTER_ROOM, ACTION_IDS.LEAVE_ROOM].includes(action)) return;
     if (blockLockedStudyAction(action)) return;
     const object = objects.find((item) => item.id === objectId);
     const feedTarget = action === "feed"
       ? objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person")
       : null;
-    const isRoomExit = action === "leaveRoom" && object?.type === "person";
+    const isRoomExit = action === ACTION_IDS.LEAVE_ROOM && object?.type === "person";
+    const isCompanionAction = object?.type === "person" && isActionId(action);
     const isDoghouseAction = object?.type === "dog" && ["enterDoghouse", "exitDoghouse", "dogEat", "dogEatApple", "dogPlay", "dogFetch"].includes(action);
     const isToyBasketAction = object?.type === "person" && ["tidyToys", "takeToys"].includes(action);
-    if (!object || (!object.actions.includes(action) && !isRoomExit && !isDoghouseAction && !isToyBasketAction)) return;
+    if (!object || (!object.actions?.includes(action) && !isCompanionAction && !isRoomExit && !isDoghouseAction && !isToyBasketAction)) return;
     if (action === "dogEat" && activeActions[objectId]) return;
     if (action === "dogEatApple" && (activeActions[objectId] || activeActions.apple1 || persistentState.appleHidden)) return;
     if (action === "dogPlay" && activeActions[objectId]) return;
@@ -291,8 +301,71 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (isToyBasketAction && (activeActions[objectId] || activeActions.dog1)) return;
     if (action === "feed" && activeActions[objectId]) return;
 
+    const companionResult = isCompanionAction ? executeCompanionAction({
+      action,
+      characterState: characterStates[objectId] || { location: object.sceneId },
+      currentSceneId,
+    }) : null;
+    if (companionResult && !companionResult.accepted) {
+      setMessage(companionResult.reason === "room-required" ? "这个活动要在房间里进行，先点击“进入房间”吧。" : "这个活动要在室外进行，先点击“去室外”吧。");
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2300);
+      return;
+    }
+
+    const companionActionToken = isCompanionAction
+      ? (companionActionTokens.current[objectId] || 0) + 1
+      : null;
+    if (isCompanionAction) companionActionTokens.current[objectId] = companionActionToken;
+
+    const activitySpot = currentSceneId === SCENE_IDS.ROOM ? ROOM_ACTIVITY_SPOTS[action] : null;
+    if (companionResult && !companionResult.transitionTo && activitySpot) {
+      setActiveActions((current) => ({ ...current, [objectId]: "move" }));
+      setObjects((current) => current.map((item) => item.id === objectId ? {
+        ...item,
+        ...activitySpot,
+        scenePositions: {
+          ...(item.scenePositions || {}),
+          [SCENE_IDS.ROOM]: activitySpot,
+        },
+      } : item));
+      setMessage(action === ACTION_IDS.REST ? "先走到小床边，再舒服地躺下休息。" : "先走到椅子前坐好，再把手放到书桌上。 ");
+      setBubbleVisible(true);
+      later(() => {
+        if (companionActionTokens.current[objectId] !== companionActionToken) return;
+        setCharacterStates((current) => ({ ...current, [objectId]: companionResult.state }));
+        setPersistentState((state) => ({
+          ...state,
+          restingCharacters: companionResult.state.activity === ACTIVITY_IDS.RESTING
+            ? [...new Set([...(state.restingCharacters || []), objectId])]
+            : (state.restingCharacters || []).filter((id) => id !== objectId),
+        }));
+        setActiveActions((current) => ({ ...current, [objectId]: action }));
+        setMessage(customMessage || actionFeedback[action]);
+      }, 720);
+      later(() => {
+        if (companionActionTokens.current[objectId] !== companionActionToken) return;
+        setActiveActions((current) => ({ ...current, [objectId]: null }));
+      }, 720 + (actionDurations[action] || 1000));
+      later(() => {
+        if (companionActionTokens.current[objectId] === companionActionToken) setBubbleVisible(false);
+      }, 3000);
+      return;
+    }
+
+    if (companionResult && !companionResult.transitionTo) {
+      setCharacterStates((current) => ({ ...current, [objectId]: companionResult.state }));
+      setPersistentState((state) => ({
+        ...state,
+        restingCharacters: companionResult.state.activity === ACTIVITY_IDS.RESTING
+          ? [...new Set([...(state.restingCharacters || []), objectId])]
+          : (state.restingCharacters || []).filter((id) => id !== objectId),
+      }));
+    }
+
     const isAlreadyInRoom = normalizeSceneId(object.sceneId) === SCENE_IDS.ROOM;
     if (isRoomExit) {
+      setActiveActions((current) => ({ ...current, [objectId]: null }));
       const savedOutdoorPosition = object.scenePositions?.[SCENE_IDS.OUTDOOR] || roomReturnPositions.current[objectId];
       const currentRoomPosition = { x: object.x, y: object.y };
       setSceneTransition("leaving-room");
@@ -318,6 +391,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         setSceneTransition(null);
       }, 620);
       later(() => setPersistentState((state) => ({ ...state, doorOpen: false })), 1250);
+      setMessage(customMessage || actionFeedback.leaveRoom);
+      setBubbleVisible(true);
+      later(() => {
+        if (companionActionTokens.current[objectId] === companionActionToken) setBubbleVisible(false);
+      }, 2300);
+      return;
     }
 
 
@@ -331,7 +410,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
 
 
-    setActiveActions((current) => ({ ...current, [objectId]: action }));
+    setActiveActions((current) => ({ ...current, [objectId]: action === ACTION_IDS.ENTER_ROOM ? null : action }));
     setMessage(customMessage || (action === "dogEatApple" ? `狗狗跑到${foodLevels[foodGrowth.level]?.name || "苹果"}旁边，低头吃起来啦！` : actionFeedback[action]) || "世界动起来啦！");
     setBubbleVisible(true);
 
@@ -340,14 +419,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (action === "sunrise") setPersistentState((state) => ({ ...state, night: false }));
     if (action === "openDoor") setPersistentState((state) => ({ ...state, doorOpen: true }));
     if (action === "closeDoor") setPersistentState((state) => ({ ...state, doorOpen: false }));
-    if (action === "rest") {
+    if (action === ACTION_IDS.ENTER_ROOM) {
       const room = customObjects.find((item) => item.kind === "house") || objects.find((item) => item.type === "house");
       if (room) {
         if (isAlreadyInRoom) {
           setCurrentSceneId(SCENE_IDS.ROOM);
           setSceneTransition(null);
-          later(() => setActiveActions((current) => ({ ...current, [objectId]: null })), actionDurations.rest);
-          later(() => setBubbleVisible(false), 2300);
           return;
         }
         const outdoorPosition = { x: object.x, y: object.y };
@@ -376,11 +453,11 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           } : item));
           setCharacterStates((current) => ({
             ...current,
-            [objectId]: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.RESTING },
+            [objectId]: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.IDLE },
           }));
           setPersistentState((state) => ({
             ...state,
-            restingCharacters: [...new Set([...(state.restingCharacters || []), objectId])],
+            restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId),
           }));
           setCurrentSceneId(SCENE_IDS.ROOM);
           setSceneTransition(null);
@@ -393,6 +470,16 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           }
         }, 900);
       }
+    }
+    if ([ACTION_IDS.STUDY, ACTION_IDS.WORK, ACTION_IDS.REST].includes(action)) {
+      const target = action === ACTION_IDS.REST
+        ? objects.find((item) => item.id === "room-bed-1")
+        : objects.find((item) => item.id === "room-desk-1");
+      if (target) setObjects((current) => current.map((item) => item.id === objectId ? {
+        ...item,
+        x: Math.max(8, target.x - (action === ACTION_IDS.REST ? 2 : 10)),
+        y: Math.min(82, target.y + (action === ACTION_IDS.REST ? 2 : 10)),
+      } : item));
     }
     if (action === "enterDoghouse") {
       const doghouse = objects.find((item) => item.id === "doghouse1");
@@ -581,8 +668,14 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
 
 
-    later(() => setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { [feedTarget?.id || "person1"]: null } : {}) })), actionDurations[action] || 1000);
-    later(() => setBubbleVisible(false), action === "feed" ? 2800 : 2300);
+    later(() => {
+      if (isCompanionAction && companionActionTokens.current[objectId] !== companionActionToken) return;
+      setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { [feedTarget?.id || "person1"]: null } : {}) }));
+    }, actionDurations[action] || 1000);
+    later(() => {
+      if (isCompanionAction && companionActionTokens.current[objectId] !== companionActionToken) return;
+      setBubbleVisible(false);
+    }, action === "feed" ? 2800 : 2300);
   };
 
 
@@ -992,6 +1085,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const openSceneEditor = () => {
+    setEditMode(true);
     const stage = stageRef.current;
     const stageBounds = stage?.getBoundingClientRect();
     if (stage && stageBounds) {
@@ -1067,7 +1161,14 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       setCurrentSceneId(currentSceneId === SCENE_IDS.OUTDOOR ? SCENE_IDS.ROOM : SCENE_IDS.OUTDOOR);
       return;
     }
-    playAction(travelPerson.id, currentSceneId === SCENE_IDS.OUTDOOR ? "rest" : "leaveRoom");
+    if (normalizeSceneId(travelPerson.sceneId) !== currentSceneId) {
+      setCurrentSceneId(currentSceneId === SCENE_IDS.OUTDOOR ? SCENE_IDS.ROOM : SCENE_IDS.OUTDOOR);
+      setMessage(currentSceneId === SCENE_IDS.OUTDOOR ? "房间里的伙伴正在等你。" : "室外的伙伴正在等你。");
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2000);
+      return;
+    }
+    playAction(travelPerson.id, currentSceneId === SCENE_IDS.OUTDOOR ? ACTION_IDS.ENTER_ROOM : ACTION_IDS.LEAVE_ROOM);
   };
   const saveWorld = () => {
     if (sceneTransition) return;
@@ -1142,9 +1243,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
       <div className="world-experience">
-      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={currentSceneId === SCENE_IDS.ROOM ? "可拖动的室内互动房间" : "可拖动的室外互动世界"}>
+      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${editMode ? "is-edit-mode" : "is-interaction-mode"} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${Object.values(characterStates).some((state) => [ACTIVITY_IDS.STUDYING, ACTIVITY_IDS.WORKING].includes(state.activity)) ? "has-desk-activity" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={`${currentSceneId === SCENE_IDS.ROOM ? "室内房间" : "室外世界"}，当前为${editMode ? "调整画面" : "互动"}模式`}>
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {currentSceneId === SCENE_IDS.ROOM ? "伙伴的房间" : worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
-        <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住画中物体即可移动</div>
+        {editMode && <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 点选物体后拖动或调整大小</div>}
+        <button className={`world-edit-toggle ${editMode ? "is-active" : ""}`} type="button" onClick={() => setEditMode((value) => !value)} aria-pressed={editMode}>
+          <span className="mode-toggle-icon" aria-hidden="true"><i /><b /></span>
+          {editMode ? "完成调整" : "调整画面"}
+        </button>
         <button className="scene-travel-button" type="button" onClick={travelBetweenScenes} disabled={Boolean(sceneTransition)}>
           <span aria-hidden="true">{currentSceneId === SCENE_IDS.ROOM ? "←" : "⌂"}</span>
           {sceneTransition ? "正在切换…" : currentSceneId === SCENE_IDS.ROOM ? "去室外" : "进入房间"}
@@ -1172,7 +1277,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span /><span /><span /><span />
         </div>}
         <SpeechBubble message={message} visible={bubbleVisible && (currentSceneId === SCENE_IDS.ROOM || !storyActive)} />
-        {selectedObjectId && (() => {
+        {editMode && selectedObjectId && (() => {
           const selectedObject = [...visibleObjects, ...visibleCustomObjects, ...visibleLibraryObjects].find((item) => item.id === selectedObjectId);
           if (!selectedObject) return null;
           return <div className="object-quick-toolbar" role="toolbar" aria-label={`调整${selectedObject.label}`}>
@@ -1193,10 +1298,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               key={object.id}
               object={object}
               action={activeActions[object.id]}
+              activity={characterStates[object.id]?.activity}
+              editable={editMode}
               persistentState={persistentState}
               selected={selectedObjectId === object.id}
               onSelect={setSelectedObjectId}
               onInteract={handleDirectAction}
+              onMoveStart={rememberEdit}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
@@ -1215,15 +1323,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={customObjectActions[object.id]}
               doorOpen={Boolean(customHouseStates[object.id]?.doorOpen)}
+              editable={editMode}
               selected={selectedObjectId === object.id}
               onSelect={setSelectedObjectId}
               onInteract={animateCustomObject}
+              onMoveStart={rememberEdit}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
             />
           ))}
           {visibleLibraryObjects.map((object) => (
-            <MaterialSceneObject key={object.id} object={object} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
+            <MaterialSceneObject key={object.id} object={object} editable={editMode} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMoveStart={rememberEdit} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
         {showJoints && (

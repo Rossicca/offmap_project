@@ -651,13 +651,30 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .motion-avatar.motion-dance { animation: character-dance 460ms ease-in-out 4; }
 .motion-avatar.motion-spin { animation: character-spin 900ms cubic-bezier(.2,.8,.2,1); }
 .motion-avatar:not(.has-segmented-rig).motion-cheer { animation: character-cheer 620ms ease-out 2; }
+.motion-avatar.motion-study { animation: companion-study 1.5s cubic-bezier(.16,1,.3,1); }
+.motion-avatar.motion-work { animation: companion-work 1.6s cubic-bezier(.16,1,.3,1); }
+.motion-avatar.motion-play { animation: companion-play 1.4s cubic-bezier(.16,1,.3,1); }
 .motion-avatar.motion-rest { animation: character-rest 1.8s ease-in-out; }
+@keyframes companion-study { 0%,100% { transform:translateY(0) rotate(0); } 34% { transform:translateY(4px) rotate(-2deg); } 68% { transform:translateY(2px) rotate(2deg); } }
+@keyframes companion-work { 0%,100% { transform:translateX(0) rotate(0); } 28% { transform:translate(-3px,3px) rotate(-2deg); } 58% { transform:translate(3px,2px) rotate(2deg); } 82% { transform:translateY(1px) rotate(-1deg); } }
+@keyframes companion-play { 0%,100% { transform:translateY(0) rotate(0); } 30% { transform:translate(-7px,-12px) rotate(-4deg); } 58% { transform:translate(7px,-9px) rotate(5deg); } 80% { transform:translateY(-3px) rotate(-2deg); } }
 .segmented-character, .segmented-character-base, .segmented-arm, .segmented-upper-arm, .segmented-forearm, .segmented-forearm > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .segmented-character { overflow: visible; filter: none; }
 .segmented-character-base, .segmented-upper-arm, .segmented-forearm > img { object-fit: fill; pointer-events: none; }
 .segmented-character-base { z-index: 2; }
 .segmented-arm { z-index: 3; transform-origin: var(--shoulder-x) var(--shoulder-y); }
 .segmented-forearm { transform-origin: var(--elbow-x) var(--elbow-y); }
+.has-segmented-rig.motion-wave .segmented-arm.visual-right .segmented-forearm { animation: rig-forearm-wave 900ms cubic-bezier(.25,1,.5,1) 1; }
+.has-segmented-rig.motion-cheer .segmented-arm.visual-left { animation: rig-cheer-left-arm 1.15s cubic-bezier(.22,1,.36,1) 1; }
+.has-segmented-rig.motion-cheer .segmented-arm.visual-right { animation: rig-cheer-right-arm 1.15s cubic-bezier(.22,1,.36,1) 1; }
+.has-segmented-rig.motion-cheer .segmented-arm.visual-left .segmented-forearm { animation: rig-cheer-left-forearm 1.15s cubic-bezier(.22,1,.36,1) 1; }
+.has-segmented-rig.motion-cheer .segmented-arm.visual-right .segmented-forearm { animation: rig-cheer-right-forearm 1.15s cubic-bezier(.22,1,.36,1) 1; }
+.has-segmented-rig.motion-study .segmented-arm.visual-left .segmented-forearm { animation:rig-study-left 1.35s cubic-bezier(.16,1,.3,1); }
+.has-segmented-rig.motion-study .segmented-arm.visual-right .segmented-forearm { animation:rig-study-right 1.35s cubic-bezier(.16,1,.3,1); }
+.has-segmented-rig.motion-work .segmented-arm.visual-right .segmented-forearm { animation:rig-work-hand 1.45s ease-in-out; }
+@keyframes rig-study-left { 35%,72% { transform:rotate(-18deg); } }
+@keyframes rig-study-right { 35%,72% { transform:rotate(18deg); } }
+@keyframes rig-work-hand { 0%,100% { transform:rotate(0); } 28% { transform:rotate(-16deg); } 52% { transform:rotate(10deg); } 76% { transform:rotate(-12deg); } }
 .reaction-badge { position: absolute; z-index: 22; left: 50%; top: -8px; padding: 5px 8px; border: 2px solid var(--ink); border-radius: 999px; color: var(--ink); background: #ffd86d; box-shadow: 0 4px 0 rgba(23,50,77,.14); transform: translateX(-50%); font-size: .65rem; font-style: normal; font-weight: 900; white-space: nowrap; }
 .rps-world-gesture { position:absolute; z-index:26; right:-7px; top:20%; width:50px; aspect-ratio:1; display:grid; place-items:center; border:3px solid var(--ink); border-radius:50%; background:#fff7cf; box-shadow:0 6px 0 rgba(23,50,77,.14); font-size:1.8rem; animation:rps-world-pop 600ms cubic-bezier(.16,.82,.24,1); }
 @keyframes rps-world-pop { 0% { opacity:0; transform:scale(.2) rotate(-18deg); } 65% { opacity:1; transform:scale(1.14) rotate(5deg); } 100% { transform:scale(1) rotate(0); } }
@@ -929,6 +946,17 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 @keyframes rig-manual-cheer-body { 0%,100% { transform: translateY(0) scale(1); } 40%,72% { transform: translateY(-12px) scale(1.015); } }
 
 @media (prefers-reduced-motion: reduce) {
+  .has-segmented-rig.motion-wave .segmented-arm.visual-right .segmented-forearm,
+  .has-segmented-rig.motion-cheer .segmented-arm,
+  .has-segmented-rig.motion-cheer .segmented-forearm,
+  .has-segmented-rig.motion-study .segmented-forearm,
+  .has-segmented-rig.motion-work .segmented-forearm,
+  .motion-avatar.motion-study,
+  .motion-avatar.motion-work,
+  .motion-avatar.motion-play { animation: none; }
+  .has-segmented-rig.motion-wave .segmented-arm.visual-right .segmented-forearm { transform: rotate(-12deg); }
+  .has-segmented-rig.motion-cheer .segmented-arm.visual-left { transform: rotate(34deg); }
+  .has-segmented-rig.motion-cheer .segmented-arm.visual-right { transform: rotate(-34deg); }
   .motion-avatar.has-manual-arm-rig.motion-cheer { animation: none; transform: translateY(-4px); }
   .has-segmented-rig.has-manual-arm-rig.motion-wave .segmented-arm.wave-arm .segmented-forearm { animation: none; transform: rotate(var(--forearm-settle)); }
   .has-segmented-rig.has-manual-arm-rig.motion-cheer .segmented-arm { transform: none; }
@@ -2799,4 +2827,136 @@ html, body {
 @media (max-width:900px) {
   .editing-project-status { width:36px; min-width:36px; padding:0; justify-content:center; }
   .editing-project-status b { display:none; }
+}
+
+/* Phase 3 room polish: furniture reads as one usable room, not isolated stickers. */
+.world-stage.scene-room,
+.world-stage.scene-room.theme-meadow,
+.world-stage.scene-room.theme-forest,
+.world-stage.scene-room.theme-ocean,
+.world-stage.scene-room.theme-space,
+.world-stage.scene-room.is-night {
+  background:#efe1cd;
+  border-color:rgba(113,78,54,.48);
+}
+.scene-room .room-shell::before {
+  inset:0 0 31%;
+  border-bottom:8px solid #9a6f50;
+  background-color:#f7eddd;
+  background-image:radial-gradient(circle,rgba(145,105,75,.09) 0 1px,transparent 1.4px);
+  background-size:28px 28px;
+  box-shadow:inset 0 -5px 0 #d7b48c;
+}
+.scene-room .room-shell::after {
+  inset:69% 0 0;
+  opacity:.88;
+  background:
+    linear-gradient(90deg,rgba(112,76,50,.18) 1px,transparent 1px) 0 0/12.5% 100%,
+    linear-gradient(104deg,#d6a06f 0 12.5%,#e2b783 12.5% 25%,#d6a06f 25% 37.5%,#e2b783 37.5% 50%,#d6a06f 50% 62.5%,#e2b783 62.5% 75%,#d6a06f 75% 87.5%,#e2b783 87.5%);
+}
+.scene-room .room-window {
+  border-color:#76533e;
+  background:linear-gradient(#c9e8ec 0 58%,#a8c982 58%);
+  box-shadow:inset 0 0 0 8px #fff5dc,0 12px 22px rgba(92,68,47,.13);
+}
+.scene-room .room-rug {
+  width:46%;
+  height:13%;
+  bottom:4.5%;
+  border:3px solid rgba(151,84,58,.45);
+  background:radial-gradient(ellipse,#e8b47f 0 46%,#cf8567 48% 72%,#b96958 74%);
+  box-shadow:0 8px 18px rgba(97,62,42,.14);
+}
+.scene-room .roomBed-object { z-index:8!important; }
+.scene-room .roomDesk-object { z-index:14!important; }
+.scene-room .roomChair-object { z-index:8!important; }
+.scene-room .person-object.is-desk-activity { z-index:11!important; }
+.scene-room .person-object.is-bed-activity { z-index:9!important; }
+.scene-room.has-desk-activity .roomChair-object { opacity:0; visibility:hidden; }
+.scene-room .person-object.is-desk-activity .motion-avatar,
+.scene-room .person-object.is-bed-activity .motion-avatar { width:clamp(156px,14vw,188px); }
+
+.scene-room .roomBed-object > .room-bed-art { width:clamp(178px,19vw,258px); height:clamp(106px,12vw,154px); }
+.scene-room .room-bed-art i { border-color:#6d4d3c; background:linear-gradient(#aec8cf,#88a9b8); box-shadow:inset 0 -8px 0 rgba(75,112,129,.18); }
+.scene-room .room-bed-art b { border-color:#6d4d3c; background:#fff8df; }
+.scene-room .room-bed-art em { border-color:#6d4d3c; background:linear-gradient(135deg,#efaa91,#d87c6d); box-shadow:inset 0 -8px 0 rgba(164,83,67,.13); }
+
+.scene-room .roomDesk-object > .room-desk-art { width:clamp(166px,17vw,226px); height:clamp(116px,13vw,166px); }
+.scene-room .room-desk-art > i { z-index:5; top:39%; height:16%; border-color:#684938; background:linear-gradient(#d3a173,#b97850); box-shadow:inset 0 5px 0 rgba(255,224,179,.35); }
+.scene-room .room-desk-art > b { z-index:2; left:9%; bottom:0; height:50%; background:#6e4a36; box-shadow:clamp(134px,15vw,196px) 0 #6e4a36; }
+.scene-room .room-desk-art > em {
+  z-index:6;
+  left:27%;
+  top:25%;
+  width:47%;
+  height:24%;
+  border:0;
+  border-radius:5px;
+  background:transparent;
+  transform:perspective(80px) rotateX(18deg);
+}
+.scene-room .room-desk-art > em::before,
+.scene-room .room-desk-art > em::after {
+  content:"";
+  position:absolute;
+  top:0;
+  width:51%;
+  height:100%;
+  border:2px solid #6c5140;
+  background:#fff7d8;
+  box-shadow:inset 0 -5px 0 rgba(222,198,148,.22);
+}
+.scene-room .room-desk-art > em::before { left:0; border-radius:8px 2px 3px 8px; transform:skewY(-5deg); }
+.scene-room .room-desk-art > em::after { right:0; border-radius:2px 8px 8px 3px; transform:skewY(5deg); }
+.scene-room .room-desk-art > em u { z-index:2; left:14%; right:14%; top:35%; height:2px; background:#d88976; box-shadow:0 7px #79a3ad; }
+.scene-room .room-desk-art > em small { z-index:8; right:-42%; bottom:1px; width:23px; height:38px; border-color:#684938; background:#e5c25c; }
+.scene-room .roomChair-object > .room-chair-art { width:clamp(78px,8vw,112px); height:clamp(116px,13vw,166px); }
+.scene-room .room-chair-art i { border-color:#684938; background:linear-gradient(#91ad86,#75966e); }
+.scene-room .room-chair-art b { border-color:#684938; background:#afc595; }
+.scene-room .room-bookshelf-art > i { border-color:#684938; background:linear-gradient(90deg,#a96d48,#bf8259 50%,#a96d48); box-shadow:inset 0 0 0 8px rgba(255,226,184,.12),0 10px 18px rgba(91,59,40,.13); }
+
+@media (max-width:560px) {
+  .scene-room .room-rug { width:58%; }
+  .scene-room .roomBed-object > .room-bed-art { width:142px; height:86px; }
+  .scene-room .roomDesk-object > .room-desk-art { width:120px; height:90px; }
+  .scene-room .person-object.is-desk-activity .motion-avatar,
+  .scene-room .person-object.is-bed-activity .motion-avatar { width:138px; }
+}
+
+/* Interaction is the safe default; direct manipulation is opt-in. */
+.world-edit-toggle {
+  position:absolute;
+  z-index:84;
+  left:16px;
+  bottom:16px;
+  min-height:44px;
+  padding:0 14px 0 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:2px solid rgba(104,158,178,.68);
+  border-radius:12px;
+  color:#48798d;
+  background:rgba(255,254,244,.95);
+  box-shadow:0 7px 16px rgba(62,103,119,.14);
+  font-weight:950;
+  cursor:pointer;
+}
+.world-edit-toggle:hover { border-color:#df8b73; color:#95503f; background:#fff7de; }
+.world-edit-toggle:focus-visible { outline:3px solid rgba(75,153,181,.42); outline-offset:3px; }
+.world-edit-toggle.is-active { color:#fff; border-color:#4f93aa; background:#5aa4bc; }
+.mode-toggle-icon { position:relative; width:24px; height:24px; flex:0 0 24px; border:2px solid currentColor; border-radius:7px; }
+.mode-toggle-icon i { position:absolute; left:5px; top:10px; width:13px; height:3px; border-radius:3px; background:currentColor; transform:rotate(-38deg); }
+.mode-toggle-icon i::after { content:""; position:absolute; right:-3px; top:-1px; border-left:4px solid currentColor; border-top:2px solid transparent; border-bottom:2px solid transparent; }
+.mode-toggle-icon b { position:absolute; right:3px; top:3px; width:4px; height:4px; border-radius:50%; background:currentColor; }
+.world-stage.is-interaction-mode .scene-object { cursor:pointer; touch-action:manipulation; }
+.world-stage.is-interaction-mode .scene-object::before { content:none; display:none; }
+.world-stage.is-edit-mode .scene-object.is-editable { cursor:grab; touch-action:none; }
+.world-stage.is-edit-mode .scene-object.is-editable:active,
+.world-stage.is-edit-mode .scene-object.is-editable.is-dragging { cursor:grabbing; }
+.world-stage.is-edit-mode .object-quick-toolbar { bottom:72px; }
+
+@media (max-width:560px) {
+  .world-edit-toggle { left:10px; bottom:10px; min-height:44px; padding-inline:9px 11px; font-size:.72rem; }
+  .world-stage.is-edit-mode .object-quick-toolbar { bottom:66px; }
 }

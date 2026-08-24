@@ -6,6 +6,8 @@ const spritePaths = [
   "src/assets/girl-sunshine-motion-transparent.png",
   "src/assets/girl-grape-motion-transparent.png",
   "src/assets/explorer-field-motion-transparent.png",
+  "src/assets/explorer-activity-motion.png",
+  "src/assets/girl-activity-motion.png",
 ];
 
 const paeth = (left, above, upperLeft) => {

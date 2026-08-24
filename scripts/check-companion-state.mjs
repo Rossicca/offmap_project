@@ -12,6 +12,7 @@ import {
   normalizeCharacterStates,
   normalizeSceneObjects,
 } from "../src/utils/companionState.js";
+import { executeCompanionAction } from "../src/utils/executeCompanionAction.js";
 
 const empty = migrateCompanionSnapshot(null);
 assert.equal(empty.companionStateVersion, COMPANION_STATE_SCHEMA_VERSION);
@@ -72,5 +73,19 @@ assert.deepEqual(normalizeActiveActions({ person1: "wave", person2: "teleport" }
 assert.equal(normalizeSceneObjects([{ id: "old-object", type: "house" }])[0].sceneId, SCENE_IDS.OUTDOOR);
 assert.equal(ROOM_SCENE_OBJECTS.length, 4);
 assert.equal(ROOM_SCENE_OBJECTS.every((object) => object.sceneId === SCENE_IDS.ROOM), true);
+
+const studying = executeCompanionAction({
+  action: "study",
+  currentSceneId: SCENE_IDS.ROOM,
+  characterState: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.IDLE },
+});
+assert.equal(studying.accepted, true);
+assert.equal(studying.state.activity, ACTIVITY_IDS.STUDYING);
+assert.equal(studying.activeAction, "study");
+assert.equal(executeCompanionAction({ action: "study", currentSceneId: SCENE_IDS.OUTDOOR }).reason, "room-required");
+assert.equal(executeCompanionAction({ action: "play", currentSceneId: SCENE_IDS.ROOM, characterState: { location: SCENE_IDS.ROOM } }).reason, "outdoor-required");
+assert.deepEqual(executeCompanionAction({ action: "jump", currentSceneId: SCENE_IDS.ROOM, characterState: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.RESTING } }).state, { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.IDLE });
+assert.equal(executeCompanionAction({ action: "enterRoom", currentSceneId: SCENE_IDS.OUTDOOR }).transitionTo, SCENE_IDS.ROOM);
+assert.equal(executeCompanionAction({ action: "leaveRoom", currentSceneId: SCENE_IDS.ROOM, characterState: { location: SCENE_IDS.ROOM } }).transitionTo, SCENE_IDS.OUTDOOR);
 
 console.log("Companion state checks passed.");
