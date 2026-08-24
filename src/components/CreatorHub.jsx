@@ -17,7 +17,6 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
   const inputRef = useRef(null);
   const [selected, setSelected] = useState(avatarCatalog[2]);
   const [panel, setPanel] = useState(null);
-  const [musicPlaying, setMusicPlaying] = useState(false);
   const [dreamMode, setDreamMode] = useState(false);
   const [friendship, setFriendship] = useState(() => Number(localStorage.getItem("living-drawing-friendship") || 0));
   const [toolNotice, setToolNotice] = useState("");
@@ -41,27 +40,6 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
     });
   };
 
-  const playMusicHint = () => {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const context = new AudioContext();
-    [523.25, 659.25, 783.99].forEach((frequency, index) => {
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-      gain.gain.setValueAtTime(0, context.currentTime + index * .13);
-      gain.gain.linearRampToValueAtTime(.12, context.currentTime + index * .13 + .02);
-      gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + index * .13 + .32);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start(context.currentTime + index * .13);
-      oscillator.stop(context.currentTime + index * .13 + .34);
-    });
-    setMusicPlaying(true);
-    showToolNotice("伙伴音乐播放中 ♫");
-    window.setTimeout(() => { setMusicPlaying(false); context.close(); }, 900);
-  };
-
   if (panel === "gallery") return <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setPanel(null)} />;
   if (panel === "canvas") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><DrawingCanvas onComplete={onUpload} busy={busy} error={error} /></main>;
   if (panel === "background") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><WorldDrawingEditor initialArt={{ house: null, background: null }} initialMode="background" embedded backgroundOnly onApply={(art) => art.background && onCreateBackground(art.background)} /></main>;
@@ -71,10 +49,10 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
       <div className="side-doodles left">
         <button className="doodle-tile blue side-tool" data-label="现在就画" type="button" onClick={() => setPanel("canvas")} aria-label="打开画板" title="现在就画">✎</button><i aria-hidden="true">〰</i>
         <button className="doodle-tile blue side-tool" data-label="收藏作品" type="button" onClick={() => setPanel("gallery")} aria-label="打开收藏作品" title="收藏作品">★</button>
-        <button className={`doodle-tile yellow music-tile side-tool${musicPlaying ? " is-playing" : ""}`} data-label="伙伴音乐" type="button" onClick={playMusicHint} aria-label="播放伙伴音乐" title="伙伴音乐">♫</button><i aria-hidden="true">➰</i>
+        <button className="doodle-tile yellow music-tile side-tool" data-label="伙伴音乐" type="button" onClick={() => window.dispatchEvent(new Event("living-drawing-open-music"))} aria-label="打开伙伴音乐播放器" title="伙伴音乐">♫</button><i aria-hidden="true">➰</i>
       </div>
       <section className="companion-window" aria-labelledby="companion-title">
-        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>DREAM DRAWING COMPANION</span><h1 id="companion-title">绘梦伙伴</h1></div><button type="button" onClick={onLogout} aria-label="进入登录界面">登</button></header>
+        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>MY LIVING DRAWING</span><h1 id="companion-title">AI 画伴</h1></div><button type="button" onClick={onLogout} aria-label="进入登录界面">登</button></header>
         <div className="companion-content">
           <section className="companion-hero">
             <div className="character-showcase"><span className="spark s1">★</span><span className="spark s2">✦</span><span className="spark s3">〰</span><div className="character-frame" style={{ backgroundImage: `url(${selected.motionSprite})` }} role="img" aria-label={selected.name} /><div className="character-caption"><b>{selected.name}</b><span>今天也想陪你一起玩！</span></div></div>

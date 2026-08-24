@@ -22,6 +22,9 @@ import { backgroundStyleFor, defaultHouseDecor } from "../data/materialCatalog";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
+const FOREGROUND_CHARACTER_LAYER = 50;
+const MAX_SCENERY_LAYER = 40;
+const defaultAppleObject = { id: "apple1", type: "food", x: 51, y: 69, actions: ["feed"], label: "苹果" };
 const defaultPositionByKind = {
   house: { x: 76, y: 43 },
   animal: { x: 64, y: 64 },
@@ -34,10 +37,13 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
-  const [objects, setObjects] = useState(() => initialState?.sceneObjects || sceneObjects);
+  const [objects, setObjects] = useState(() => {
+    const initialObjects = initialState?.sceneObjects || sceneObjects;
+    return initialObjects.some((object) => object.id === "apple1") ? initialObjects : [...initialObjects, defaultAppleObject];
+  });
   const [sceneTheme, setSceneTheme] = useState(initialState?.sceneTheme || "meadow");
   const [activeActions, setActiveActions] = useState({});
-  const [persistentState, setPersistentState] = useState(() => initialState?.persistentState || { night: false, doorOpen: false, appleHidden: false, dogMoved: false });
+  const [persistentState, setPersistentState] = useState(() => initialState?.persistentState || { night: false, doorOpen: false, appleHidden: false, dogMoved: false, restingCharacters: [] });
   const [message, setMessage] = useState(() => selectedAvatar
     ? `${selectedAvatar.name}已经进入互动世界啦！`
     : "Demo 已找到 6 个朋友，点点它们试试看！");
@@ -74,6 +80,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
   const stageRef = useRef(null);
+  const roomReturnPositions = useRef({});
+  const feedReturnPositions = useRef({});
   const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
 
 
@@ -93,7 +101,23 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
   const playAction = (objectId, action, customMessage) => {
     const object = objects.find((item) => item.id === objectId);
-    if (!object || !object.actions.includes(action)) return;
+    const feedTarget = action === "feed"
+      ? objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person")
+      : null;
+    const isRoomExit = action === "leaveRoom" && object?.type === "person";
+    if (!object || (!object.actions.includes(action) && !isRoomExit)) return;
+
+    const isPerson = object.type === "person";
+    const isAlreadyInRoom = persistentState.restingCharacters?.includes(objectId);
+    if (isPerson && action !== "rest" && isAlreadyInRoom) {
+      const returnPosition = roomReturnPositions.current[objectId];
+      setObjects((current) => current.map((item) => item.id === objectId ? {
+        ...item,
+        x: returnPosition?.x ?? Math.max(12, item.x - 15),
+        y: returnPosition?.y ?? Math.min(78, item.y + 18),
+      } : item));
+      setPersistentState((state) => ({ ...state, restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId) }));
+    }
 
 
     if (storyActive && !storyEnding) {
@@ -112,21 +136,47 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     if (action === "sunrise") setPersistentState((state) => ({ ...state, night: false }));
     if (action === "openDoor") setPersistentState((state) => ({ ...state, doorOpen: true }));
     if (action === "closeDoor") setPersistentState((state) => ({ ...state, doorOpen: false }));
+    if (action === "rest") {
+      const room = customObjects.find((item) => item.kind === "house") || objects.find((item) => item.type === "house");
+      if (room) {
+        if (!isAlreadyInRoom) roomReturnPositions.current[objectId] = { x: object.x, y: object.y };
+        if (room.isCustom) setCustomHouseStates((current) => ({ ...current, [room.id]: { ...(current[room.id] || {}), doorOpen: true } }));
+        setObjects((current) => current.map((item) => item.id === objectId ? { ...item, x: room.x, y: Math.min(78, room.y + 5) } : item));
+        setPersistentState((state) => ({
+          ...state,
+          doorOpen: true,
+          restingCharacters: [...new Set([...(state.restingCharacters || []), objectId])],
+        }));
+      }
+    }
     if (action === "move") {
       setPersistentState((state) => ({ ...state, dogMoved: !state.dogMoved }));
       setObjects((current) => current.map((item) => item.id === objectId ? { ...item, x: item.x > 58 ? 50 : 70 } : item));
     }
     if (action === "feed") {
+      if (feedTarget) {
+        feedReturnPositions.current[objectId] = { x: object.x, y: object.y };
+        setPersistentState((state) => ({ ...state, appleHidden: false }));
+        setObjects((current) => current.map((item) => item.id === objectId ? {
+          ...item,
+          x: Math.max(5, Math.min(95, feedTarget.x + 2)),
+          y: Math.max(5, Math.min(90, feedTarget.y - 4)),
+        } : item));
+      }
       later(() => {
         setPersistentState((state) => ({ ...state, appleHidden: true }));
-        setActiveActions((current) => ({ ...current, person1: "eat" }));
+        setActiveActions((current) => ({ ...current, [feedTarget?.id || "person1"]: "eat" }));
         setMessage("好吃！");
-      }, 1150);
-      later(() => setPersistentState((state) => ({ ...state, appleHidden: false })), 3200);
+      }, 980);
+      later(() => {
+        const returnPosition = feedReturnPositions.current[objectId];
+        if (returnPosition) setObjects((current) => current.map((item) => item.id === objectId ? { ...item, ...returnPosition } : item));
+      }, 2200);
+      later(() => setPersistentState((state) => ({ ...state, appleHidden: false })), 3150);
     }
 
 
-    later(() => setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { person1: null } : {}) })), actionDurations[action] || 1000);
+    later(() => setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { [feedTarget?.id || "person1"]: null } : {}) })), actionDurations[action] || 1000);
     later(() => setBubbleVisible(false), action === "feed" ? 2800 : 2300);
   };
 
@@ -243,7 +293,16 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
   const changeObjectLayer = (id, direction) => {
-    const updateLayer = (item) => item.id === id ? { ...item, layer: Math.max(1, Math.min(40, (item.layer || 3) + direction)) } : item;
+    const updateLayer = (item) => {
+      if (item.id !== id) return item;
+      const isForegroundCharacter = ["person", "dog"].includes(item.type) || ["character", "animal"].includes(item.kind);
+      return {
+        ...item,
+        layer: isForegroundCharacter
+          ? FOREGROUND_CHARACTER_LAYER
+          : Math.max(1, Math.min(MAX_SCENERY_LAYER, (item.layer || 3) + direction)),
+      };
+    };
     if (libraryObjects.some((item) => item.id === id)) setLibraryObjects((current) => current.map(updateLayer));
     else if (customObjects.some((item) => item.id === id)) setCustomObjects((current) => current.map(updateLayer));
     else setObjects((current) => current.map(updateLayer));
@@ -352,6 +411,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
       setObjects((current) => current.map((object) => object.id === objectId ? { ...object, x, y } : object));
     }
     if (objectId === "dog1") setPersistentState((state) => state.dogMoved ? { ...state, dogMoved: false } : state);
+    if (persistentState.restingCharacters?.includes(objectId)) {
+      setPersistentState((state) => ({ ...state, restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId) }));
+    }
   };
 
 
@@ -386,7 +448,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     <main className="world-page">
       <header className="world-header">
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
-          <span aria-hidden="true">✦</span><b>绘梦伙伴</b>
+          <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
         <div className="found-status"><span aria-hidden="true">●</span> 世界里有 {visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友</div>
         <KidToolDock

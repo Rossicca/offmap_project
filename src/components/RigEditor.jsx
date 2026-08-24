@@ -70,8 +70,8 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
 
   return (
     <main className="rig-editor-page">
-      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>绘梦伙伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
-      <section className="rig-editor-intro"><div><h1>把关节放到<br /><em>正确的位置</em></h1><p>选择最接近的角色模板，然后直接拖动节点。这里是本地可校准模板，不会假装已经完成云端 AI 识别。</p></div><span>第 2 步，共 2 步</span></section>
+      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
+      <section className="rig-editor-intro"><div><h1>把关节放到<br /><em>正确的位置</em></h1><p>选择最接近的角色模板，然后直接拖动节点。这里是本地可校准模板，不会假装已经完成云端 AI 识别。</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
         <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${analysis.previewUrl})` }} aria-label="关节校准画布">
           {nodes.map((node, index) => <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${node.x}%`, top: `${node.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>)}
@@ -81,7 +81,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
           <p className="rig-hint"><b>操作提示</b> 按住红色节点拖动；节点名称会跟着移动。确认后仍可在互动世界中显示或隐藏关节。</p>
-          <button className="primary-button" type="button" onClick={confirm}>确认关节，进入世界 <span aria-hidden="true">→</span></button>
+          <button className="primary-button" type="button" onClick={confirm}>确认关节，继续画背景 <span aria-hidden="true">→</span></button>
         </aside>
       </section>
     </main>

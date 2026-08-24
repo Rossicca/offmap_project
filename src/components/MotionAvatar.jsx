@@ -12,7 +12,7 @@ const frameByAction = {
 };
 
 
-const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "休息一下" };
+const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "房间休息" };
 
 
 const humanNodes = [
@@ -67,4 +67,3 @@ export function MotionDog({ action, showJoints }) {
     </div>
   );
 }
-
