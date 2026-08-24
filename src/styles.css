@@ -827,6 +827,81 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .material-prop .material-shape-three { left:24%; right:24%; top:53%; height:7px; border-radius:6px; background:var(--material-accent); }
 .material-variant-1 { --v: 2; transform:rotate(2deg); }.material-variant-2 { --v: -2; transform:rotate(-2deg); }.material-variant-3 .material-shape-three { transform:rotate(12deg); }.material-variant-4 .material-shape-one { border-style:dashed; }.material-variant-5 .material-shape-two { transform:rotate(-8deg); }
 
+/* Individually drawn world materials: muted pencil colors, graphite outlines, no repeated placeholder blobs. */
+.material-nature[class*="material-nature-"],.material-prop[class*="material-prop-"] { transform:rotate(-1deg); }
+.material-nature[class*="material-nature-"] i,.material-prop[class*="material-prop-"] i { inset:auto; border-color:#5f4a3e; box-sizing:border-box; }
+.material-nature[class*="material-nature-"]::after,.material-prop[class*="material-prop-"]::after { content:""; position:absolute; left:14%; right:14%; bottom:8%; height:8%; border-radius:50%; background:rgba(78,61,48,.11); filter:blur(2px); }
+
+/* Nature 1: grass tuft. */
+.material-nature-1 .material-shape-one { left:22%; bottom:16%; width:56%; height:34%; border:3px solid #5f4a3e; border-radius:55% 50% 35% 38%; background:#83a777; }
+.material-nature-1 .material-shape-two { left:48%; bottom:27%; width:4px; height:48%; border:0; background:#5f8158; transform:rotate(-2deg); box-shadow:-20px 8px 0 #5f8158,20px 10px 0 #5f8158; }
+.material-nature-1 .material-shape-three { left:24%; bottom:40%; width:26%; height:30%; border:0; border-radius:100% 0; background:#9fba7f; transform:rotate(-28deg); box-shadow:36px -3px 0 #728f65; }
+.material-nature-1 .material-shape-four { left:42%; bottom:30%; width:7px; height:52%; border:0; border-radius:100% 0; background:#779865; transform:rotate(14deg); }
+
+/* Nature 2: dandelion. */
+.material-nature-2 .material-shape-one { left:49%; bottom:17%; width:4px; height:54%; border:0; border-radius:4px; background:#66845f; transform:rotate(4deg); }
+.material-nature-2 .material-shape-two { left:33%; top:11%; width:39%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; background:radial-gradient(circle,#f9e9b9 0 3px,transparent 3.5px) 0 0/12px 12px,#f4f0d7; box-shadow:inset 0 0 0 5px rgba(255,255,255,.38); }
+.material-nature-2 .material-shape-three { left:28%; bottom:25%; width:28%; height:19%; border:0; border-radius:100% 0; background:#8fa778; transform:rotate(16deg); }
+.material-nature-2 .material-shape-four { right:18%; top:8%; width:5px; height:5px; border:0; border-radius:50%; background:#f8edc6; box-shadow:12px 8px 0 #f8edc6,-8px -4px 0 #f8edc6; }
+
+/* Nature 3: sunflower. */
+.material-nature-3 .material-shape-one { left:48%; bottom:15%; width:5px; height:50%; border:0; background:#68835b; }
+.material-nature-3 .material-shape-two { left:27%; top:10%; width:47%; aspect-ratio:1; border:0; border-radius:50%; background:repeating-conic-gradient(#e8b94e 0 12deg,#f2cb63 12deg 24deg); box-shadow:0 0 0 2px #5f4a3e; }
+.material-nature-3 .material-shape-two::after { content:""; position:absolute; inset:27%; border:2px solid #5f4a3e; border-radius:50%; background:radial-gradient(circle,#73513b 0 2px,#9a7048 2.5px 100%); }
+.material-nature-3 .material-shape-three { left:25%; bottom:26%; width:29%; height:19%; border:0; border-radius:100% 0; background:#84a26f; transform:rotate(18deg); box-shadow:34px -5px 0 #789765; }
+
+/* Nature 4: mushroom family. */
+.material-nature-4 .material-shape-one { left:22%; top:28%; width:43%; height:29%; border:3px solid #5f4a3e; border-radius:55% 55% 18% 18%; background:radial-gradient(circle,#f6e4bf 0 4px,transparent 4.5px) 3px 2px/18px 16px,#cb755f; }
+.material-nature-4 .material-shape-two { left:36%; top:53%; width:17%; height:30%; border:3px solid #5f4a3e; border-top:0; border-radius:0 0 40% 40%; background:#ead9b7; }
+.material-nature-4 .material-shape-three { right:16%; top:46%; width:31%; height:22%; border:3px solid #5f4a3e; border-radius:55% 55% 16% 16%; background:#e5b952; }
+.material-nature-4 .material-shape-four { right:26%; top:66%; width:12%; height:20%; border:2px solid #5f4a3e; border-top:0; border-radius:0 0 40% 40%; background:#ead9b7; }
+
+/* Nature 5: river stones. */
+.material-nature-5 .material-shape-one { left:17%; bottom:17%; width:46%; height:35%; border:3px solid #5f4a3e; border-radius:58% 48% 44% 38%; background:linear-gradient(145deg,#c4b7a2,#988d82); }
+.material-nature-5 .material-shape-two { right:13%; bottom:18%; width:38%; height:29%; border:3px solid #5f4a3e; border-radius:55% 45% 42% 35%; background:#8199a3; }
+.material-nature-5 .material-shape-three { left:39%; bottom:39%; width:30%; height:24%; border:3px solid #5f4a3e; border-radius:55% 48% 40% 35%; background:#d0a97b; }
+.material-nature-5 .material-shape-four { left:26%; bottom:28%; width:15%; height:5%; border:0; border-radius:50%; background:rgba(255,255,255,.28); transform:rotate(-12deg); }
+
+/* Nature 6: little pond. */
+.material-nature-6 .material-shape-one { left:10%; right:10%; bottom:16%; height:37%; border:3px solid #5f4a3e; border-radius:50%; background:linear-gradient(180deg,#9fd0d5,#6da9b9); }
+.material-nature-6 .material-shape-two { left:30%; bottom:30%; width:30%; height:14%; border:2px solid #5f4a3e; border-radius:50%; background:#83a875; transform:rotate(-5deg); }
+.material-nature-6 .material-shape-three { right:18%; bottom:38%; width:4px; height:35%; border:0; background:#6f8b64; box-shadow:9px 4px 0 #6f8b64,-8px 7px 0 #6f8b64; }
+.material-nature-6 .material-shape-four { left:40%; bottom:41%; width:10%; aspect-ratio:1; border:2px solid #5f4a3e; border-radius:50%; background:#e4b85a; }
+
+/* Nature 7: rounded shrub. */
+.material-nature-7 .material-shape-one { left:14%; bottom:16%; width:72%; height:49%; border:3px solid #5f4a3e; border-radius:52% 48% 36% 40%; background:#76956f; }
+.material-nature-7 .material-shape-two { left:20%; top:22%; width:39%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; background:#91aa7a; }
+.material-nature-7 .material-shape-three { right:16%; top:27%; width:37%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; background:#6f8d68; }
+.material-nature-7 .material-shape-four { left:34%; top:16%; width:36%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; background:#86a578; }
+.material-nature-7 .material-shape-five { left:31%; top:44%; width:5px; height:5px; border:0; border-radius:50%; background:#e8c55f; box-shadow:32px 6px 0 #e4a47d,15px -16px 0 #f0d37d; }
+
+/* Nature 8: leaf pile. */
+.material-nature-8 .material-shape-one,.material-nature-8 .material-shape-two,.material-nature-8 .material-shape-three,.material-nature-8 .material-shape-four,.material-nature-8 .material-shape-five { width:32%; height:28%; border:3px solid #5f4a3e; border-radius:100% 0 100% 0; }
+.material-nature-8 .material-shape-one { left:15%; bottom:18%; background:#c97957; transform:rotate(24deg); }.material-nature-8 .material-shape-two { left:37%; bottom:15%; background:#dfaa4e; transform:rotate(-9deg); }.material-nature-8 .material-shape-three { right:13%; bottom:22%; background:#869565; transform:rotate(25deg); }.material-nature-8 .material-shape-four { left:26%; bottom:36%; background:#b85f4f; transform:rotate(56deg); }.material-nature-8 .material-shape-five { right:27%; bottom:38%; background:#d38b4d; transform:rotate(-42deg); }
+
+/* Props: each object has its own silhouette and construction. */
+.material-prop-1 .material-shape-one { left:17%; right:17%; bottom:15%; height:48%; border:3px solid #5f4a3e; border-radius:10px 10px 18px 18px; background:repeating-linear-gradient(90deg,#d2975e 0 8px,#b87849 8px 12px); }
+.material-prop-1 .material-shape-two { left:27%; top:16%; width:46%; height:42%; border:4px solid #5f4a3e; border-bottom:0; border-radius:50% 50% 0 0; background:transparent; }
+.material-prop-1 .material-shape-three { left:20%; right:20%; top:54%; height:6px; border:0; border-radius:8px; background:#75936d; }
+.material-prop-2 .material-shape-one { left:30%; top:12%; width:46%; aspect-ratio:1; border:3px solid #5f4a3e; background:linear-gradient(135deg,#e8bc53 0 50%,#d97965 50%); transform:rotate(45deg); }
+.material-prop-2 .material-shape-two { left:49%; top:53%; width:3px; height:34%; border:0; background:#5f4a3e; transform:rotate(-12deg); }
+.material-prop-2 .material-shape-three { left:42%; bottom:8%; width:13%; height:13%; border:2px solid #5f4a3e; border-radius:50%; background:#78a3af; box-shadow:10px -12px 0 -2px #d97965; }
+.material-prop-3 .material-shape-one { left:15%; right:15%; top:24%; bottom:17%; border:3px solid #5f4a3e; border-radius:8px 3px 3px 8px; background:#6f9a76; transform:rotate(-2deg); }
+.material-prop-3 .material-shape-two { left:49%; top:27%; bottom:20%; width:3px; border:0; background:#f0d9ae; }
+.material-prop-3 .material-shape-three { left:23%; top:37%; width:21%; height:4px; border:0; background:#f0d9ae; box-shadow:0 10px 0 #f0d9ae,40px 0 0 #f0d9ae,40px 10px 0 #f0d9ae; }
+.material-prop-4 .material-shape-one { left:18%; top:18%; width:64%; height:51%; border:4px solid #5f4a3e; border-radius:5px; background:linear-gradient(160deg,#f5e8c9,#dbe9df); transform:rotate(-2deg); }
+.material-prop-4 .material-shape-two { left:47%; top:67%; width:6px; height:24%; border:0; background:#795d46; transform:rotate(14deg); box-shadow:-22px 7px 0 #795d46,22px 7px 0 #795d46; }
+.material-prop-4 .material-shape-three { left:31%; top:30%; width:38%; height:25%; border:0; border-radius:50%; background:linear-gradient(145deg,#7fa8b2 0 45%,#d7846b 46% 100%); }
+.material-prop-5 .material-shape-one { left:11%; right:11%; bottom:16%; height:58%; border:3px solid #5f4a3e; background:linear-gradient(120deg,#d87a65 0 50%,#e9b956 50%); clip-path:polygon(50% 0,100% 100%,0 100%); }
+.material-prop-5 .material-shape-two { left:49%; top:28%; width:3px; height:56%; border:0; background:#5f4a3e; }.material-prop-5 .material-shape-three { left:31%; bottom:17%; width:3px; height:22%; border:0; background:#f7e7c2; box-shadow:38px 0 0 #f7e7c2; }
+.material-prop-6 .material-shape-one { left:14%; right:14%; bottom:20%; height:31%; border:3px solid #5f4a3e; background:#75a4b1; clip-path:polygon(0 0,100% 0,78% 100%,22% 100%); }
+.material-prop-6 .material-shape-two { left:49%; top:18%; width:4px; height:40%; border:0; background:#5f4a3e; }.material-prop-6 .material-shape-three { left:51%; top:18%; width:34%; height:34%; border:3px solid #5f4a3e; background:#f0d07a; clip-path:polygon(0 0,100% 72%,0 100%); }
+.material-prop-7 .material-shape-one,.material-prop-7 .material-shape-two,.material-prop-7 .material-shape-three { top:12%; width:28%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; }.material-prop-7 .material-shape-one { left:12%; background:#d97b68; }.material-prop-7 .material-shape-two { left:37%; background:#e7bd58; }.material-prop-7 .material-shape-three { right:10%; background:#75a8b5; }
+.material-prop-7 .material-shape-four { left:26%; top:39%; width:48%; height:46%; border:0; background:linear-gradient(74deg,transparent 0 31%,#5f4a3e 32% 34%,transparent 35% 64%,#5f4a3e 65% 67%,transparent 68%); }
+.material-prop-8 .material-shape-one { left:47%; top:13%; width:7px; height:72%; border:0; border-radius:4px; background:#765945; }.material-prop-8 .material-shape-two { left:18%; top:22%; width:64%; height:28%; border:3px solid #5f4a3e; border-radius:5px; background:#e6bd6b; }.material-prop-8 .material-shape-three { left:27%; top:31%; width:46%; height:4px; border:0; background:#765945; }
+.material-prop-9 .material-shape-one { left:24%; right:24%; top:25%; bottom:16%; border:3px solid #5f4a3e; border-radius:12px 12px 18px 18px; background:linear-gradient(145deg,#f7e7ab,#e2ad51); box-shadow:inset 0 0 0 6px rgba(255,255,255,.25); }.material-prop-9 .material-shape-two { left:34%; top:10%; width:32%; height:24%; border:4px solid #5f4a3e; border-bottom:0; border-radius:50% 50% 0 0; background:transparent; }.material-prop-9 .material-shape-three { left:41%; top:43%; width:18%; aspect-ratio:1; border:2px solid #5f4a3e; border-radius:50%; background:#fff0b6; }
+.material-prop-10 .material-shape-one { left:16%; right:16%; top:31%; bottom:16%; border:3px solid #5f4a3e; border-radius:9px 9px 16px 16px; background:linear-gradient(135deg,#83a89a,#5f8f8b); }.material-prop-10 .material-shape-two { left:23%; top:18%; width:54%; height:24%; border:3px solid #5f4a3e; border-radius:50% 50% 8px 8px; background:#d98470; }.material-prop-10 .material-shape-three { left:36%; top:47%; width:28%; aspect-ratio:1; border:3px solid #5f4a3e; border-radius:50%; background:conic-gradient(#e9c45e 0 25%,#fff4c9 0 50%,#e9c45e 0 75%,#fff4c9 0); }
+
 .library-scene-object { width: clamp(88px,10vw,126px); min-height: clamp(96px,11vw,138px); display:grid; place-items:center; }
 .library-scene-object .material-art { width:100%; height:auto; aspect-ratio:1; }
 .library-scene-object > b { position:absolute; left:50%; bottom:-18px; padding:3px 8px; border-radius:999px; color:#6f4a32; background:rgba(255,254,242,.92); font-size:.68rem; white-space:nowrap; transform:translateX(-50%); }
