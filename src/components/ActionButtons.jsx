@@ -55,11 +55,13 @@ function ActionIcon({ name }) {
 }
 
 
-export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false, currentFood = { name: "苹果" } }) {
+export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false, currentFood = { name: "苹果" }, currentSceneId = "outdoor", activeCharacterId = "person1", transitioning = false }) {
   const [open, setOpen] = useState(false);
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
-    if (visibleObjectIds && !visibleObjectIds.has(item.target)) return false;
+    const target = item.target === "person1" ? activeCharacterId : item.target;
+    if (currentSceneId === "room" && target === "world") return false;
+    if (visibleObjectIds && !visibleObjectIds.has(target)) return false;
     if (visibleObjectIds && item.action === "enterDoghouse" && !visibleObjectIds.has("doghouse1")) return false;
     if (visibleObjectIds && item.action === "exitDoghouse" && !visibleObjectIds.has("doghouse1")) return false;
     if (visibleObjectIds && item.action === "dogEat" && !visibleObjectIds.has("doghouse1")) return false;
@@ -67,10 +69,10 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
     if (visibleObjectIds && item.action === "dogPlay" && !visibleObjectIds.has("dogToy1")) return false;
     if (visibleObjectIds && item.action === "dogFetch" && !visibleObjectIds.has("fetchBall1")) return false;
     if (visibleObjectIds && ["tidyToys", "takeToys"].includes(item.action) && !visibleObjectIds.has("toyBasket1")) return false;
-    if (item.action === "leaveRoom") return restingCharacters.includes(item.target);
-    if (item.action === "rest") return !restingCharacters.includes(item.target);
-    if (item.action === "rpsGame") return !restingCharacters.includes(item.target);
-    if (item.action === "cardCompare") return !restingCharacters.includes(item.target);
+    if (item.action === "leaveRoom") return currentSceneId === "room";
+    if (item.action === "rest") return currentSceneId === "outdoor";
+    if (item.action === "rpsGame") return !restingCharacters.includes(target);
+    if (item.action === "cardCompare") return !restingCharacters.includes(target);
     if (item.action === "enterDoghouse") return !persistentState.dogInHouse;
     if (item.action === "exitDoghouse") return Boolean(persistentState.dogInHouse);
     if (item.action === "move" && item.target === "dog1") return !persistentState.dogInHouse;
@@ -78,8 +80,8 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
     if (item.action === "dogEatApple") return !persistentState.dogInHouse && !persistentState.appleHidden && !activeActions.apple1;
     if (item.action === "dogPlay") return !persistentState.dogInHouse && !persistentState.toysStored && !persistentState.toysBeingCarried;
     if (item.action === "dogFetch") return !persistentState.dogInHouse && !persistentState.toysStored && !persistentState.toysBeingCarried;
-    if (item.action === "tidyToys") return !persistentState.toysStored && !persistentState.toysBeingCarried && !restingCharacters.includes(item.target) && !["dogPlay", "dogFetch"].includes(activeActions.dog1);
-    if (item.action === "takeToys") return Boolean(persistentState.toysStored) && !persistentState.toysBeingCarried && !restingCharacters.includes(item.target);
+    if (item.action === "tidyToys") return !persistentState.toysStored && !persistentState.toysBeingCarried && !restingCharacters.includes(target) && !["dogPlay", "dogFetch"].includes(activeActions.dog1);
+    if (item.action === "takeToys") return Boolean(persistentState.toysStored) && !persistentState.toysBeingCarried && !restingCharacters.includes(target);
     return true;
   });
   return (
@@ -91,10 +93,11 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
         <div className="quick-heading"><h2>想让谁动起来？</h2><p>也可以直接单击或双击画面里的朋友</p></div>
         <div className="action-scroll">
         {visibleActions.map((item) => {
+          const target = item.target === "person1" ? activeCharacterId : item.target;
           const actualAction = item.target === "house1" && persistentState.doorOpen ? "closeDoor" : item.action;
           const label = actualAction === "closeDoor" ? "关上门" : item.action === "wind" && windActive ? "风正在吹" : item.action === "feed" ? `喂${currentFood.name}` : item.action === "dogEatApple" ? `狗狗吃${currentFood.name}` : item.label;
           return (
-            <button key={`${item.target}-${item.action}`} type="button" disabled={item.action === "wind" && windActive} onClick={() => onAction(item.target, actualAction)}>
+            <button key={`${target}-${item.action}`} type="button" disabled={transitioning || (item.action === "wind" && windActive)} onClick={() => onAction(target, actualAction)}>
               <ActionIcon name={item.icon} />{label}
             </button>
           );

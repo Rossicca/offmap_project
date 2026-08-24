@@ -1,17 +1,17 @@
 const themes = [{ id: "meadow", label: "晴空草地" }, { id: "forest", label: "森林黄昏" }, { id: "ocean", label: "海底世界" }, { id: "space", label: "星际舞台" }];
 
 
-export default function SceneEditor({ objects, theme, positionBounds = {}, onThemeChange, onObjectChange, onLayerChange, onDeleteObject, onClose }) {
+export default function SceneEditor({ objects, theme, sceneId = "outdoor", positionBounds = {}, onThemeChange, onObjectChange, onLayerChange, onDeleteObject, onClose }) {
   return (
     <div className="scene-editor-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="scene-editor" role="dialog" aria-modal="true" aria-labelledby="scene-editor-title">
         <header>
-          <div><h2 id="scene-editor-title">移动和调整东西</h2><p>调位置和大小；被挡住时，点“放前面”。</p></div>
+          <div><h2 id="scene-editor-title">调整{sceneId === "room" ? "房间" : "室外"}里的东西</h2><p>这里只显示当前场景；调位置和大小，被挡住时点“放前面”。</p></div>
           <button type="button" onClick={onClose} aria-label="关闭场景编辑器">×</button>
         </header>
-        <div className="theme-picker" aria-label="场景主题">
+        {sceneId === "outdoor" && <div className="theme-picker" aria-label="室外主题">
           {themes.map((item) => <button type="button" key={item.id} className={theme === item.id ? "is-active" : ""} onClick={() => onThemeChange(item.id)} aria-pressed={theme === item.id}>{item.label}</button>)}
-        </div>
+        </div>}
         <div className="object-position-list">
           {objects.map((object) => {
             const bounds = positionBounds[object.id] || { minX: 8, maxX: 92, minY: 8, maxY: 92 };

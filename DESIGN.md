@@ -147,6 +147,7 @@ The same identity survives from character choice to motion. Product-provided com
 
 - Warm drafting paper, translucent tracing paper, graphite marks, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable workbench.
 - One framed stage is the interaction anchor; supporting controls stay compact and tactile.
+- The living world has two real stages, `outdoor` and `room`; only objects belonging to the active scene are rendered or edited.
 - AI-authored character identities remain recognizable across dedicated motion frames.
 - CSS scenery and illustrated props use graphite construction and quiet fill rather than glossy clip art.
 - All quick actions use one graphite inline-SVG stroke family.
@@ -234,7 +235,7 @@ At `1050px`, the world-and-chat grid stacks and the conversation card becomes a 
 
 The calibration artwork-treatment selector uses four equal columns on desktop, two columns on narrow desktop, returns to four compact columns on mobile, and collapses to two columns at `430px` and below. Every treatment remains an ordinary control rather than a hero card and preserves at least a `44px` touch height.
 
-The application must maintain zero horizontal page overflow at the `320px` minimum viewport. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing.
+The application must maintain zero horizontal page overflow at the `320px` minimum viewport, including the implemented `390px` mobile layout. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing. At `390px`, scene navigation and editor controls retain `44px` touch targets.
 
 The floating companion music button stores a viewport-safe position rather than participating in page flow. Clamp it by its measured half-size on every move, persist the final position locally, and re-clamp it whenever the viewport resizes or the mobile layout breakpoint changes. Neither the button nor its open panel may create desktop or mobile page overflow.
 
@@ -317,6 +318,12 @@ Sun, tree, apple, house, door, stars, and ground are authored with CSS geometry,
 
 The tree uses an irregular layered crown, leaf highlights, bark variation, and a soft grounded shadow rather than three flat circles. The cottage keeps roof and wall in separate bands, with a readable tiled roof, chimney, windows, arched door, flower box, and one shared hand-drawn outline language. Background thumbnails and their applied stages must describe the same place.
 
+### Outdoor & Room Scenes
+
+The world contains two implemented scenes: `outdoor` and `room`. The room inherits the Animator's Light Table language through warm paper, graphite outlines, and low-saturation colored-pencil furniture. Its bed, desk, chair, and bookcase are ordinary draggable scene objects. The stage renders only objects whose `sceneId` matches `currentSceneId`, and SceneEditor lists only that same current-scene subset.
+
+Opening the house door and completing the move inside switches to `room`; the room provides a clear `去室外` action to return. World state persists `currentSceneId`, each object's `sceneId`, and separate `outdoor` / `room` character entries under `scenePositions`, capturing the character position when entering a scene. Older saved objects without `sceneId` migrate to `outdoor`. The existing four `sceneTheme` choices remain outdoor-only visual themes and do not restyle the room.
+
 ### Companion Mini Games
 
 Rock-paper-scissors and card comparison reuse the same warm paper, coral pencil, pale blue frame, and rounded typography as the living world. Score, current round, result, and next action form a clear top-to-bottom sequence. Large empty prototype areas, harsh black borders, and unrelated game-template styling are forbidden. Choice controls keep at least `44px` targets, distinct but restrained color coding, visible focus, short result motion, and zero mobile overflow.
@@ -369,7 +376,7 @@ Story mode is an optional stage overlay opened by a small control. Its warm-pape
 
 ### Scene, Export & Safety Layers
 
-Scene editing is the keyboard-accessible alternative to free dragging: a directional drawer with theme controls, one object card per piece, and labeled horizontal/vertical range inputs using the same measured bounds as the stage. This is not a second positioning model; both interfaces update the same coordinates. Its child-facing arrangement controls say `移动东西`, `放前面`, `放后面`, and `拿走`, never “图层”. Export is a centered paper dialog with a pale tracing-paper preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions.
+Scene editing is the keyboard-accessible alternative to free dragging: a directional drawer with theme controls, one object card per current-scene piece, and labeled horizontal/vertical range inputs using the same measured bounds as the stage. It filters by `currentSceneId`; outdoor theme controls retain the existing four choices and affect only the outdoor stage. This is not a second positioning model; both interfaces update the same coordinates. Its child-facing arrangement controls say `移动东西`, `放前面`, `放后面`, and `拿走`, never “图层”. Export is a centered paper dialog with a pale tracing-paper preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions.
 
 Every modal dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit. Opening moves focus to its first enabled control; `Tab` and `Shift+Tab` remain contained within the active dialog; `Escape` closes it; closing restores focus to the element that launched it. Material and house dialogs additionally allow a backdrop click to close, without treating clicks inside the sheet as dismissal.
 
@@ -395,6 +402,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
 - **Do** start a new world with only background, house, primary person, and dog; make every other prop an explicit addable choice without removing its interaction.
 - **Do** keep the living stage clear of grid lines, fold marks, ghost silhouettes, and outline-only clouds.
+- **Do** render and edit only the active `currentSceneId`; keep room furniture draggable and preserve independent outdoor/room character positions.
+- **Do** default legacy objects without `sceneId` to `outdoor`, and keep all four `sceneTheme` choices scoped to outdoor visuals.
 - **Do** use the same graphite inline-SVG stroke style for every quick action.
 - **Do** collapse quick interaction to one normal-sized open/close button, preserve every action when expanded, and remind users that the stage artwork is directly clickable.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
@@ -413,6 +422,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
 - **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.
+- **Do** preserve zero horizontal overflow and `44px` scene controls at the implemented `390px` mobile width.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 - **Do** use normal-sized plain-text header tools and concrete child-facing verbs: `加东西`, `装房子`, `移动东西`, `放前面`, `放后面`, and `拿走`.
 - **Do** keep house selection, door interaction, and decoration as three distinct actions: single click selects, double click toggles the door, and the header's `装房子` opens decoration.
@@ -432,6 +442,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
+- **Don't** show objects from the inactive scene in the stage or SceneEditor, or apply an outdoor `sceneTheme` to the room.
 - **Don't** restore the uploaded figure as a translucent `drawing-backdrop` or decorate the clean stage with wireframe clouds.
 - **Don't** show abstract background swatches when the user is choosing a specific place, or let a material preview disagree with its world rendering.
 - **Don't** let the quick interaction area, music button, music panel, or drawing-step navigation introduce horizontal overflow on desktop or mobile.

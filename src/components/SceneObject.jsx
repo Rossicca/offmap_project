@@ -16,6 +16,10 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
   if (type === "fetchBall") return <span className="world-fetch-ball-art" aria-hidden="true"><i /></span>;
   if (type === "toyBasket") return <span className="world-toy-basket-art" aria-hidden="true"><i /><b /><em><u /><small /></em></span>;
   if (type === "doghouse") return <span className="world-doghouse-art" aria-hidden="true"><i /><b><em /></b><u /><strong className={`doghouse-status-sign ${dogInHouse ? "is-home" : "is-away"}`}>{dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}</strong></span>;
+  if (type === "roomBed") return <span className="room-bed-art" aria-hidden="true"><i /><b /><em /><u /></span>;
+  if (type === "roomDesk") return <span className="room-desk-art" aria-hidden="true"><i /><b /><em><u /><small /></em></span>;
+  if (type === "roomChair") return <span className="room-chair-art" aria-hidden="true"><i /><b /><em /></span>;
+  if (type === "roomBookshelf") return <span className="room-bookshelf-art" aria-hidden="true"><i /><b>{Array.from({ length: 8 }, (_, index) => <em key={index} />)}</b></span>;
   return <span aria-hidden="true">{emojiByType[type]}</span>;
 }
 
@@ -66,16 +70,19 @@ export default function SceneObject({ object, action, persistentState, onInterac
   const isRiggedPerson = object.type === "person" && avatar;
   const isRiggedDog = object.type === "dog";
   const isInDoghouse = isRiggedDog && persistentState.dogInHouse;
-  const isInRoom = object.type === "person" && persistentState.restingCharacters?.includes(object.id);
+  const primaryAction = object.actions?.[0];
+  const interactionLabel = primaryAction
+    ? `点击${primaryAction === "feed" ? "去找小朋友" : "触发动作"}`
+    : "点击选中";
   return (
     <button
-      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
-      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : `点击${object.actions[0] === "feed" ? "去找小朋友" : "触发动作"}`}`}
+      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : interactionLabel}`}
       aria-describedby="drag-help"
       data-object-id={object.id}
-      onClick={() => activate(() => { onSelect?.(object.id); object.type === "doghouse" ? onDoghouseDecorate?.() : onInteract(object.id, object.actions[0]); })}
+      onClick={() => activate(() => { onSelect?.(object.id); object.type === "doghouse" ? onDoghouseDecorate?.() : primaryAction && onInteract?.(object.id, primaryAction); })}
       {...dragHandlers}
       disabled={hidden}
     >
