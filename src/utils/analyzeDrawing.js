@@ -36,7 +36,7 @@ function createLocalPreview(file) {
 }
 
 
-export async function analyzeDrawing(image) {
+export async function analyzeDrawing(image, { inputOrigin = "upload" } = {}) {
   if (!(image instanceof File) || !image.type.startsWith("image/")) {
     throw new Error("请选择一张图片文件。支持 JPG、PNG、WEBP 或 GIF。 ");
   }
@@ -66,6 +66,7 @@ export async function analyzeDrawing(image) {
   return {
     sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: "uploaded-character" } : { ...object }),
     source: "ark-vision",
+    inputOrigin,
     previewUrl: preview.url,
     imageSize: preview.size,
     rigAnalysis: {

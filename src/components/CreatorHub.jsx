@@ -41,7 +41,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
   };
 
   if (panel === "gallery") return <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setPanel(null)} />;
-  if (panel === "canvas") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><DrawingCanvas onComplete={onUpload} busy={busy} error={error} /></main>;
+  if (panel === "canvas") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><DrawingCanvas onComplete={(file) => onUpload(file, { inputOrigin: "canvas" })} busy={busy} error={error} /></main>;
   if (panel === "background") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><WorldDrawingEditor initialArt={{ house: null, background: null }} initialMode="background" embedded backgroundOnly onApply={(art) => art.background && onCreateBackground(art.background)} /></main>;
 
   return (
@@ -58,7 +58,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
             <div className="character-showcase"><span className="spark s1">★</span><span className="spark s2">✦</span><span className="spark s3">〰</span><div className="character-frame" style={{ backgroundImage: `url(${selected.motionSprite})` }} role="img" aria-label={selected.name} /><div className="character-caption"><b>{selected.name}</b><span>今天也想陪你一起玩！</span></div></div>
             <div className="companion-actions">
               <p>你好，{userName}！<br /><b>今天想做什么？</b></p>
-              <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" disabled={busy} onChange={(event) => event.target.files[0] && onUpload(event.target.files[0])} />
+              <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" disabled={busy} onChange={(event) => event.target.files[0] && onUpload(event.target.files[0], { inputOrigin: "upload" })} />
               <button className="companion-action coral" type="button" disabled={busy} onClick={() => inputRef.current?.click()}><span><DoodleIcon name="move" /></span>{busy ? "正在唤醒…" : "让画动起来"}</button>
               <button className="companion-action sunshine" type="button" onClick={() => onChooseAvatar(selected)}><span><DoodleIcon name="chat" /></span>和我聊天</button>
               <button className="companion-action leaf" type="button" onClick={() => setPanel("gallery")}><span><DoodleIcon name="save" /></span>我的小伙伴{projects.length ? ` · ${projects.length}` : ""}</button>

@@ -54,11 +54,11 @@ export default function App() {
   }, []);
 
 
-  const upload = async (file) => {
+  const upload = async (file, options = {}) => {
     setBusy(true);
     setError("");
     try {
-      const result = await analyzeDrawing(file);
+      const result = await analyzeDrawing(file, options);
       releasePreview(previewUrlRef.current);
       previewUrlRef.current = result.previewUrl;
       setSelectedAvatar(null);
@@ -96,6 +96,8 @@ export default function App() {
       sourceImageUrl: nextAnalysis.previewUrl,
       imageSize: nextAnalysis.cutoutSize || nextAnalysis.imageSize,
       foregroundExtracted: Boolean(nextAnalysis.foregroundPrepared),
+      preserveSourceArt: nextAnalysis.inputOrigin === "canvas",
+      inputOrigin: nextAnalysis.inputOrigin || "upload",
       isUploaded: true,
     };
     setSelectedAvatar(uploadedAvatar);

@@ -12,6 +12,7 @@ const templates = {
 
 export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const originalPreviewUrl = analysis.originalPreviewUrl || analysis.previewUrl;
+  const isCanvasDrawing = analysis.inputOrigin === "canvas";
   const boardRef = useRef(null);
   const cutoutReviewRef = useRef(null);
   const dragRef = useRef(null);
@@ -198,6 +199,10 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   };
 
   const confirm = async () => {
+    if (isCanvasDrawing) {
+      finishRig({ foregroundUrl: originalPreviewUrl, cutoutSize: analysis.imageSize, finalNodes: nodes, foregroundPrepared: true });
+      return;
+    }
     if (!cutoutResult) {
       await prepareCutout();
       return;
@@ -208,7 +213,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   return (
     <main className="rig-editor-page">
       <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
-      <section className="rig-editor-intro"><div><h1>{cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
+      <section className="rig-editor-intro"><div><h1>{cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{isCanvasDrawing ? `视觉模型识别到 ${detectedNodes?.length || nodes.length} 个关节。这里只记录关节位置，你画出的颜色、线条和透明区域都会原样保留。` : cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
         <div className={`rig-canvas ${cutoutResult ? "is-cutout-review" : ""}`} ref={boardRef} style={{ backgroundImage: cutoutResult ? "none" : `url(${previewUrl})` }} aria-label={cutoutResult ? "人物透明背景检查画布" : "关节校准画布"}>
           {cutoutResult
@@ -217,15 +222,15 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
           {cutoutBusy && <div className="cutout-processing" role="status"><i aria-hidden="true" /><b>{cutoutProgress}</b><span>首次使用需要下载约 80MB 模型，之后会从浏览器缓存读取。</span></div>}
         </div>
         <aside className="rig-controls">
-          {!cutoutResult && <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy || cutoutBusy} error={enhancementError} styleLock={styleLock} onStyleLockChange={chooseStyleLock} onChange={chooseEnhancement} />}
-          <div className={`cutout-status ${cutoutResult ? "is-ready" : ""}`} role="status"><h2>{cutoutResult ? "人物边缘检查" : "本机人物提取"}</h2><p>{cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : "使用关节范围定位人物，再生成独立透明 PNG。图片只在这台设备上处理。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
+          {!cutoutResult && !isCanvasDrawing && <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy || cutoutBusy} error={enhancementError} styleLock={styleLock} onStyleLockChange={chooseStyleLock} onChange={chooseEnhancement} />}
+          <div className={`cutout-status ${cutoutResult || isCanvasDrawing ? "is-ready" : ""}`} role="status"><h2>{isCanvasDrawing ? "保留原画" : cutoutResult ? "人物边缘检查" : "本机人物提取"}</h2><p>{isCanvasDrawing ? "画布已经导出透明 PNG，不再运行抠图或画面增强；关节点不会修改任何像素。" : cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : "使用关节范围定位人物，再生成独立透明 PNG。图片只在这台设备上处理。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
           {!cutoutResult && <><div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
           <p className="rig-hint"><b>操作提示</b> 红点范围会帮助模型避开周围的房子、云朵和其他物件。</p></>}
           {cutoutResult && <button className="cutout-retry" type="button" onClick={() => { setCutoutResult(null); setCutoutReviewReady(false); setCutoutProgress(""); }}>重新定位关节</button>}
           {cutoutError && !cutoutResult && <button className="cutout-fallback" type="button" onClick={() => finishRig()}>暂用原图继续</button>}
-          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用这个人物，继续画背景" : "提取人物并检查"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
+          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{isCanvasDrawing ? "保留原画并继续" : enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用这个人物，继续画背景" : "提取人物并检查"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
         </aside>
       </section>
     </main>
