@@ -327,12 +327,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       : null;
     const stageBounds = stageRef.current?.getBoundingClientRect();
     const avatarBounds = stageRef.current?.querySelector(`[data-object-id="${objectId}"] .motion-avatar`)?.getBoundingClientRect();
+    const activityFurniture = action === ACTION_IDS.REST
+      ? objects.find((item) => item.type === "roomBed")
+      : [ACTION_IDS.STUDY, ACTION_IDS.WORK].includes(action)
+        ? objects.find((item) => item.type === "roomDesk")
+        : null;
     const activitySpot = currentSceneId === SCENE_IDS.ROOM ? roomActivitySpotFor(action, objectAvatar, {
       stageWidth: stageBounds?.width,
       stageHeight: stageBounds?.height,
       avatarWidth: avatarBounds?.width,
       avatarHeight: avatarBounds?.height,
-    }) : null;
+    }, activityFurniture) : null;
     if (companionResult && !companionResult.transitionTo && activitySpot) {
       setActiveActions((current) => ({ ...current, [objectId]: "move" }));
       setObjects((current) => current.map((item) => item.id === objectId ? {

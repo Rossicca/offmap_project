@@ -6,8 +6,13 @@ const roomActivitySpots = Object.freeze({
   [ACTION_IDS.REST]: Object.freeze({ x: 22, y: 62 }),
 });
 
-const deskHipTarget = Object.freeze({ x: 72, y: 64 });
 const clampPercent = (value) => Math.max(8, Math.min(92, value));
+
+function furnitureSpot(action, furniture) {
+  if (!Number.isFinite(furniture?.x) || !Number.isFinite(furniture?.y)) return roomActivitySpots[action];
+  const verticalOffset = action === ACTION_IDS.REST ? 6 : 7;
+  return { x: clampPercent(furniture.x), y: clampPercent(furniture.y - verticalOffset) };
+}
 
 function hipAnchor(nodes) {
   const hips = Array.isArray(nodes)
@@ -20,8 +25,8 @@ function hipAnchor(nodes) {
   };
 }
 
-export function roomActivitySpotFor(action, avatar, layout = {}) {
-  const spot = roomActivitySpots[action];
+export function roomActivitySpotFor(action, avatar, layout = {}, furniture = null) {
+  const spot = furnitureSpot(action, furniture);
   if (!spot) return null;
   const anchor = avatar?.isUploaded && [ACTION_IDS.STUDY, ACTION_IDS.WORK].includes(action)
     ? hipAnchor(avatar.rigNodes)
@@ -30,6 +35,9 @@ export function roomActivitySpotFor(action, avatar, layout = {}) {
   if (!anchor || ![stageWidth, stageHeight, avatarWidth, avatarHeight].every((value) => Number.isFinite(value) && value > 0)) return { ...spot };
   const hipOffsetX = (anchor.x - 50) / 100 * avatarWidth / stageWidth * 100;
   const hipOffsetY = (anchor.y - 50) / 100 * avatarHeight / stageHeight * 100;
+  const deskHipTarget = Number.isFinite(furniture?.x) && Number.isFinite(furniture?.y)
+    ? { x: furniture.x, y: furniture.y - 5 }
+    : { x: 72, y: 64 };
   return {
     x: clampPercent(deskHipTarget.x - hipOffsetX),
     y: clampPercent(deskHipTarget.y - hipOffsetY),
