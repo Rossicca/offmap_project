@@ -33,7 +33,7 @@ const defaultPositionByKind = {
 };
 
 
-export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
+export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
@@ -395,6 +395,17 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     setShowSceneEditor(true);
   };
 
+  useEffect(() => {
+    const openWorldTool = (event) => {
+      if (event.detail === "arrange") openSceneEditor();
+      if (event.detail === "materials") setShowMaterialLibrary(true);
+      if (event.detail === "house") setShowHouseDecorator(true);
+      if (event.detail === "joints") setShowJoints((value) => !value);
+    };
+    window.addEventListener("living-drawing-open-world-tool", openWorldTool);
+    return () => window.removeEventListener("living-drawing-open-world-tool", openWorldTool);
+  }, [objects, customObjects, libraryObjects]);
+
 
   const moveObject = (objectId, clientX, clientY, objectSize) => {
     const rect = stageRef.current?.getBoundingClientRect();
@@ -450,6 +461,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
           <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
+        <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         <div className="found-status"><span aria-hidden="true">●</span> 世界里有 {visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友</div>
         <KidToolDock
           onAdd={() => setShowMaterialLibrary(true)}
@@ -481,11 +493,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
         </button>
         <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />
-        <div className="drawing-backdrop" style={{ backgroundImage: previewUrl ? `url(${previewUrl})` : "none" }} aria-hidden="true" />
         <div className="sky-wash" aria-hidden="true" />
         <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
-        <div className="cloud cloud-one" aria-hidden="true" />
-        <div className="cloud cloud-two" aria-hidden="true" />
         <div className="ground" aria-hidden="true" />
         {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
         <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />

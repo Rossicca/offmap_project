@@ -44,8 +44,11 @@ function JointOverlay({ species, calibratedNodes }) {
 
 export default function MotionAvatar({ avatar, action, showJoints }) {
   const frame = frameByAction[action] || "0% 0%";
+  const uploadedAspect = avatar.isUploaded && avatar.imageSize?.width && avatar.imageSize?.height
+    ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
+    : undefined;
   return (
-    <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
+    <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
