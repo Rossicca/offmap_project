@@ -6,10 +6,10 @@ const emojiByType = { person: "🧒", sun: "☀️", tree: "🌳", dog: "🐕", 
 const FOREGROUND_CHARACTER_LAYER = 50;
 
 
-function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, personVariant }) {
+function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, personVariant, currentFood }) {
   if (type === "sun") return <span className="world-sun-art" aria-hidden="true"><i /></span>;
   if (type === "tree") return <span className={`world-tree-art tree-${treeVariant || "plain"}`} aria-hidden="true"><i /><b />{treeVariant && <em className="tree-fruits">{Array.from({ length: treeVariant === "blossom" ? 9 : 7 }, (_, index) => <span key={index} />)}</em>}</span>;
-  if (type === "food") return <span className="world-apple-art" aria-hidden="true"><i /></span>;
+  if (type === "food") return currentFood?.id === "apple" ? <span className="world-apple-art" aria-hidden="true"><i /></span> : <span className="world-upgraded-food-art" aria-hidden="true">{currentFood?.emoji || "🍎"}</span>;
   if (type === "distantHouse") return <span className={`world-distant-house-art variant-${houseVariant || "red"}`} aria-hidden="true"><i /><b><em /><u /><small /></b></span>;
   if (type === "distantPerson") return <span className={`world-distant-person-art variant-${personVariant || "red"}`} aria-hidden="true"><i /><b /><em /><u /></span>;
   if (type === "dogToy") return <span className="world-dog-toy-art" aria-hidden="true"><i /><b /></span>;
@@ -20,7 +20,7 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate, foodGrowth, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -79,10 +79,10 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
+        ? <><MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />{foodGrowth && <span className="person-food-meter" role="progressbar" aria-label={`${currentFood?.name || "食物"}成长值`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={foodGrowth.points}><i style={{ width: `${foodGrowth.points}%` }} /></span>}</>
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
-          : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} />}
+          : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
     </button>
   );
 }
