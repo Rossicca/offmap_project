@@ -150,6 +150,7 @@ The same identity survives from character choice to motion. Product-provided com
 - AI-authored character identities remain recognizable across dedicated motion frames.
 - CSS scenery and illustrated props use graphite construction and quiet fill rather than glossy clip art.
 - All quick actions use one graphite inline-SVG stroke family.
+- Quick actions stay collapsed behind one ordinary-sized `打开互动` control; expansion reveals every action plus a short reminder that the artwork itself can be clicked.
 - The living world and its white paper conversation card read as one responsive two-column play surface.
 - Conversation stays continuous and lightweight through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick-topic pills, and one composer.
 - Uploaded drawings pass through an explicit paper-board calibration workspace; draggable red-pencil joints preserve the child’s artwork while making the local template model understandable.
@@ -160,6 +161,7 @@ The same identity survives from character choice to motion. Product-provided com
 - A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
+- The companion music control is a precisely draggable floating button whose position survives reloads and is re-clamped after resize or mobile layout changes.
 - Motion is short, readable, object-specific, and fully reduced when requested.
 - The world-and-chat pair stacks at `1050px`; other desktop layouts collapse at `820px`, and compact mobile treatment begins at `560px` with a two-row header and touch-safe controls.
 
@@ -224,13 +226,15 @@ The palette behaves like an animator's desk viewed through a warm lightbox. Most
 
 The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. Its follow-on rig editor stays within `1220px`, pairing a `1.35fr / .65fr` image canvas and control column; the canvas remains dominant and the node inventory never becomes a separate dashboard. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
 
-The stage and desktop conversation card are fluid from `560px` to `760px` tall. The story task is a compact `270px` paper card inside the stage’s upper-left safe area, with a progress line and one obvious next action. Every movable object stores its center as stage-relative percentages. Its measured half-width and half-height define per-object minimum and maximum coordinates, so the whole illustration remains inside the lightbox at every viewport size. A drag threshold separates taps from moves and preserves object actions after ordinary clicks.
+The stage and desktop conversation card are fluid from `560px` to `760px` tall. The story task is a compact `270px` paper card inside the stage’s upper-left safe area, with a progress line and one obvious next action. Quick interaction occupies one ordinary control when closed instead of a large permanent region; when opened it reveals the complete action set and the hint `也可以直接点击画面里的角色和物件`. Every movable object stores its center as stage-relative percentages. Its measured half-width and half-height define per-object minimum and maximum coordinates, so the whole illustration remains inside the lightbox at every viewport size. A `5px` drag threshold separates taps from moves and preserves object actions after ordinary clicks.
 
 At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, including the calibration workspace; the avatar grid becomes two columns and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, the stage becomes a tall `600px` minimum viewport with a `6px` paper corner, and the conversation card becomes `420px` high. The header becomes two rows: a centered wordmark first, then a horizontally scrollable utility rail. Mobile topics, dialog actions, editor confirmations, joint/story toggles, and other primary controls keep a `44px` minimum touch target. Composer text yields to its arrow on the narrow send button, and horizontal action rails scroll internally without increasing page width.
 
 The calibration artwork-treatment selector uses four equal columns on desktop, two columns on narrow desktop, returns to four compact columns on mobile, and collapses to two columns at `430px` and below. Every treatment remains an ordinary control rather than a hero card and preserves at least a `44px` touch height.
 
 The application must maintain zero horizontal page overflow at the `320px` minimum viewport. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing.
+
+The floating companion music button stores a viewport-safe position rather than participating in page flow. Clamp it by its measured half-size on every move, persist the final position locally, and re-clamp it whenever the viewport resizes or the mobile layout breakpoint changes. Neither the button nor its open panel may create desktop or mobile page overflow.
 
 The material library and house decoration studio are centered desktop dialogs with contained scrolling. Below `700px`, each docks to the viewport bottom as a sheet capped at `92dvh`; category and motif tabs scroll within their own rail, item grids reduce to two columns, every tab and utility action preserves a `44px` target, and no dialog content may widen the page.
 
@@ -264,6 +268,7 @@ The form language uses lightly worn paper rectangles with `1px`–`1.5px` graphi
 
 - **Primary:** Muted red-pencil face, white heavy label, `58px` minimum height, `22px` horizontal padding, `7px` corners, and a fine graphite border without a hard press base.
 - **Quick Action:** Tracing-paper face, graphite inline SVG plus label, `52px` minimum height, `7px` corners, and a `1.5px` graphite border.
+- **Quick Interaction Toggle:** One ordinary-sized `打开互动` / `收起互动` button with `aria-expanded`; it replaces the formerly large always-visible quick-action block without removing any action.
 - **Hover / Focus / Active:** Hover increases contrast or adds a slight warm lift; focus uses a `4px` gold ring with `3px` offset; active shifts down `1px` and scales to `0.985`.
 
 ### Chips
@@ -304,13 +309,19 @@ Each product-provided character has a dedicated 2×2 motion sheet. CSS changes `
 
 ### Hand-Drawn World Props
 
-Sun, tree, apple, house, door, clouds, stars, and ground are authored with CSS geometry, low-saturation pencil fills, graphite outlines, and minimal warm shadows. Their action states are semantic: the door rotates in perspective, the sun descends into a charcoal world, the tree shakes, and the apple travels toward the character.
+Sun, tree, apple, house, door, stars, and ground are authored with CSS geometry, low-saturation pencil fills, graphite outlines, and minimal warm shadows. Their action states are semantic: the door rotates in perspective, the sun descends into a charcoal world, the tree shakes, and the apple travels toward the character. Keep the stage visually clean: do not repeat the uploaded character as a low-opacity `drawing-backdrop`, and do not add decorative wireframe clouds.
 
 ### Direct-Manipulation Scene Objects
 
 Every visible `.scene-object` is a native button that supports click actions plus pointer-based dragging on mouse, pen, and touch. At rest it uses `cursor: grab`, `touch-action: none`, and `user-select: none`. Dragging begins only after a `5px` movement threshold, captures the pointer, raises the object above overlays, changes to `grabbing`, adds Drag Lift, and draws a blue-pencil `1px` dashed frame `8px` outside the object (`5px` on mobile). Releasing or cancelling always clears the drag state; a completed drag suppresses the accidental click that would otherwise fire the object's action.
 
 Movement is calculated from the object's center plus the initial pointer offset. Clamp the resulting stage-relative percentages using the rendered object's half-width and half-height, with a small safety inset, so no artwork can be dragged outside the stage. Recompute bounds when the scene or viewport changes.
+
+### Companion Music Control
+
+The music launcher is a floating companion button, not a fixed corner ornament. Preserve the exact pointer-to-button grab offset, begin dragging only after `5px`, call pointer capture for the matching pointer, and release it on matching `pointerup` or `pointercancel`. Clamp the complete measured button inside the viewport, persist its settled position locally, and re-clamp the restored position after resize and mobile breakpoint changes. A tap that stays below the threshold opens or closes music; a completed drag never toggles it.
+
+The music panel provides direct entrances to `位置和大小`, `加东西`, `装房子`, and `显示关节` / `隐藏关节`. `位置和大小` opens the existing SceneEditor controls, including its original size control; this dock adds routes to those capabilities and does not replace or reduce the SceneEditor.
 
 ### Joint Inspector
 
@@ -350,6 +361,10 @@ Scene editing is the keyboard-accessible alternative to free dragging: a directi
 
 Every modal dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit. Opening moves focus to its first enabled control; `Tab` and `Shift+Tab` remain contained within the active dialog; `Escape` closes it; closing restores focus to the element that launched it. Material and house dialogs additionally allow a backdrop click to close, without treating clicks inside the sheet as dismissal.
 
+### World & Background Drawing Steps
+
+The `画世界` and `画背景` steps share one restrained graphite-and-tracing-paper return button in the same position and visual style. It returns to the immediately preceding workspace, keeps a `44px` mobile target, and never competes with the drawing canvas.
+
 ### Mobile Utility Navigation
 
 Below `560px`, the world header is two rows: the centered wordmark occupies the first row and the utility actions form a horizontally scrollable pill rail on the second. Preserve the `44px` row and touch-safe target envelope, never wrap action labels, hide the scrollbar, and keep every function reachable without compressing the stage width.
@@ -366,6 +381,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** preserve each AI companion's identity across its dedicated motion frames.
 - **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
 - **Do** use the same graphite inline-SVG stroke style for every quick action.
+- **Do** collapse quick interaction to one normal-sized open/close button, preserve every action when expanded, and remind users that the stage artwork is directly clickable.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
 - **Do** keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.
 - **Do** keep human and animal calibration templates anatomy-aware and draggable, and disclose before action that AI analysis or redraw uploads the drawing to Volcengine Ark while the work stays saved on this device.
@@ -376,6 +392,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
 - **Do** preserve speaker attribution when switching between two companions in one transcript.
 - **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
+- **Do** give the music launcher exact-offset pointer capture, a `5px` drag threshold, viewport clamping, persisted position, and resize/mobile re-clamping; keep the SceneEditor size control intact behind `位置和大小`.
+- **Do** use the same quiet return button in both world- and background-drawing steps.
 - **Do** keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
 - **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
 - **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
@@ -397,6 +415,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
+- **Don't** restore the uploaded figure as a translucent `drawing-backdrop` or decorate the clean stage with wireframe clouds.
+- **Don't** let the quick interaction area, music button, music panel, or drawing-step navigation introduce horizontal overflow on desktop or mobile.
 - **Don't** apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.
 - **Don't** destructively replace the uploaded original, allow a stale treatment request to win, or leave enhancement and confirmation controls active while processing.
 - **Don't** make drag the only way to position an object; keep labeled range controls available to keyboard users.

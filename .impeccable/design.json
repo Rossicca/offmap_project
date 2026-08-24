@@ -51,6 +51,8 @@
     "surfacePatterns": [
       { "name": "animator-lightbox", "layout": "framed responsive stage with 28px blue-pencil grid", "surface": "Tracing Paper over Drafting Paper with graphite frame", "behavior": "construction guides stay non-interactive and all artwork remains inside measured stage bounds" },
       { "name": "direct-scene-manipulation", "layout": "stage-relative percentage centers with per-object measured bounds", "surface": "low-saturation illustrated cutouts", "behavior": "pointer-captured mouse/touch drag; 5px threshold; grab/grabbing; blue-pencil dashed drag frame; moved clicks suppressed" },
+      { "name": "collapsible-quick-interaction", "layout": "one ordinary-sized open/close control when collapsed; complete action set when expanded", "surface": "compact tracing-paper control and contained action rail", "behavior": "aria-expanded reflects state and expanded copy reminds users they can click characters and objects directly" },
+      { "name": "draggable-companion-music", "layout": "viewport-clamped floating launcher with a contained music panel", "surface": "small companion paper button above the stage", "behavior": "exact grab offset, 5px threshold, matching pointer capture/release, drag-click suppression, persisted position, and resize/mobile re-clamping; panel links to 位置和大小, 加东西, 装房子, and 显示/隐藏关节 while preserving SceneEditor size controls" },
       { "name": "scene-editor-alternative", "layout": "420px right drawer; mobile bottom sheet capped at 78dvh", "surface": "Warm White paper sheet", "behavior": "labeled horizontal/vertical ranges share the same coordinates and bounds as direct drag for keyboard access" },
       { "name": "rig-calibration", "layout": "1.35fr / .65fr desktop; stacked below 820px", "surface": "contained-image paper canvas plus tracing-paper controls", "behavior": "20px draggable red-pencil nodes with graphite labels; anatomy-aware human, dog, and rabbit templates" },
       { "name": "ai-artwork-redraw", "layout": "four equal columns on desktop, two below 1100px, four compact columns below 760px, and two at 430px and below; controls remain at least 52px tall", "surface": "ordinary tracing-paper selection controls beside the calibration canvas", "behavior": "原图 is permanently retained; Volcengine Ark Seedream image-to-image provides 轻度保留画风, 中度绘本卡通, and 重度角色重绘; pre-action copy discloses the Ark upload and local save; source-and-level results are cached; request identity plus browser abort and server disconnect propagation block obsolete work; generation times out at 180s; controls and confirmation disable while busy; errors restore 原图; PNG/JPEG/WEBP/GIF input is capped at 6MB and image output at 12MB with MIME validation; ARK_IMAGE_MODEL is independent from vision/chat and defaults to doubao-seedream-4-0-250828" },
@@ -93,12 +95,19 @@
       "css": ".ds-btn-primary { min-height:58px; padding:0 22px; display:inline-flex; align-items:center; justify-content:space-between; gap:18px; border:1.5px solid #2f3232; border-radius:7px; color:#fff; background:#c65343; box-shadow:none; font:900 .9rem ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; cursor:pointer; transition:filter 180ms ease,transform 180ms ease; } .ds-btn-primary:hover { filter:contrast(1.08); transform:translateY(-1px); } .ds-btn-primary:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; } .ds-btn-primary:active { transform:translateY(1px) scale(.985); }"
     },
     {
-      "name": "Quick Action Magnet",
+      "name": "Collapsible Quick Interaction",
       "kind": "button",
       "refersTo": "button-quick-action",
-      "description": "A tracing-paper action using the shared graphite inline-SVG icon grammar.",
-      "html": "<button class=\"ds-btn-quick\" type=\"button\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4\"/></svg>看日落</button>",
-      "css": ".ds-btn-quick { min-height:52px; padding:0 16px; display:inline-flex; align-items:center; gap:9px; border:1.5px solid #2f3232; border-radius:7px; color:#2f3232; background:#f6f2e8; box-shadow:none; font:900 .9rem ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; cursor:pointer; transition:filter 180ms ease,transform 180ms ease; } .ds-btn-quick svg { width:24px; height:24px; fill:none; stroke:#2f3232; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; } .ds-btn-quick:hover { filter:contrast(1.05); transform:translateY(-1px); } .ds-btn-quick:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; } .ds-btn-quick:active { transform:translateY(1px) scale(.985); }"
+      "description": "One ordinary-sized toggle replaces the large permanent quick-action block; expansion keeps every action and explains direct stage clicks.",
+      "html": "<section class=\"ds-quick-interaction\"><button class=\"ds-quick-toggle\" type=\"button\" aria-expanded=\"true\">收起互动</button><div><p>也可以直接点击画面里的角色和物件</p><button class=\"ds-btn-quick\" type=\"button\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M2 12h2M20 12h2\"/></svg>看日落</button></div></section>",
+      "css": ".ds-quick-toggle,.ds-btn-quick { min-height:44px; padding:0 14px; display:inline-flex; align-items:center; gap:8px; border:1.5px solid #2f3232; border-radius:7px; color:#2f3232; background:#f6f2e8; font:900 .9rem ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-quick-interaction>div { max-width:100%; overflow-x:auto; } .ds-quick-interaction p { margin:8px 0; color:#4d7b97; } .ds-btn-quick svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; } .ds-quick-toggle:focus-visible,.ds-btn-quick:focus-visible { outline:4px solid #ffd34f; outline-offset:3px; }"
+    },
+    {
+      "name": "Draggable Companion Music Dock",
+      "kind": "custom",
+      "description": "A precisely draggable, persisted music launcher whose panel routes to existing world tools without replacing SceneEditor sizing.",
+      "html": "<aside class=\"ds-music-dock\"><button class=\"ds-music-float\" type=\"button\" aria-expanded=\"true\" aria-label=\"伙伴音乐，可拖动\">音乐</button><nav aria-label=\"音乐和世界工具\"><button type=\"button\">位置和大小</button><button type=\"button\">加东西</button><button type=\"button\">装房子</button><button type=\"button\" aria-pressed=\"false\">显示关节</button></nav></aside>",
+      "css": ".ds-music-dock { position:fixed; inset:auto 16px 16px auto; max-width:calc(100vw - 24px); z-index:40; } .ds-music-float { width:52px; height:52px; border:1.5px solid #2f3232; border-radius:50%; color:#fff; background:#c65343; cursor:grab; touch-action:none; user-select:none; } .ds-music-float.is-dragging { cursor:grabbing; filter:drop-shadow(0 15px 13px rgba(54,48,39,.2)); } .ds-music-dock nav { width:min(260px,calc(100vw - 24px)); margin-top:8px; padding:10px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; overflow:hidden; border:1.5px solid #2f3232; border-radius:12px; background:#faf8f1; } .ds-music-dock nav button { min-width:0; min-height:44px; }"
     },
     {
       "name": "Draggable Scene Object",
@@ -139,7 +148,7 @@
       "name": "Animator Lightbox Stage",
       "kind": "card",
       "description": "The tracing-paper world with graphite frame, blue-pencil construction grid, and subdued colored-pencil scenery.",
-      "html": "<section class=\"ds-stage\" aria-label=\"互动世界\"><i class=\"ds-cloud one\"></i><i class=\"ds-cloud two\"></i><div class=\"ds-ground\"></div><button class=\"ds-sun\" aria-label=\"让太阳动一动\"><i></i></button><button class=\"ds-tree\" aria-label=\"让树动一动\"><i></i><b></b></button><button class=\"ds-apple\" aria-label=\"让苹果去找小朋友\"><i></i></button></section>",
+      "html": "<section class=\"ds-stage\" aria-label=\"互动世界\"><div class=\"ds-ground\"></div><button class=\"ds-sun\" aria-label=\"让太阳动一动\"><i></i></button><button class=\"ds-tree\" aria-label=\"让树动一动\"><i></i><b></b></button><button class=\"ds-apple\" aria-label=\"让苹果去找小朋友\"><i></i></button></section>",
       "css": ".ds-stage { width:100%; height:360px; position:relative; isolation:isolate; overflow:hidden; border:1.5px solid #2f3232; border-radius:8px; background-color:#f6f2e8; background-image:linear-gradient(rgba(77,123,151,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(77,123,151,.12) 1px,transparent 1px); background-size:28px 28px; box-shadow:0 18px 40px rgba(58,54,45,.15); } .ds-stage::before { content:''; position:absolute; inset:0; opacity:.38; pointer-events:none; background-image:linear-gradient(87deg,transparent 0 18%,rgba(75,118,145,.28) 18.1%,transparent 18.45%),linear-gradient(176deg,transparent 0 72%,rgba(183,78,65,.2) 72.1%,transparent 72.35%); } .ds-ground { position:absolute; left:-2%; right:-2%; bottom:-4%; height:34%; border-top:2px solid rgba(54,72,61,.66); border-radius:46% 54% 0 0/13% 15% 0 0; background:rgba(133,154,117,.42); } @media(max-width:560px){.ds-stage{border-radius:6px}}"
     },
     {
@@ -160,6 +169,7 @@
       "AI-authored character identities remain recognizable across dedicated motion frames.",
       "CSS scenery and hand-drawn props use graphite construction and subdued fill rather than glossy clip art.",
       "All quick actions use one graphite inline-SVG stroke family.",
+      "Quick interaction collapses to one ordinary-sized toggle; opening it preserves every action and explains that the stage artwork is directly clickable.",
       "Motion is short, readable, object-specific, and fully reduced when requested.",
       "The living world and its white paper conversation card read as one responsive two-column play surface.",
       "Conversation stays continuous through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick topics, and one composer.",
@@ -169,6 +179,8 @@
       "Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.",
       "Before joint placement, the calibration workspace offers 原图 plus three Volcengine Ark Seedream image-to-image redraws—轻度保留画风, 中度绘本卡通, and 重度角色重绘—while permanently retaining 原图 as the non-destructive source.",
       "The scene editor exposes the same coordinates and bounds through labeled range controls for keyboard users.",
+      "The companion music launcher supports exact-offset pointer capture, a 5px drag threshold, viewport clamping, persisted position, and resize/mobile re-clamping; its panel links to 位置和大小, 加东西, 装房子, and joint visibility without removing SceneEditor size controls.",
+      "World- and background-drawing steps share one quiet, consistently placed return button; the stage omits translucent drawing-backdrop duplication and wireframe clouds.",
       "Compact mobile treatment begins at `560px` with two-row navigation, `44px` controls, contained horizontal rails, and zero page overflow down to `320px`."
     ],
     "rules": [
@@ -186,10 +198,13 @@
       "Do preserve each AI companion's identity across its dedicated motion frames.",
       "Do author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.",
       "Do use the same graphite inline-SVG stroke style for every quick action.",
+      "Do collapse quick interaction behind one normal-sized open/close button, preserve all expanded actions, and mention direct stage clicks.",
       "Do keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.",
       "Do keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.",
       "Do preserve speaker attribution when switching between two companions in one transcript.",
       "Do keep scene dragging bounded, touch-capable, and visible through grab/grabbing, temporary lift, and a blue-pencil dashed frame.",
+      "Do make the music launcher precisely draggable with a 5px threshold, matching pointer capture, viewport clamping, persisted position, and resize/mobile re-clamping; keep the existing SceneEditor size control.",
+      "Do use one consistent return control for both world- and background-drawing steps.",
       "Do preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.",
       "Do disclose before action that AI analysis or redraw uploads the drawing to Volcengine Ark while the work stays saved on this device.",
       "Do keep 原图 permanently available; use Seedream image-to-image for 轻度保留画风, 中度绘本卡通, and 重度角色重绘; cache each source-and-treatment result; and reject stale request identities.",
@@ -216,6 +231,8 @@
       "Don't stack story, editor, export, or safety layers into a competing control dashboard.",
       "Don't compress mobile utility controls below the touch-safe envelope to force one-line navigation.",
       "Don't let any object cross the measured stage boundary or let drag completion fire its click action.",
+      "Don't restore a low-opacity drawing-backdrop from the uploaded character or add wireframe clouds to the clean canvas.",
+      "Don't allow quick interaction, the floating music control, its panel, or drawing navigation to create desktop or mobile horizontal overflow.",
       "Don't apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.",
       "Don't destructively replace the uploaded original, allow a stale treatment request to win, or leave enhancement and confirmation controls active while processing.",
       "Don't make drag the only positioning method or allow horizontal rails to widen the page.",
