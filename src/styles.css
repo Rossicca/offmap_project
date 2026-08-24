@@ -1857,6 +1857,7 @@ html, body {
 .wardrobe-options > button b { font-size:.78rem; }
 .wardrobe-options > button small { color:#6c929f; font-size:.66rem; font-weight:900; }
 .wardrobe-avatar-thumb { width:72px; height:72px; display:block; background-repeat:no-repeat; background-size:200% 200%; background-position:0 0; filter:saturate(.78) contrast(.97) drop-shadow(0 4px 3px rgba(77,60,43,.14)); }
+.wardrobe-outfit-thumb { width:76px; height:76px; display:block; background-repeat:no-repeat; background-size:200% 200%; background-position:0 0; filter:saturate(.82) contrast(.98) drop-shadow(0 4px 3px rgba(77,60,43,.14)); }
 .wardrobe-swatch { width:64px; height:64px; position:relative; display:block; border:2px solid #6d5143; border-radius:18px; background:var(--swatch); box-shadow:inset 0 0 0 5px rgba(255,255,255,.2),0 4px 0 rgba(80,60,45,.09); }
 .swatch-outfit { clip-path:polygon(18% 5%,37% 17%,63% 17%,82% 5%,100% 30%,83% 46%,76% 36%,76% 95%,24% 95%,24% 36%,17% 46%,0 30%); }
 .swatch-outfit::after { content:""; position:absolute; left:10%; right:10%; bottom:20%; height:6px; border-radius:8px; background:var(--swatch-accent); }
@@ -1885,37 +1886,6 @@ html, body {
 .avatar-wardrobe footer button { min-height:42px; padding:0 13px; border:2px solid #c2dfe6; border-radius:12px; color:#487b8c; background:#f8fdfc; font-weight:900; cursor:pointer; }
 .avatar-wardrobe footer button:disabled { opacity:.42; cursor:not-allowed; }
 .avatar-wardrobe footer .primary-button { min-width:150px; color:#fff; border-color:#e7826c; background:#e7826c; }
-
-/* Clothing tint and small wearable pieces follow the same animated avatar container. */
-.avatar-wardrobe-layer { position:absolute; z-index:3; inset:0; display:block; pointer-events:none; }
-.avatar-wardrobe-layer i,.avatar-wardrobe-layer b { position:absolute; display:block; }
-.look-hair { left:32%; top:22%; width:38%; height:20%; opacity:.46; border-radius:56% 56% 34% 34%; background:var(--look-hair); mix-blend-mode:color; }
-.hair-natural .look-hair { display:none; }
-.look-outfit { left:27%; top:45%; width:45%; height:35%; opacity:.48; border-radius:26% 26% 30% 30%; background:var(--look-outfit); mix-blend-mode:color; clip-path:polygon(13% 8%,31% 0,69% 0,87% 8%,100% 35%,84% 45%,79% 31%,79% 100%,21% 100%,21% 31%,16% 45%,0 35%); }
-.look-outfit b { inset:0; opacity:.58; }
-.pattern-stars .look-outfit b { background:linear-gradient(135deg,transparent 43%,#fff1b7 44% 56%,transparent 57%) 0 0/18px 18px; }
-.pattern-dots .look-outfit b { background:radial-gradient(circle,#fff1b7 0 2px,transparent 2.5px) 0 0/13px 13px; }
-.pattern-stripes .look-outfit b { background:repeating-linear-gradient(135deg,transparent 0 8px,var(--look-accent) 8px 11px); }
-.pattern-flowers .look-outfit b { background:radial-gradient(circle at 50% 22%,#fff1b7 0 2.5px,transparent 3px) 0 0/15px 15px; }
-.pattern-leaves .look-outfit b { background:repeating-linear-gradient(45deg,transparent 0 10px,var(--look-accent) 10px 13px,transparent 13px 20px); }
-.look-shoe { bottom:18%; width:16%; height:9%; opacity:.5; border-radius:58% 44% 30% 38%; background:var(--look-shoes); mix-blend-mode:color; }
-.look-shoe.is-left { left:25%; transform:rotate(-5deg); }.look-shoe.is-right { right:25%; transform:scaleX(-1) rotate(-5deg); }
-.headwear-none .look-headwear { display:none; }
-.look-headwear { left:33%; top:10%; width:39%; height:11%; background:var(--look-headwear); filter:drop-shadow(0 1px 0 rgba(80,55,43,.45)); }
-.headwear-headband .look-headwear { height:5%; top:22%; border-radius:999px; transform:rotate(-4deg); }
-.headwear-clips .look-headwear { left:62%; top:20%; width:11%; aspect-ratio:1; height:auto; clip-path:polygon(50% 0,61% 35%,98% 35%,68% 56%,79% 94%,50% 71%,21% 94%,32% 56%,2% 35%,39% 35%); }
-.headwear-beret .look-headwear { left:35%; top:10%; width:38%; height:14%; border-radius:60% 70% 42% 36%; transform:rotate(-8deg); }
-.headwear-beret .look-headwear b { left:48%; top:-16%; width:8%; height:22%; border-radius:5px; background:inherit; }
-.accessory-none .look-accessory { display:none; }
-.look-accessory { background:var(--look-accessory); filter:drop-shadow(0 1px 0 rgba(80,55,43,.5)); }
-.accessory-scarf .look-accessory { left:42%; top:44%; width:21%; height:13%; clip-path:polygon(6% 0,50% 32%,94% 0,75% 50%,88% 100%,50% 74%,12% 100%,25% 50%); }
-.accessory-badge .look-accessory { left:57%; top:55%; width:8%; aspect-ratio:1; border-radius:50%; box-shadow:0 0 0 2px #f5dda0; }
-.accessory-glasses .look-accessory { left:35%; top:31%; width:33%; height:10%; border:2px solid var(--look-accessory); border-radius:999px; background:linear-gradient(90deg,transparent 44%,var(--look-accessory) 44% 56%,transparent 56%); box-shadow:inset 12px 0 0 -2px rgba(255,255,255,.2),inset -12px 0 0 -2px rgba(255,255,255,.2); }
-.accessory-satchel .look-accessory { left:62%; top:58%; width:16%; height:16%; border-radius:5px; }
-.accessory-satchel .look-accessory::before { content:""; position:absolute; right:44%; bottom:78%; width:48%; height:170%; border-left:3px solid var(--look-accessory); transform:rotate(-30deg); transform-origin:bottom; }
-.accessory-bow .look-accessory { left:45%; top:45%; width:18%; height:10%; clip-path:polygon(3% 13%,48% 38%,52% 38%,97% 13%,84% 88%,52% 62%,48% 62%,16% 88%); }
-.motion-cheer .look-shoe.is-left { left:20%; bottom:20%; transform:rotate(-27deg); }.motion-cheer .look-shoe.is-right { right:21%; bottom:18%; transform:rotate(19deg); }
-.motion-wave .look-shoe.is-left { left:24%; bottom:20%; transform:rotate(-9deg); }.motion-wave .look-shoe.is-right { right:24%; bottom:18%; }
 
 @media (max-width:760px) {
   .avatar-wardrobe-backdrop { padding:0; align-items:end; }

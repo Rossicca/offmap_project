@@ -42,19 +42,20 @@ function JointOverlay({ species, calibratedNodes }) {
   );
 }
 
-function WardrobeLayer({ look }) {
-  if (!look) return null;
-  const outfit = wardrobeItem("outfit", look.outfit);
-  const hair = wardrobeItem("hair", look.hair || "natural");
-  const shoes = wardrobeItem("shoes", look.shoes);
-  const headwear = wardrobeItem("headwear", look.headwear);
-  const accessory = wardrobeItem("accessory", look.accessory);
-  return <span className={`avatar-wardrobe-layer hair-${look.hair || "natural"} pattern-${look.pattern || "plain"} headwear-${look.headwear || "none"} accessory-${look.accessory || "none"}`} style={{ "--look-outfit": outfit.color, "--look-accent": outfit.accent, "--look-hair": hair.color, "--look-shoes": shoes.color, "--look-headwear": headwear.color || "#d77b68", "--look-accessory": accessory.color || "#7c9569" }} aria-hidden="true"><i className="look-hair" /><i className="look-outfit"><b /></i><i className="look-shoe is-left" /><i className="look-shoe is-right" /><i className="look-headwear"><b /></i><i className="look-accessory"><b /></i></span>;
-}
-
-
 export default function MotionAvatar({ avatar, action, showJoints, look }) {
   const frame = frameByAction[action] || "0% 0%";
+  const outfit = wardrobeItem("outfit", look?.outfit || "original");
+  const outfitSprite = outfit.avatars?.includes(avatar.id) && outfit.sprite ? outfit.sprite : avatar.motionSprite;
+  const outfitMask = outfit.maskWithBase && outfitSprite !== avatar.motionSprite ? {
+    WebkitMaskImage: `url(${avatar.motionSprite})`,
+    WebkitMaskPosition: frame,
+    WebkitMaskRepeat: "no-repeat",
+    WebkitMaskSize: "200% 200%",
+    maskImage: `url(${avatar.motionSprite})`,
+    maskPosition: frame,
+    maskRepeat: "no-repeat",
+    maskSize: "200% 200%",
+  } : {};
   const uploadedAspect = avatar.isUploaded && avatar.imageSize?.width && avatar.imageSize?.height
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
@@ -62,8 +63,7 @@ export default function MotionAvatar({ avatar, action, showJoints, look }) {
     <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
-        : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
-      {!avatar.isUploaded && avatar.species === "human" && <WardrobeLayer look={look} />}
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${outfitSprite})`, backgroundPosition: frame, ...outfitMask }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>
