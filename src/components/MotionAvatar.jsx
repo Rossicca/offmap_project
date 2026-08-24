@@ -56,7 +56,6 @@ export default function MotionAvatar({ avatar, action, showJoints, look }) {
     maskRepeat: "no-repeat",
     maskSize: "200% 200%",
   } : {};
-  const paperBlend = outfit.paperBlend || (outfitSprite === avatar.motionSprite && avatar.paperBlend);
   const uploadedAspect = avatar.isUploaded && avatar.imageSize?.width && avatar.imageSize?.height
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
@@ -64,7 +63,7 @@ export default function MotionAvatar({ avatar, action, showJoints, look }) {
     <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
-        : <span className="motion-sprite" style={{ backgroundImage: `url(${outfitSprite})`, backgroundPosition: frame, ...(paperBlend ? { mixBlendMode: "multiply", filter: "brightness(1.025) contrast(1.035)" } : {}), ...outfitMask }} aria-hidden="true" />}
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${outfitSprite})`, backgroundPosition: frame, ...outfitMask }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>

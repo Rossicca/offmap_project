@@ -308,7 +308,7 @@ A large live house preview updates immediately when a preset is clicked, and the
 
 ### Motion Sprite Characters
 
-Each product-provided character has a dedicated 2×2 motion sheet. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Apply restrained saturation and contrast so authored art sits naturally on tracing paper. Never substitute an unrelated figure or rebuild the chosen character as generic geometry.
+Each product-provided character has a dedicated 2×2 motion sheet. Every human sheet and outfit sheet must be a genuine RGBA cutout: the four outer corners are transparent, the surrounding paper is removed, and white details inside the character remain opaque. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Never fake cutouts with `mix-blend-mode`, substitute an unrelated figure, or rebuild the chosen character as generic geometry.
 
 ### Hand-Drawn World Props
 
@@ -382,6 +382,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 
 - **Do** keep drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills consistent across every surface.
 - **Do** preserve each AI companion's identity across its dedicated motion frames.
+- **Do** use genuinely transparent RGBA character and outfit sheets so the same cutout works on the stage, material cards, and wardrobe preview without a white paper rectangle.
 - **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
 - **Do** use the same graphite inline-SVG stroke style for every quick action.
 - **Do** collapse quick interaction to one normal-sized open/close button, preserve every action when expanded, and remind users that the stage artwork is directly clickable.
@@ -410,6 +411,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 
 - **Don't** turn the experience into a generic AI upload dashboard or dense control console.
 - **Don't** replace a selected character with a generic DOM puppet or unrelated animation asset.
+- **Don't** bake white or checkerboard backgrounds into character sheets or use blend modes to imitate transparency.
 - **Don't** use emoji as the primary living-world art for sun, tree, apple, house, or dog when authored assets and CSS props exist.
 - **Don't** mix icon libraries, filled glyphs, or emoji into the unified quick-action SVG family.
 - **Don't** add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.

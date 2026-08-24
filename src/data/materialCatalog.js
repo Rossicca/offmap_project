@@ -1,7 +1,7 @@
 import explorerMotion from "../assets/explorer-motion-paper.png";
 import rabbitMotion from "../assets/rabbit-motion-paper.png";
 import dogMotion from "../assets/dog-motion-paper.png";
-import girlMotion from "../assets/girl-coral-motion-paper.png";
+import girlMotion from "../assets/girl-coral-motion-transparent.png";
 
 const makeItems = (category, names, colors) => names.map((name, index) => ({
   id: `${category}-${index + 1}`,
@@ -23,7 +23,7 @@ export const materialCategories = [
 
 export const materialCatalog = [
   { id: "character-explorer", category: "character", name: "探险男孩", variant: 0, motionSprite: explorerMotion, frame: "0% 0%" },
-  { id: "character-girl", category: "character", name: "小芽女孩", variant: 1, motionSprite: girlMotion, frame: "0% 0%", paperBlend: true },
+  { id: "character-girl", category: "character", name: "小芽女孩", variant: 1, motionSprite: girlMotion, frame: "0% 0%" },
   { id: "character-rabbit", category: "character", name: "兔兔朋友", variant: 2, motionSprite: rabbitMotion, frame: "0% 0%" },
   { id: "character-dog", category: "character", name: "小狗伙伴", variant: 3, motionSprite: dogMotion, frame: "0% 0%" },
   ...makeItems("background", ["晴天草坡", "森林小路", "海边沙滩", "星空营地", "雨后彩虹", "秋日公园", "雪地木屋", "花园午后", "山谷日出", "月亮湖边"], ["#b9d8e4", "#bed7a3", "#e7c98c", "#8c94bd", "#d5b8d8"]),

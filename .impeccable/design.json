@@ -174,7 +174,7 @@
     "keyCharacteristics": [
       "Drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
-      "AI-authored character identities remain recognizable across dedicated motion frames.",
+      "AI-authored character identities remain recognizable across dedicated motion frames, with genuine RGBA cutouts shared by the stage, materials, and wardrobe.",
       "CSS scenery and hand-drawn props use graphite construction and subdued fill rather than glossy clip art.",
       "All quick actions use one graphite inline-SVG stroke family.",
       "Quick interaction collapses to one ordinary-sized toggle; opening it preserves every action and explains that the stage artwork is directly clickable.",
@@ -204,6 +204,7 @@
     "dos": [
       "Do keep drafting paper, tracing paper, graphite, blue-pencil guides, and subdued colored-pencil fills consistent across every surface.",
       "Do preserve each AI companion's identity across its dedicated motion frames.",
+      "Do require genuine RGBA transparency for every character and outfit sheet so stage, material, and wardrobe surfaces never show a paper rectangle.",
       "Do author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.",
       "Do use the same graphite inline-SVG stroke style for every quick action.",
       "Do collapse quick interaction behind one normal-sized open/close button, preserve all expanded actions, and mention direct stage clicks.",
@@ -230,6 +231,7 @@
     "donts": [
       "Don't turn the experience into a generic AI upload dashboard or dense control console.",
       "Don't replace a selected character with a generic DOM puppet or unrelated animation asset.",
+      "Don't bake white or checkerboard backgrounds into character sheets or use blend modes to imitate transparency.",
       "Don't use emoji as the primary living-world art for sun, tree, apple, house, or dog when authored assets and CSS props exist.",
       "Don't mix icon libraries, filled glyphs, or emoji into the unified quick-action SVG family.",
       "Don't add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.",
