@@ -1,9 +1,9 @@
 const getEffectsVolume = () => {
   try {
-    const saved = Number(window.localStorage.getItem("living-drawing-music-volume") ?? .28);
+    const saved = Number(window.localStorage.getItem("living-drawing-music-volume") ?? .16);
     return Math.max(0, Math.min(1, saved));
   } catch {
-    return .28;
+    return .16;
   }
 };
 
@@ -20,7 +20,7 @@ export async function playDogBark(count = 1, delaySeconds = 0) {
     if (context.state === "suspended") await context.resume();
     const master = context.createGain();
     const compressor = context.createDynamicsCompressor();
-    master.gain.value = Math.min(.2, .055 + volume * .14);
+    master.gain.value = Math.min(.12, .035 + volume * .08);
     master.connect(compressor);
     compressor.connect(context.destination);
 
