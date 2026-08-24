@@ -2,6 +2,7 @@ import explorerMotion from "../assets/explorer-motion-paper.png";
 import rabbitMotion from "../assets/rabbit-motion-paper.png";
 import dogMotion from "../assets/dog-motion-paper.png";
 import girlMotion from "../assets/girl-coral-motion-transparent.png";
+import materialPropsPencil from "../assets/material-props-pencil.png";
 
 const makeItems = (category, names, colors) => names.map((name, index) => ({
   id: `${category}-${index + 1}`,
@@ -13,6 +14,18 @@ const makeItems = (category, names, colors) => names.map((name, index) => ({
 }));
 
 const pencilColors = ["#e88a72", "#e7bd58", "#75ad87", "#6da9bd", "#9685b5", "#c8799a"];
+
+const propNames = ["野餐篮", "小风筝", "故事书", "画板", "小帐篷", "玩具船", "气球束", "路牌", "小灯笼", "音乐盒"];
+const propPositions = ["1.3% 2.3%", "25.65% 2.3%", "50% 2.3%", "74.35% 2.3%", "98.7% 2.3%", "1.3% 97.7%", "25.65% 97.7%", "50% 97.7%", "74.35% 97.7%", "98.7% 97.7%"];
+const pencilProps = propNames.map((name, index) => ({
+  id: `prop-${index + 1}`,
+  category: "prop",
+  name,
+  variant: index,
+  artSheet: materialPropsPencil,
+  artPosition: propPositions[index],
+  artSize: "560% 210%",
+}));
 
 export const doghouseCatalog = [
   { id: "doghouse-warm", name: "暖木小屋", variant: "gable", roof: "#c96f47", wall: "#d9ad72", door: "#503c34", sign: "#ffe08a" },
@@ -36,7 +49,11 @@ export const materialCategories = [
 
 const interactiveSceneMaterials = [
   { id: "interactive-sun", category: "interactive", name: "暖阳", variant: 0, color: "#ffd761", accent: "#f4a95e", sceneObject: { id: "sun1", type: "sun", x: 79, y: 16, actions: ["sunset", "sunrise"], label: "太阳" } },
-  { id: "interactive-tree", category: "interactive", name: "故事树", variant: 1, color: "#78a56e", accent: "#d6ad65", sceneObject: { id: "tree1", type: "tree", x: 19, y: 48, actions: ["shake"], label: "大树" } },
+  { id: "interactive-tree", category: "interactive", name: "故事树", variant: 1, color: "#78a56e", accent: "#d6ad65", sceneObject: { id: "tree1", type: "tree", x: 19, y: 48, actions: ["shake"], label: "故事树" } },
+  { id: "interactive-tree-apple", category: "interactive", name: "苹果树", variant: 1, color: "#72ad62", accent: "#dc6557", sceneObject: { id: "tree-apple-1", type: "tree", treeVariant: "apple", fruitType: "apple", x: 24, y: 48, actions: ["shake"], label: "苹果树" } },
+  { id: "interactive-tree-pear", category: "interactive", name: "梨树", variant: 1, color: "#8fba62", accent: "#e3c95f", sceneObject: { id: "tree-pear-1", type: "tree", treeVariant: "pear", fruitType: "pear", x: 30, y: 48, actions: ["shake"], label: "梨树" } },
+  { id: "interactive-tree-orange", category: "interactive", name: "橙子树", variant: 1, color: "#62a75a", accent: "#ef9b45", sceneObject: { id: "tree-orange-1", type: "tree", treeVariant: "orange", fruitType: "orange", x: 36, y: 48, actions: ["shake"], label: "橙子树" } },
+  { id: "interactive-tree-blossom", category: "interactive", name: "花朵树", variant: 1, color: "#7fb36c", accent: "#f4aabd", sceneObject: { id: "tree-blossom-1", type: "tree", treeVariant: "blossom", x: 42, y: 48, actions: ["shake"], label: "花朵树" } },
   { id: "interactive-apple", category: "interactive", name: "红苹果", variant: 2, color: "#d86658", accent: "#78a56e", sceneObject: { id: "apple1", type: "food", x: 51, y: 69, actions: ["feed"], label: "苹果" } },
   { id: "interactive-dog-toy", category: "interactive", name: "骨头玩具", variant: 3, color: "#efb85a", accent: "#88a8c1", sceneObject: { id: "dogToy1", type: "dogToy", x: 57, y: 76, layer: 16, actions: ["toyBounce"], label: "狗狗的玩具球" } },
   { id: "interactive-fetch-ball", category: "interactive", name: "彩色小球", variant: 4, color: "#ef8e77", accent: "#7fb2c6", sceneObject: { id: "fetchBall1", type: "fetchBall", x: 45, y: 75, layer: 17, actions: ["ballBounce"], label: "狗狗捡的小球" } },
@@ -51,7 +68,7 @@ export const materialCatalog = [
   ...makeItems("background", ["晴天草坡", "森林小路", "海边沙滩", "星空营地", "雨后彩虹", "秋日公园", "雪地木屋", "花园午后", "山谷日出", "月亮湖边"], ["#b9d8e4", "#bed7a3", "#e7c98c", "#8c94bd", "#d5b8d8"]),
   ...interactiveSceneMaterials,
   ...makeItems("nature", ["小草丛", "蒲公英", "向日葵", "蘑菇堆", "圆石头", "小池塘", "灌木球", "落叶堆"], ["#78a56e", "#d5b44b", "#d98763", "#7998ad"]),
-  ...makeItems("prop", ["野餐篮", "小风筝", "故事书", "画板", "小帐篷", "玩具船", "气球束", "路牌", "小灯笼", "音乐盒"], pencilColors),
+  ...pencilProps,
   ...doghouseCatalog.map((item) => ({ ...item, category: "doghouse", color: item.wall, accent: item.roof })),
 ];
 

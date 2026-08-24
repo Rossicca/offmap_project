@@ -6,10 +6,11 @@ const emojiByType = { person: "🧒", sun: "☀️", tree: "🌳", dog: "🐕", 
 const FOREGROUND_CHARACTER_LAYER = 50;
 
 
-function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, personVariant, currentFood }) {
+function WorldProp({ type, dogInHouse = false, treeVariant, fruitVariant, houseVariant, personVariant, currentFood }) {
   if (type === "sun") return <span className="world-sun-art" aria-hidden="true"><i /></span>;
   if (type === "tree") return <span className={`world-tree-art tree-${treeVariant || "plain"}`} aria-hidden="true"><i /><b />{treeVariant && <em className="tree-fruits">{Array.from({ length: treeVariant === "blossom" ? 9 : 7 }, (_, index) => <span key={index} />)}</em>}</span>;
   if (type === "food") return currentFood?.id === "apple" ? <span className="world-apple-art" aria-hidden="true"><i /></span> : <span className="world-upgraded-food-art" aria-hidden="true">{currentFood?.emoji || "🍎"}</span>;
+  if (type === "harvestFruit") return <span className={`harvest-fruit-art fruit-${fruitVariant || "apple"}`} aria-hidden="true"><i /><b /></span>;
   if (type === "distantHouse") return <span className={`world-distant-house-art variant-${houseVariant || "red"}`} aria-hidden="true"><i /><b><em /><u /><small /></b></span>;
   if (type === "distantPerson") return <span className={`world-distant-person-art variant-${personVariant || "red"}`} aria-hidden="true"><i /><b /><em /><u /></span>;
   if (type === "dogToy") return <span className="world-dog-toy-art" aria-hidden="true"><i /><b /></span>;
@@ -72,18 +73,20 @@ export default function SceneObject({ object, action, activity, editable = false
   const isRiggedDog = object.type === "dog";
   const isInDoghouse = isRiggedDog && persistentState.dogInHouse;
   const primaryAction = object.actions?.[0];
+  const isHarvestFruit = object.type === "harvestFruit";
   const interactionLabel = primaryAction
     ? `点击${primaryAction === "feed" ? "去找小朋友" : "触发动作"}`
     : "点击选中";
   return (
     <button
-      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${editable ? "is-editable" : ""} ${isDeskActivity ? "is-desk-activity" : ""} ${isBedActivity ? "is-bed-activity" : ""} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} ${isHarvestFruit ? "is-fresh-fruit" : ""} action-${action || "idle"} ${editable ? "is-editable" : ""} ${isDeskActivity ? "is-desk-activity" : ""} ${isBedActivity ? "is-bed-activity" : ""} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
       aria-label={editable ? `${object.label}，点击选中后可移动或调整大小，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%` : `${object.label}，${interactionLabel}`}
       aria-describedby={editable ? "drag-help" : undefined}
       data-object-id={object.id}
       onClick={() => activate(() => editable ? onSelect?.(object.id) : primaryAction && onInteract?.(object.id, primaryAction))}
+      onDoubleClick={() => !editable && object.type === "tree" && onInteract?.(object.id, "shake")}
       {...dragHandlers}
       disabled={hidden}
     >
@@ -91,7 +94,7 @@ export default function SceneObject({ object, action, activity, editable = false
         ? <MotionAvatar avatar={avatar} action={action} activity={activity} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} />
-          : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
+          : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} fruitVariant={object.fruitVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
     </button>
   );
 }
