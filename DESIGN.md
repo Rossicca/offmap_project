@@ -158,6 +158,7 @@ The same identity survives from character choice to motion. Product-provided com
 - Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
 - The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
+- Companion growth is calm and cumulative: meaningful learning, story, creation, outfit, and save milestones award one-time local experience; the compact `Lv.` entry and the full `我的形象` progress card show the same five-level path without rankings or punitive streaks.
 - A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
@@ -279,6 +280,8 @@ Status chips are compact green-on-pale-green pills. They report recognition or l
 
 Major cards are warm near-opaque paper sheets with `1.5px` graphite borders, `12px` corners, and one shared ambient shadow. The living stage is a tracing-paper grid with blue-pencil construction marks and a quiet colored-pencil ground wash. Selected avatar cards use a pale blue-pencil tint and `aria-pressed`, never a glossy glow.
 
+The avatar growth card lives inside `我的形象`, below the active companion rather than as a separate dashboard. It pairs a red-pencil level stamp, green linear experience track, explicit `再获得 N 经验` copy, the next reward, and five plain-language milestones. The compact world-header entry shows only `Lv.` and the current title; below `620px`, only the level remains so the existing tool rail keeps its space. Experience persists locally across projects, repeated event IDs never farm points, and clearing local data removes growth with the rest of the user's work.
+
 Calibration, story, and modal surfaces reuse the same graphite-and-paper family. The scene drawer keeps a square desktop edge against the viewport and changes to a softly rounded top edge when docked to the mobile bottom.
 
 ### Inputs / Fields
@@ -305,7 +308,7 @@ A large live house preview updates immediately when a preset is clicked, and the
 
 ### Motion Sprite Characters
 
-Each product-provided character has a dedicated 2×2 motion sheet. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Apply restrained saturation and contrast so authored art sits naturally on tracing paper. Never substitute an unrelated figure or rebuild the chosen character as generic geometry.
+Each product-provided character has a dedicated 2×2 motion sheet. Every human sheet and outfit sheet must be a genuine RGBA cutout: the four outer corners are transparent, the surrounding paper is removed, and white details inside the character remain opaque. CSS changes `background-position` to select identity-consistent idle, wave, jump, and eat frames, then applies a short whole-cutout motion accent. The dog follows the same approach for idle, move, jump, and sit. Never fake cutouts with `mix-blend-mode`, substitute an unrelated figure, or rebuild the chosen character as generic geometry.
 
 ### Hand-Drawn World Props
 
@@ -379,6 +382,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 
 - **Do** keep drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills consistent across every surface.
 - **Do** preserve each AI companion's identity across its dedicated motion frames.
+- **Do** use genuinely transparent RGBA character and outfit sheets so the same cutout works on the stage, material cards, and wardrobe preview without a white paper rectangle.
 - **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
 - **Do** use the same graphite inline-SVG stroke style for every quick action.
 - **Do** collapse quick interaction to one normal-sized open/close button, preserve every action when expanded, and remind users that the stage artwork is directly clickable.
@@ -407,6 +411,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 
 - **Don't** turn the experience into a generic AI upload dashboard or dense control console.
 - **Don't** replace a selected character with a generic DOM puppet or unrelated animation asset.
+- **Don't** bake white or checkerboard backgrounds into character sheets or use blend modes to imitate transparency.
 - **Don't** use emoji as the primary living-world art for sun, tree, apple, house, or dog when authored assets and CSS props exist.
 - **Don't** mix icon libraries, filled glyphs, or emoji into the unified quick-action SVG family.
 - **Don't** add gradients as ornamental UI styling, glass effects, or low-contrast decoration; the stage's day/night sky transition is functional scenery.

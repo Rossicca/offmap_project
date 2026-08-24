@@ -20,7 +20,7 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate, foodGrowth, currentFood }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate, foodGrowth, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -30,7 +30,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
     const doorOpen = persistentState.doorOpen;
     return (
       <button
-        className={`scene-object house-object action-${action || "idle"} ${dragging ? "is-dragging" : ""}`}
+        className={`scene-object house-object action-${action || "idle"} ${selected ? "is-selected" : ""} ${dragging ? "is-dragging" : ""}`}
         style={{
           "--x": `${object.x}%`,
           "--y": `${object.y}%`,
@@ -42,7 +42,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
         aria-label={`${object.label}，可拖动；点击装饰房子。${doorOpen ? "门已打开" : "门已关闭"}`}
         aria-describedby="drag-help"
         data-object-id={object.id}
-        onClick={() => activate(() => onDecorate?.())}
+        onClick={() => activate(() => { onSelect?.(object.id); onDecorate?.(); })}
         {...dragHandlers}
       >
         {houseArt
@@ -68,18 +68,18 @@ export default function SceneObject({ object, action, persistentState, onInterac
   const isInRoom = object.type === "person" && persistentState.restingCharacters?.includes(object.id);
   return (
     <button
-      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
       aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : `点击${object.actions[0] === "feed" ? "去找小朋友" : "触发动作"}`}`}
       aria-describedby="drag-help"
       data-object-id={object.id}
-      onClick={() => activate(() => object.type === "doghouse" ? onDoghouseDecorate?.() : onInteract(object.id, object.actions[0]))}
+      onClick={() => activate(() => { onSelect?.(object.id); object.type === "doghouse" ? onDoghouseDecorate?.() : onInteract(object.id, object.actions[0]); })}
       {...dragHandlers}
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <><MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />{foodGrowth && <span className="person-food-meter" role="progressbar" aria-label={`${currentFood?.name || "食物"}成长值`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={foodGrowth.points}><i style={{ width: `${foodGrowth.points}%` }} /></span>}</>
+        ? <><MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />{foodGrowth && <span className="person-food-meter" role="progressbar" aria-label={`${currentFood?.name || "食物"}成长值`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={foodGrowth.points}><i style={{ width: `${foodGrowth.points}%` }} /></span>}</>
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
