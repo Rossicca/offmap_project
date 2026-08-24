@@ -17,7 +17,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const enhancementCacheRef = useRef(new Map([
     ["original", originalPreviewUrl],
     ...(analysis.enhancementLevel && analysis.enhancementLevel !== "original"
-      ? [[analysis.enhancementLevel, analysis.previewUrl]]
+      ? [[`${analysis.enhancementLevel}:${analysis.enhancementStyleLock === false ? "flexible" : "storybook"}`, analysis.previewUrl]]
       : []),
   ]));
   const detectedType = analysis.rigAnalysis?.person?.type;
@@ -27,6 +27,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const [nodes, setNodes] = useState(() => detectedNodes?.length ? detectedNodes : templates[initialSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [enhancementLevel, setEnhancementLevel] = useState(analysis.enhancementLevel || "original");
+  const [styleLock, setStyleLock] = useState(analysis.enhancementStyleLock !== false);
   const [previewUrl, setPreviewUrl] = useState(analysis.previewUrl);
   const [enhancementBusy, setEnhancementBusy] = useState(false);
   const [enhancementError, setEnhancementError] = useState("");
@@ -64,13 +65,14 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     setNodes(templates[nextSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
   };
 
-  const chooseEnhancement = async (level) => {
+  const chooseEnhancement = async (level, locked = styleLock) => {
     const request = ++enhancementRequestRef.current;
     enhancementAbortRef.current?.abort();
     enhancementAbortRef.current = null;
     setEnhancementLevel(level);
     setEnhancementError("");
-    const cached = enhancementCacheRef.current.get(level);
+    const cacheKey = `${level}:${locked ? "storybook" : "flexible"}`;
+    const cached = level === "original" ? originalPreviewUrl : enhancementCacheRef.current.get(cacheKey);
     if (cached) {
       setPreviewUrl(cached);
       setEnhancementBusy(false);
@@ -80,8 +82,8 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     const controller = new AbortController();
     enhancementAbortRef.current = controller;
     try {
-      const result = await enhanceDrawing(originalPreviewUrl, level, { signal: controller.signal });
-      enhancementCacheRef.current.set(level, result);
+      const result = await enhanceDrawing(originalPreviewUrl, level, { signal: controller.signal, styleLock: locked });
+      enhancementCacheRef.current.set(cacheKey, result);
       if (request === enhancementRequestRef.current) setPreviewUrl(result);
     } catch (error) {
       if (request === enhancementRequestRef.current && error.name !== "AbortError") {
@@ -95,6 +97,11 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
         setEnhancementBusy(false);
       }
     }
+  };
+
+  const chooseStyleLock = (locked) => {
+    setStyleLock(locked);
+    if (enhancementLevel !== "original") chooseEnhancement(enhancementLevel, locked);
   };
 
   const startNodeDrag = (index, event) => {
@@ -144,6 +151,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     originalPreviewUrl,
     previewUrl,
     enhancementLevel,
+    enhancementStyleLock: styleLock,
     needsRigSetup: false,
     rigAnalysis: {
       ...analysis.rigAnalysis,
@@ -160,7 +168,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
           {nodes.map((node, index) => { const point = displayNode(node); return <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${point.x}%`, top: `${point.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>; })}
         </div>
         <aside className="rig-controls">
-          <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy} error={enhancementError} onChange={chooseEnhancement} />
+          <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy} error={enhancementError} styleLock={styleLock} onStyleLockChange={chooseStyleLock} onChange={chooseEnhancement} />
           <div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>

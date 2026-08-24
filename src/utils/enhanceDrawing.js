@@ -1,9 +1,9 @@
-export async function enhanceDrawing(source, level, { signal } = {}) {
+export async function enhanceDrawing(source, level, { signal, styleLock = true } = {}) {
   if (level === "original") return source;
   const response = await fetch("/api/vision/enhance", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: source, level }),
+    body: JSON.stringify({ image: source, level, styleLock }),
     signal,
   });
   const result = await response.json().catch(() => ({}));
