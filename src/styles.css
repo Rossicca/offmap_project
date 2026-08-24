@@ -2842,3 +2842,41 @@ html, body {
   .scene-room .person-object.is-desk-activity .motion-avatar,
   .scene-room .person-object.is-bed-activity .motion-avatar { width:138px; }
 }
+
+/* Interaction is the safe default; direct manipulation is opt-in. */
+.world-edit-toggle {
+  position:absolute;
+  z-index:84;
+  left:16px;
+  bottom:16px;
+  min-height:44px;
+  padding:0 14px 0 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:2px solid rgba(104,158,178,.68);
+  border-radius:12px;
+  color:#48798d;
+  background:rgba(255,254,244,.95);
+  box-shadow:0 7px 16px rgba(62,103,119,.14);
+  font-weight:950;
+  cursor:pointer;
+}
+.world-edit-toggle:hover { border-color:#df8b73; color:#95503f; background:#fff7de; }
+.world-edit-toggle:focus-visible { outline:3px solid rgba(75,153,181,.42); outline-offset:3px; }
+.world-edit-toggle.is-active { color:#fff; border-color:#4f93aa; background:#5aa4bc; }
+.mode-toggle-icon { position:relative; width:24px; height:24px; flex:0 0 24px; border:2px solid currentColor; border-radius:7px; }
+.mode-toggle-icon i { position:absolute; left:5px; top:10px; width:13px; height:3px; border-radius:3px; background:currentColor; transform:rotate(-38deg); }
+.mode-toggle-icon i::after { content:""; position:absolute; right:-3px; top:-1px; border-left:4px solid currentColor; border-top:2px solid transparent; border-bottom:2px solid transparent; }
+.mode-toggle-icon b { position:absolute; right:3px; top:3px; width:4px; height:4px; border-radius:50%; background:currentColor; }
+.world-stage.is-interaction-mode .scene-object { cursor:pointer; touch-action:manipulation; }
+.world-stage.is-interaction-mode .scene-object::before { content:none; display:none; }
+.world-stage.is-edit-mode .scene-object.is-editable { cursor:grab; touch-action:none; }
+.world-stage.is-edit-mode .scene-object.is-editable:active,
+.world-stage.is-edit-mode .scene-object.is-editable.is-dragging { cursor:grabbing; }
+.world-stage.is-edit-mode .object-quick-toolbar { bottom:72px; }
+
+@media (max-width:560px) {
+  .world-edit-toggle { left:10px; bottom:10px; min-height:44px; padding-inline:9px 11px; font-size:.72rem; }
+  .world-stage.is-edit-mode .object-quick-toolbar { bottom:66px; }
+}

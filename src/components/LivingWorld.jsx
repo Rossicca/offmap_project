@@ -153,6 +153,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
   const [avatarGrowth, setAvatarGrowth] = useState(() => loadAvatarGrowth(initialState?.avatarGrowth));
   const [growthNotice, setGrowthNotice] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [selectedObjectId, setSelectedObjectId] = useState(null);
   const undoHistory = useRef([]);
   const redoHistory = useRef([]);
@@ -193,6 +194,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
   useEffect(() => { setSelectedObjectId(null); }, [currentSceneId]);
+  useEffect(() => { if (!editMode) setSelectedObjectId(null); }, [editMode]);
   useEffect(() => { localStorage.setItem("living-drawing-avatar-growth", JSON.stringify(avatarGrowth)); }, [avatarGrowth]);
   useEffect(() => {
     if (!safety.sessionMinutes) return undefined;
@@ -1021,6 +1023,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const openSceneEditor = () => {
+    setEditMode(true);
     const stage = stageRef.current;
     const stageBounds = stage?.getBoundingClientRect();
     if (stage && stageBounds) {
@@ -1178,9 +1181,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
       <div className="world-experience">
-      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${Object.values(characterStates).some((state) => [ACTIVITY_IDS.STUDYING, ACTIVITY_IDS.WORKING].includes(state.activity)) ? "has-desk-activity" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={currentSceneId === SCENE_IDS.ROOM ? "可拖动的室内互动房间" : "可拖动的室外互动世界"}>
+      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${editMode ? "is-edit-mode" : "is-interaction-mode"} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${Object.values(characterStates).some((state) => [ACTIVITY_IDS.STUDYING, ACTIVITY_IDS.WORKING].includes(state.activity)) ? "has-desk-activity" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={`${currentSceneId === SCENE_IDS.ROOM ? "室内房间" : "室外世界"}，当前为${editMode ? "调整画面" : "互动"}模式`}>
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {currentSceneId === SCENE_IDS.ROOM ? "伙伴的房间" : worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
-        <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住画中物体即可移动</div>
+        {editMode && <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 点选物体后拖动或调整大小</div>}
+        <button className={`world-edit-toggle ${editMode ? "is-active" : ""}`} type="button" onClick={() => setEditMode((value) => !value)} aria-pressed={editMode}>
+          <span className="mode-toggle-icon" aria-hidden="true"><i /><b /></span>
+          {editMode ? "完成调整" : "调整画面"}
+        </button>
         <button className="scene-travel-button" type="button" onClick={travelBetweenScenes} disabled={Boolean(sceneTransition)}>
           <span aria-hidden="true">{currentSceneId === SCENE_IDS.ROOM ? "←" : "⌂"}</span>
           {sceneTransition ? "正在切换…" : currentSceneId === SCENE_IDS.ROOM ? "去室外" : "进入房间"}
@@ -1208,7 +1215,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span /><span /><span /><span />
         </div>}
         <SpeechBubble message={message} visible={bubbleVisible && (currentSceneId === SCENE_IDS.ROOM || !storyActive)} />
-        {selectedObjectId && (() => {
+        {editMode && selectedObjectId && (() => {
           const selectedObject = [...visibleObjects, ...visibleCustomObjects, ...visibleLibraryObjects].find((item) => item.id === selectedObjectId);
           if (!selectedObject) return null;
           return <div className="object-quick-toolbar" role="toolbar" aria-label={`调整${selectedObject.label}`}>
@@ -1230,10 +1237,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={activeActions[object.id]}
               activity={characterStates[object.id]?.activity}
+              editable={editMode}
               persistentState={persistentState}
               selected={selectedObjectId === object.id}
               onSelect={setSelectedObjectId}
               onInteract={handleDirectAction}
+              onMoveStart={rememberEdit}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
@@ -1252,15 +1261,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={customObjectActions[object.id]}
               doorOpen={Boolean(customHouseStates[object.id]?.doorOpen)}
+              editable={editMode}
               selected={selectedObjectId === object.id}
               onSelect={setSelectedObjectId}
               onInteract={animateCustomObject}
+              onMoveStart={rememberEdit}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
             />
           ))}
           {visibleLibraryObjects.map((object) => (
-            <MaterialSceneObject key={object.id} object={object} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
+            <MaterialSceneObject key={object.id} object={object} editable={editMode} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMoveStart={rememberEdit} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
         {showJoints && (

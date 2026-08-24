@@ -1,16 +1,24 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
 const dragThreshold = 5;
 
 
-export default function useSceneDrag({ object, onMove, onMoveEnd }) {
+export default function useSceneDrag({ object, onMoveStart, onMove, onMoveEnd, enabled = true }) {
   const dragRef = useRef(null);
   const suppressClickRef = useRef(false);
   const [dragging, setDragging] = useState(false);
 
+  useEffect(() => {
+    if (enabled) return;
+    dragRef.current = null;
+    suppressClickRef.current = false;
+    setDragging(false);
+  }, [enabled]);
+
 
   const startDrag = (event) => {
+    if (!enabled) return;
     if (event.button !== 0) return;
     const stageBounds = event.currentTarget.closest(".world-stage")?.getBoundingClientRect();
     const centerX = stageBounds ? stageBounds.left + stageBounds.width * object.x / 100 : event.clientX;
@@ -31,8 +39,11 @@ export default function useSceneDrag({ object, onMove, onMoveEnd }) {
   const moveDrag = (event) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) <= dragThreshold) return;
-    drag.moved = true;
+    if (!drag.moved) {
+      if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) <= dragThreshold) return;
+      drag.moved = true;
+      onMoveStart?.(object.id);
+    }
     setDragging(true);
     const visibleBounds = event.currentTarget.getBoundingClientRect();
     onMove?.(
@@ -67,12 +78,12 @@ export default function useSceneDrag({ object, onMove, onMoveEnd }) {
   return {
     dragging,
     activate,
-    dragHandlers: {
+    dragHandlers: enabled ? {
       onDragStart: (event) => event.preventDefault(),
       onPointerDown: startDrag,
       onPointerMove: moveDrag,
       onPointerUp: (event) => finishDrag(event),
       onPointerCancel: (event) => finishDrag(event, true),
-    },
+    } : {},
   };
 }

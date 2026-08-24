@@ -141,7 +141,7 @@ components:
 
 My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing and calibration tools; the finished living world stays free of grids, fold lines, ghost drawings, and wireframe clouds.
 
-The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, trees, backgrounds, sun, apple, stars, and ground use layered hand-drawn geometry with warm texture and coherent outlines. Scene objects are direct-manipulation pieces: pointer and touch dragging moves them inside measured stage bounds, while the scene editor provides labeled range controls as the keyboard-accessible alternative.
+The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, trees, backgrounds, sun, apple, stars, and ground use layered hand-drawn geometry with warm texture and coherent outlines. Scene objects default to interaction-only clicks so play never causes accidental movement. The ordinary-sized `调整画面` switch explicitly enables pointer and touch selection, bounded dragging, resizing, copying, undo, redo, and deletion; `完成调整` clears selection and returns every stage click to interaction. The scene editor remains the labeled keyboard-accessible alternative.
 
 **Key Characteristics:**
 
@@ -274,6 +274,7 @@ The form language uses lightly worn paper rectangles with `1px`–`1.5px` graphi
 - **Primary:** Muted red-pencil face, white heavy label, `58px` minimum height, `22px` horizontal padding, `7px` corners, and a fine graphite border without a hard press base.
 - **Quick Action:** Tracing-paper face, graphite inline SVG plus label, `52px` minimum height, `7px` corners, and a `1.5px` graphite border.
 - **Quick Interaction Toggle:** One ordinary-sized `打开互动` / `收起互动` button with `aria-expanded`; it replaces the formerly large always-visible quick-action block without removing any action.
+- **World Edit Toggle:** A `44px`-minimum `调整画面` / `完成调整` button with `aria-pressed`; off is interaction-only, on reveals selection feedback and object tools. Turning it off clears the active selection.
 - **Hover / Focus / Active:** Hover increases contrast or adds a slight warm lift; focus uses a `4px` gold ring with `3px` offset; active shifts down `1px` and scales to `0.985`.
 
 ### Chips
@@ -420,7 +421,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
 - **Do** give the music launcher exact-offset pointer capture, a `5px` drag threshold, viewport clamping, persisted position, and resize/mobile re-clamping; keep the SceneEditor size control intact behind `位置和大小`.
 - **Do** use the same quiet return button in both world- and background-drawing steps.
-- **Do** keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
+- **Do** keep play safe by default: only the explicit `调整画面` mode may drag or resize stage objects, and keep the scene editor's labeled range controls synchronized as the keyboard-accessible positioning alternative.
 - **Do** reuse the same scrim-and-paper layer system for scene editing, export, parent safety, and rest reminders while preserving their distinct risk levels.
 - **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.

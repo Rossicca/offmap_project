@@ -123,7 +123,7 @@
     {
       "name": "Draggable Scene Object",
       "kind": "custom",
-      "description": "A native-button scene piece with direct pointer/touch positioning, bounded movement, and visible drafting feedback.",
+      "description": "A native-button scene piece that clicks only for interaction by default; the explicit 调整画面 mode enables bounded pointer/touch positioning, object tools, undo, and visible drafting feedback.",
       "html": "<button class=\"ds-scene-object is-dragging\" type=\"button\" aria-label=\"小屋，可拖动，当前位置横向72%，纵向55%\"><span aria-hidden=\"true\">△□</span></button>",
       "css": ".ds-scene-object { position:relative; border:0; background:transparent; cursor:grab; touch-action:none; user-select:none; transition:filter 160ms ease,opacity 160ms ease; } .ds-scene-object:hover { filter:contrast(1.03) drop-shadow(0 7px 8px rgba(54,48,39,.16)); } .ds-scene-object.is-dragging { z-index:30; cursor:grabbing; filter:contrast(1.04) drop-shadow(0 15px 13px rgba(54,48,39,.2)); } .ds-scene-object.is-dragging::after { content:''; position:absolute; inset:-8px; border:1px dashed rgba(76,119,148,.8); border-radius:8px; pointer-events:none; } @media(max-width:560px){.ds-scene-object.is-dragging::after{inset:-5px}}"
     },
@@ -173,7 +173,7 @@
   ],
   "narrative": {
     "northStar": "The Animator's Light Table",
-    "overview": "My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing tools; the living world stays free of grids, fold lines, ghost art, and wireframe clouds.\n\nIdentity survives from character choice to motion through low-saturation authored sprites and layered hand-drawn CSS scenery. Scene objects are native-button pieces with bounded pointer and touch dragging, grab/grabbing feedback, a blue-pencil dashed drag frame, and a synchronized range-control alternative in the scene editor.",
+    "overview": "My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing tools; the living world stays free of grids, fold lines, ghost art, and wireframe clouds.\n\nIdentity survives from character choice to motion through low-saturation authored sprites and layered hand-drawn CSS scenery. Stage clicks are interaction-only by default. An explicit 调整画面 mode enables bounded pointer and touch dragging, grab/grabbing feedback, a blue-pencil dashed frame, object tools and undo; the scene editor stays the synchronized range-control alternative.",
     "keyCharacteristics": [
       "Drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
