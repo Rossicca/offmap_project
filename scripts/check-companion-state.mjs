@@ -75,7 +75,11 @@ assert.equal(normalizeSceneObjects([{ id: "old-object", type: "house" }])[0].sce
 assert.equal(ROOM_SCENE_OBJECTS.length, 4);
 assert.equal(ROOM_SCENE_OBJECTS.every((object) => object.sceneId === SCENE_IDS.ROOM), true);
 assert.deepEqual(roomActivitySpotFor("study", { isUploaded: false }), { x: 72, y: 62 });
-assert.deepEqual(roomActivitySpotFor("study", { isUploaded: true }), { x: 72, y: 42 });
+assert.deepEqual(roomActivitySpotFor("study", { isUploaded: true }), { x: 72, y: 62 });
+assert.deepEqual(roomActivitySpotFor("study", {
+  isUploaded: true,
+  rigNodes: [{ label: "左髋", x: 68, y: 80 }, { label: "右胯", x: 72, y: 80 }],
+}, { stageWidth: 1000, stageHeight: 800, avatarWidth: 180, avatarHeight: 300 }), { x: 68.4, y: 52.75 });
 assert.equal(roomActivitySpotFor("wave", { isUploaded: true }), null);
 
 const studying = executeCompanionAction({

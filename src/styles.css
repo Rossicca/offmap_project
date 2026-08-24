@@ -2844,7 +2844,6 @@ html, body {
 .scene-room .roomChair-object { z-index:8!important; }
 .scene-room .person-object.is-desk-activity { z-index:11!important; }
 .scene-room .person-object.is-bed-activity { z-index:9!important; }
-.scene-room.has-desk-activity .roomChair-object { opacity:0; visibility:hidden; }
 .scene-room .person-object.is-desk-activity .motion-avatar,
 .scene-room .person-object.is-bed-activity .motion-avatar { width:clamp(156px,14vw,188px); }
 

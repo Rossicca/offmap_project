@@ -315,7 +315,14 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     const objectAvatar = object?.type === "person"
       ? companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar
       : null;
-    const activitySpot = currentSceneId === SCENE_IDS.ROOM ? roomActivitySpotFor(action, objectAvatar) : null;
+    const stageBounds = stageRef.current?.getBoundingClientRect();
+    const avatarBounds = stageRef.current?.querySelector(`[data-object-id="${objectId}"] .motion-avatar`)?.getBoundingClientRect();
+    const activitySpot = currentSceneId === SCENE_IDS.ROOM ? roomActivitySpotFor(action, objectAvatar, {
+      stageWidth: stageBounds?.width,
+      stageHeight: stageBounds?.height,
+      avatarWidth: avatarBounds?.width,
+      avatarHeight: avatarBounds?.height,
+    }) : null;
     if (companionResult && !companionResult.transitionTo && activitySpot) {
       setActiveActions((current) => ({ ...current, [objectId]: "move" }));
       setObjects((current) => current.map((item) => item.id === objectId ? {
