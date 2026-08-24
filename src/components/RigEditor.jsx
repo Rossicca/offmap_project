@@ -35,6 +35,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const [previewUrl, setPreviewUrl] = useState(analysis.previewUrl);
   const [enhancementBusy, setEnhancementBusy] = useState(false);
   const [enhancementError, setEnhancementError] = useState("");
+  const [cutoutEnabled, setCutoutEnabled] = useState(false);
   const [cutoutResult, setCutoutResult] = useState(null);
   const [cutoutReviewReady, setCutoutReviewReady] = useState(false);
   const [cutoutBusy, setCutoutBusy] = useState(false);
@@ -159,12 +160,13 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const finishRig = ({ foregroundUrl = null, cutoutSize = null, finalNodes = nodes, foregroundPrepared = false } = {}) => onConfirm({
+  const finishRig = ({ foregroundUrl = null, cutoutSize = null, finalNodes = nodes, foregroundPrepared = false, cutoutApplied = false } = {}) => onConfirm({
     ...analysis,
     originalPreviewUrl,
     previewUrl,
     foregroundUrl,
     foregroundPrepared,
+    cutoutApplied,
     cutoutSize,
     enhancementLevel,
     enhancementStyleLock: styleLock,
@@ -176,6 +178,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   });
 
   const prepareCutout = async () => {
+    if (!cutoutEnabled) return;
     setCutoutBusy(true);
     setCutoutError("");
     setCutoutProgress("正在准备人物范围…");
@@ -198,12 +201,33 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     }
   };
 
+  const changeCutoutMode = (enabled) => {
+    setCutoutEnabled(enabled);
+    setCutoutError("");
+    setCutoutProgress("");
+    if (!enabled) {
+      setCutoutResult(null);
+      setCutoutReviewReady(false);
+    }
+  };
+
+  const useOriginal = () => finishRig({
+    foregroundUrl: previewUrl,
+    cutoutSize: analysis.imageSize,
+    foregroundPrepared: false,
+    cutoutApplied: false,
+  });
+
   const confirm = async () => {
+    if (!cutoutEnabled) {
+      useOriginal();
+      return;
+    }
     if (!cutoutResult) {
       await prepareCutout();
       return;
     }
-    finishRig({ foregroundUrl: cutoutReviewRef.current?.exportPng() || cutoutResult.url, cutoutSize: cutoutResult.size, finalNodes: cutoutResult.nodes, foregroundPrepared: true });
+    finishRig({ foregroundUrl: cutoutReviewRef.current?.exportPng() || cutoutResult.url, cutoutSize: cutoutResult.size, finalNodes: cutoutResult.nodes, foregroundPrepared: true, cutoutApplied: true });
   };
 
   return (
@@ -218,15 +242,23 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
           {cutoutBusy && <div className="cutout-processing" role="status"><i aria-hidden="true" /><b>{cutoutProgress}</b><span>首次使用需要下载约 80MB 模型，之后会从浏览器缓存读取。</span></div>}
         </div>
         <aside className="rig-controls">
+          <div className={`cutout-mode-toggle ${cutoutEnabled ? "is-active" : ""}`}>
+            <div><h2>自动抠图</h2><p id="cutout-mode-description">{cutoutEnabled ? "已启用。画面仍保持原图；点击下面的“开始抠图并检查”后才会处理。" : "已关闭。不会运行抠图模型，进入世界时会完整保留原图。"}</p></div>
+            <label className="cutout-switch">
+              <input type="checkbox" checked={cutoutEnabled} disabled={cutoutBusy} onChange={(event) => changeCutoutMode(event.target.checked)} aria-label="启用自动抠图" aria-describedby="cutout-mode-description" />
+              <span className="cutout-switch-track" aria-hidden="true"><i /></span>
+              <b>{cutoutEnabled ? "已开启" : "已关闭"}</b>
+            </label>
+          </div>
           {!cutoutResult && <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy || cutoutBusy} error={enhancementError} styleLock={styleLock} onStyleLockChange={chooseStyleLock} onChange={chooseEnhancement} />}
-          <div className={`cutout-status ${cutoutResult ? "is-ready" : ""}`} role="status"><h2>{cutoutResult ? "人物边缘检查" : "本机人物提取"}</h2><p>{cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : "使用关节范围定位人物，再生成独立透明 PNG。图片只在这台设备上处理。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
+          <div className={`cutout-status ${cutoutResult ? "is-ready" : cutoutEnabled ? "is-enabled" : ""}`} role="status"><h2>{cutoutResult ? "人物边缘检查" : cutoutEnabled ? "等待手动开始" : "使用原图"}</h2><p>{cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : cutoutEnabled ? "开关只启用功能，不会自动处理。确认关节点后，再点击按钮开始抠图。" : "保留当前画面的全部内容和颜色，不执行人物提取。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
           {!cutoutResult && <><div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
           <p className="rig-hint"><b>操作提示</b> 红点范围会帮助模型避开周围的房子、云朵和其他物件。</p></>}
           {cutoutResult && <button className="cutout-retry" type="button" onClick={() => { setCutoutResult(null); setCutoutReviewReady(false); setCutoutProgress(""); }}>重新定位关节</button>}
-          {cutoutError && !cutoutResult && <button className="cutout-fallback" type="button" onClick={() => finishRig()}>暂用原图继续</button>}
-          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用这个人物，继续画背景" : "提取人物并检查"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
+          {cutoutError && !cutoutResult && <button className="cutout-fallback" type="button" onClick={useOriginal}>关闭抠图，使用原图</button>}
+          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用抠图人物，继续画背景" : cutoutEnabled ? "开始抠图并检查" : "使用原图，继续画背景"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
         </aside>
       </section>
     </main>

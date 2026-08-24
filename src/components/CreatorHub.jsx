@@ -13,10 +13,11 @@ const DoodleIcon = ({ name }) => {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 };
 
-export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreateBackground, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
+export default function CreatorHub({ userName, onUpload, onEditArtwork, onChooseAvatar, onCreateBackground, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
   const [selected, setSelected] = useState(primaryAvatarCatalog[0]);
   const [panel, setPanel] = useState(null);
+  const [editingProject, setEditingProject] = useState(null);
   const [dreamMode, setDreamMode] = useState(false);
   const [friendship, setFriendship] = useState(() => Number(localStorage.getItem("living-drawing-friendship") || 0));
   const [toolNotice, setToolNotice] = useState("");
@@ -40,8 +41,12 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
     });
   };
 
-  if (panel === "gallery") return <ProjectGallery projects={projects} onOpen={onOpenProject} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setPanel(null)} />;
+  if (panel === "gallery") return <ProjectGallery projects={projects} onOpen={onOpenProject} onEditArtwork={(project) => { setEditingProject(project); setPanel("edit-artwork"); }} onRename={onRenameProject} onDelete={onDeleteProject} onClose={() => setPanel(null)} />;
   if (panel === "canvas") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><DrawingCanvas onComplete={(file) => onUpload(file, { inputOrigin: "canvas" })} busy={busy} error={error} /></main>;
+  if (panel === "edit-artwork" && editingProject) {
+    const initialImageUrl = editingProject.avatarData?.editableImageUrl || editingProject.avatarData?.sourceImageUrl || editingProject.avatarData?.imageUrl || "";
+    return <main className="creator-page"><button className="studio-back" type="button" onClick={() => { setEditingProject(null); setPanel("gallery"); }}>← 返回我的作品</button><DrawingCanvas initialImageUrl={initialImageUrl} editingName={editingProject.name} onComplete={(file) => onEditArtwork(editingProject, file)} busy={busy} error={error} /></main>;
+  }
   if (panel === "background") return <main className="creator-page"><button className="studio-back" type="button" onClick={() => setPanel(null)}>← 返回伙伴主页</button><WorldDrawingEditor initialArt={{ house: null, background: null }} initialMode="background" embedded backgroundOnly onApply={(art) => art.background && onCreateBackground(art.background)} /></main>;
 
   return (

@@ -12,6 +12,12 @@ import { clearProjects, loadProjects, migrateLegacyProjects, removeProject, stor
 
 
 const releasePreview = (url) => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
+const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(String(reader.result || ""));
+  reader.onerror = () => reject(reader.error || new Error("画作读取失败。"));
+  reader.readAsDataURL(file);
+});
 
 
 export default function App() {
@@ -58,12 +64,21 @@ export default function App() {
     setBusy(true);
     setError("");
     try {
-      const result = await analyzeDrawing(file, options);
+      const [result, editableImageUrl] = await Promise.all([
+        analyzeDrawing(file, options),
+        options.inputOrigin === "canvas" ? fileToDataUrl(file) : Promise.resolve(""),
+      ]);
       releasePreview(previewUrlRef.current);
       previewUrlRef.current = result.previewUrl;
       setSelectedAvatar(null);
       setCompanions([]);
-      setAnalysis({ ...result, needsRigSetup: true });
+      setAnalysis({
+        ...result,
+        sceneObjects: options.savedState?.sceneObjects || result.sceneObjects,
+        savedState: options.savedState || null,
+        editableImageUrl,
+        needsRigSetup: true,
+      });
     } catch (uploadError) {
       setError(uploadError.message || "这张图片暂时打不开，请换一张试试。 ");
     } finally {
@@ -93,11 +108,13 @@ export default function App() {
       joints: rig.movable,
       rigNodes: rig.nodes,
       imageUrl: nextAnalysis.foregroundUrl || nextAnalysis.previewUrl,
-      sourceImageUrl: nextAnalysis.previewUrl,
+      sourceImageUrl: nextAnalysis.originalPreviewUrl || nextAnalysis.previewUrl,
       imageSize: nextAnalysis.cutoutSize || nextAnalysis.imageSize,
-      foregroundExtracted: Boolean(nextAnalysis.foregroundPrepared),
-      preserveSourceArt: nextAnalysis.inputOrigin === "canvas",
+      foregroundExtracted: Boolean(nextAnalysis.cutoutApplied),
+      preserveSourceArt: !nextAnalysis.cutoutApplied,
+      cutoutApplied: Boolean(nextAnalysis.cutoutApplied),
       inputOrigin: nextAnalysis.inputOrigin || "upload",
+      editableImageUrl: nextAnalysis.editableImageUrl || "",
       isUploaded: true,
     };
     setSelectedAvatar(uploadedAvatar);
@@ -212,6 +229,11 @@ export default function App() {
     setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: restoredUploadedAvatar ? "saved-upload" : "saved-project", previewUrl: restoredUploadedAvatar?.sourceImageUrl || restoredUploadedAvatar?.imageUrl || null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints, nodes: avatar.rigNodes }, dog: { type: "小狗", joints: 7 } } });
   };
 
+  const editProjectArtwork = (project, file) => {
+    setCurrentProjectId(project.id);
+    void upload(file, { inputOrigin: "canvas", editingProjectId: project.id, savedState: project.snapshot });
+  };
+
 
   const renameProject = (id) => {
     const current = projects.find((project) => project.id === id);
@@ -266,8 +288,8 @@ export default function App() {
 
 
   else screen = analysis
-      ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} onAvatarChange={changeWorldAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
-      : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
+      ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} onAvatarChange={changeWorldAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} editingProjectName={projects.find((project) => project.id === currentProjectId)?.name || ""} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
+      : <CreatorHub userName={userName} onUpload={upload} onEditArtwork={editProjectArtwork} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 
   return <>{screen}{userName && <CompanionMusic variant="floating" />}</>;
 }

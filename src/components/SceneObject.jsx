@@ -24,7 +24,7 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, foodGrowth, currentFood }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -87,7 +87,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <><MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />{foodGrowth && <span className="person-food-meter" role="progressbar" aria-label={`${currentFood?.name || "食物"}成长值`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={foodGrowth.points}><i style={{ width: `${foodGrowth.points}%` }} /></span>}</>
+        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
