@@ -87,10 +87,24 @@ async function handleVision(body) {
     role: "user",
     content: [
       { type: "image_url", image_url: { url: body.image } },
-      { type: "text", text: `分析这幅儿童画中最主要的可动角色。识别人物或动物类别、当前姿态，以及归一化关节坐标（x/y 均为图片宽高的 0 到 1）。儿童画可能夸张或缺少肢体，不确定的节点不要编造。只返回 JSON：{"characterType":"人物|狗|兔子|猫|鸟|马|乌龟|章鱼|其他动物","pose":"姿态描述","confidence":0到1,"joints":[{"name":"关节中文名","x":0.5,"y":0.5,"confidence":0.8}],"movable":["可动部位"],"notes":"简短提示"}` },
+      { type: "text", text: `分析图片中最主要的单个可动角色，忽略背景和其他次要对象。识别人物或动物类别、当前姿态，并把关节坐标精确放在可见身体关节中心。人物优先返回：头部中心、身体中心、左肩、左肘、左手腕、右肩、右肘、右手腕、左髋、左膝、左脚踝、右髋、右膝、右脚踝；动物返回头、躯干和各肢体关键节点。x/y 必须相对完整图片宽高归一化为 0 到 1，左上角是 (0,0)，右下角是 (1,1)。不确定或不可见的节点不要编造。只返回 JSON：{"characterType":"人物|狗|兔子|猫|鸟|马|乌龟|章鱼|其他动物","pose":"姿态描述","confidence":0到1,"joints":[{"name":"关节中文名","x":0.5,"y":0.5,"confidence":0.8}],"movable":["可动部位"],"notes":"简短提示"}` },
     ],
   }], 120_000);
-  const joints = Array.isArray(result.joints) ? result.joints.filter((joint) => Number.isFinite(joint.x) && Number.isFinite(joint.y)).map((joint) => ({ name: String(joint.name || "关节"), x: Math.max(0, Math.min(1, joint.x)), y: Math.max(0, Math.min(1, joint.y)), confidence: Math.max(0, Math.min(1, Number(joint.confidence) || 0)) })).slice(0, 24) : [];
+  let joints = Array.isArray(result.joints) ? result.joints.filter((joint) => Number.isFinite(joint.x) && Number.isFinite(joint.y)).map((joint) => ({ name: String(joint.name || "关节"), x: Math.max(0, Math.min(1, joint.x)), y: Math.max(0, Math.min(1, joint.y)), confidence: Math.max(0, Math.min(1, Number(joint.confidence) || 0)) })).slice(0, 32) : [];
+  if (String(result.characterType || "").includes("人物")) {
+    const standardJoints = [
+      ["头部", /头/], ["身体中心", /身体中心|躯干|胸/],
+      ["左肩", /左肩/], ["左肘", /左肘/], ["左手腕", /左手腕|左腕|左手/],
+      ["右肩", /右肩/], ["右肘", /右肘/], ["右手腕", /右手腕|右腕|右手/],
+      ["左髋", /左髋|左胯/], ["左膝", /左膝/], ["左脚踝", /左脚踝|左踝|左脚/],
+      ["右髋", /右髋|右胯/], ["右膝", /右膝/], ["右脚踝", /右脚踝|右踝|右脚/],
+    ];
+    const normalized = standardJoints.map(([name, pattern]) => {
+      const match = joints.find((joint) => pattern.test(joint.name));
+      return match ? { ...match, name } : null;
+    }).filter(Boolean);
+    if (normalized.length >= 6) joints = normalized;
+  }
   return { characterType: String(result.characterType || "人物"), pose: String(result.pose || "未知姿态"), confidence: Math.max(0, Math.min(1, Number(result.confidence) || 0)), joints, movable: Array.isArray(result.movable) ? result.movable.map(String).slice(0, 16) : [], notes: String(result.notes || "") };
 }
 

@@ -21,7 +21,10 @@ function createLocalPreview(file) {
       }
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(sourceUrl);
-      resolve(preserveTransparency ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", .76));
+      resolve({
+        url: preserveTransparency ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", .84),
+        size: { width: canvas.width, height: canvas.height },
+      });
     };
     image.onerror = () => {
       URL.revokeObjectURL(sourceUrl);
@@ -43,21 +46,29 @@ export async function analyzeDrawing(image) {
   }
 
 
-  const previewUrl = await createLocalPreview(image);
-  let vision = null;
+  const preview = await createLocalPreview(image);
+  let vision;
   try {
-    vision = await analyzeDrawingWithArk(previewUrl);
+    vision = await analyzeDrawingWithArk(preview.url);
   } catch (error) {
-    console.warn("Vision API unavailable; using local rig fallback:", error.message);
+    throw new Error(`关节识别失败：${error.message || "视觉模型暂时不可用"}。请稍后重试。`);
   }
-  const type = vision?.characterType || "人物";
-  const movable = vision?.movable?.length ? vision.movable : ["头", "身体", "双臂", "双腿"];
+  const detectedNodes = vision.joints?.length >= 6 ? vision.joints.map((joint) => ({
+    label: joint.name || "关节",
+    x: Math.max(2, Math.min(98, Number(joint.x) * (Number(joint.x) <= 1 ? 100 : 1))),
+    y: Math.max(2, Math.min(98, Number(joint.y) * (Number(joint.y) <= 1 ? 100 : 1))),
+    confidence: Number(joint.confidence) || 0,
+  })) : undefined;
+  if (!detectedNodes) throw new Error("关节识别失败：视觉模型没有返回足够的有效关节点。请换一张人物更清楚的图片。");
+  const type = vision.characterType || "人物";
+  const movable = vision.movable?.length ? vision.movable : detectedNodes.map((node) => node.label);
   return {
     sceneObjects: demoScene.map((object) => object.type === "person" ? { ...object, avatarId: "uploaded-character" } : { ...object }),
-    source: vision ? "ark-vision" : "mock",
-    previewUrl,
+    source: "ark-vision",
+    previewUrl: preview.url,
+    imageSize: preview.size,
     rigAnalysis: {
-      person: { type, joints: vision?.joints?.length || 10, movable, nodes: vision?.joints || undefined, pose: vision?.pose, confidence: vision?.confidence, notes: vision?.notes },
+      person: { type, joints: detectedNodes.length, movable, nodes: detectedNodes, pose: vision.pose, confidence: vision.confidence, notes: vision.notes, source: "ark-vision" },
       dog: analyzeAnimalRig("dog"),
     },
   };
