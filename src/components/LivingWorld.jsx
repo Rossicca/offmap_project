@@ -1064,7 +1064,6 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               houseDecor={houseDecor}
               doghouseDecor={doghouseDecor}
               onDoghouseDecorate={() => { setEditingDoghouseId(null); setShowDoghouseDecorator(true); }}
-              foodGrowth={object.type === "person" ? foodGrowth : null}
               currentFood={foodLevels[foodGrowth.level] || foodLevels[0]}
             />
           ))}
