@@ -139,9 +139,9 @@ components:
 
 **Creative North Star: "The Animator's Light Table"**
 
-My Living Drawing is a quiet animator's workbench: warm drafting paper supports a translucent tracing-paper stage, graphite defines structure, blue-pencil guides reveal construction, and restrained colored-pencil fills make characters and props feel touched by hand. The interface should resemble a working animation lightbox rather than a polished AI dashboard or a bright children's game template.
+My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing and calibration tools; the finished living world stays free of grids, fold lines, ghost drawings, and wireframe clouds.
 
-The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, sun, tree, apple, clouds, stars, and ground use simple hand-drawn geometry. Scene objects are direct-manipulation pieces: pointer and touch dragging moves them inside measured stage bounds, while the scene editor provides labeled range controls as the keyboard-accessible alternative.
+The same identity survives from character choice to motion. Product-provided companions retain recognizable sprite artwork, softened to low-saturation colored pencil. Houses, trees, backgrounds, sun, apple, stars, and ground use layered hand-drawn geometry with warm texture and coherent outlines. Scene objects are direct-manipulation pieces: pointer and touch dragging moves them inside measured stage bounds, while the scene editor provides labeled range controls as the keyboard-accessible alternative.
 
 **Key Characteristics:**
 
@@ -159,7 +159,8 @@ The same identity survives from character choice to motion. Product-provided com
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
 - The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
 - Companion growth is calm and cumulative: meaningful learning, story, creation, outfit, and save milestones award one-time local experience; the compact `Lv.` entry and the full `我的形象` progress card show the same five-level path without rankings or punitive streaks.
-- A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
+- A focused material library uses six plain-language categories—伙伴, 背景, 互动, 自然, 摆件, and 狗窝—plus a 120-preset house decoration studio. Scene thumbnails depict recognizable illustrated places rather than abstract color swatches.
+- A new world begins with only the background, one house, the primary person, and the dog. Sun, tree, food, toys, basket, and doghouse remain optional, fully interactive additions instead of forced defaults; saved projects retain everything their creator added.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
 - The companion music control is a precisely draggable floating button whose position survives reloads and is re-clamped after resize or mobile layout changes.
@@ -247,7 +248,7 @@ Spacing follows the observed rhythm of `8px`, `12px`, `16px`, `24px`, `34px`, an
 
 ## Elevation & Depth
 
-Depth comes from translucent sheets laid on a workbench. Fine graphite borders define paper edges; restrained warm-gray ambient shadows separate major sheets without plastic button bases. Sprite characters and scene props use low, soft drop shadows only when needed to remain legible over the tracing grid. Dragging temporarily increases lift to show that a piece has left the paper plane.
+Depth comes from translucent sheets laid on a workbench. Fine graphite borders define paper edges; restrained warm-gray ambient shadows separate major sheets without plastic button bases. Sprite characters and scene props use low, soft drop shadows only when needed to remain legible over the clean sky and ground. Dragging temporarily increases lift to show that a piece has left the paper plane.
 
 ### Shadow Vocabulary
 
@@ -278,7 +279,7 @@ Status chips are compact green-on-pale-green pills. They report recognition or l
 
 ### Cards / Containers
 
-Major cards are warm near-opaque paper sheets with `1.5px` graphite borders, `12px` corners, and one shared ambient shadow. The living stage is a tracing-paper grid with blue-pencil construction marks and a quiet colored-pencil ground wash. Selected avatar cards use a pale blue-pencil tint and `aria-pressed`, never a glossy glow.
+Major cards are warm near-opaque paper sheets with `1.5px` graphite borders, `12px` corners, and one shared ambient shadow. The living stage is a clean pale-sky field with a quiet colored-pencil ground wash; it never displays graph paper, construction folds, ghost characters, or outline clouds. Selected avatar cards use a pale blue-pencil tint and `aria-pressed`, never a glossy glow.
 
 The avatar growth card lives inside `我的形象`, below the active companion rather than as a separate dashboard. It pairs a red-pencil level stamp, green linear experience track, explicit `再获得 N 经验` copy, the next reward, and five plain-language milestones. The compact world-header entry shows only `Lv.` and the current title; below `620px`, only the level remains so the existing tool rail keeps its space. Experience persists locally across projects, repeated event IDs never farm points, and clearing local data removes growth with the rest of the user's work.
 
@@ -296,9 +297,9 @@ Do not expose implementation language such as “图层” to children. Object a
 
 ### Material Library
 
-The library contains exactly 60 unique materials across seven plain-language categories: 伙伴, 衣服, 头发, 鞋子, 背景, 自然, and 摆件. Every choice has a code-native CSS preview assembled from simple outlined shapes, category-specific silhouettes, small hand-drawn variations, and low-saturation pencil colors; do not depend on emoji, stock thumbnails, or network imagery.
+The library is organized into six plain-language categories: 伙伴, 背景, 互动, 自然, 摆件, and 狗窝. Every choice has a code-native CSS preview assembled from recognizable category-specific silhouettes, small hand-drawn variations, and low-saturation pencil colors; do not depend on generic color blocks, stock thumbnails, or network imagery. The ten background previews show their actual place—meadow, forest path, beach, night camp, rainbow, autumn park, snow cottage, flower garden, sunrise valley, or moonlit lake.
 
-Selecting a non-background material adds a named, saved scene object and closes the library. The object enters at a staggered stage position, can be dragged with the same bounded direct-manipulation behavior as built-in pieces, participates in `移动东西`, `放前面`, `放后面`, and `拿走`, and persists with the saved world. Selecting a background applies it directly to the stage sky, ground, and sun treatment as a replacement instead of creating a draggable object. Cards say `放进去` or `换背景` so the consequence is explicit before activation.
+Selecting a non-background material adds a named, saved scene object and closes the library. Interactive additions use real world IDs and actions, so adding the tree immediately exposes `摇摇树`, adding food enables feeding, and adding dog toys or the doghouse enables their related actions. The object can be dragged, resized, duplicated, undone, redone, or removed and persists with the saved world. Selecting a background applies it directly to the stage sky, ground, and light treatment instead of creating a draggable object. Cards say `放进去` or `换背景` so the consequence is explicit before activation.
 
 ### House Decoration Studio
 
@@ -313,6 +314,12 @@ Each product-provided character has a dedicated 2×2 motion sheet. Every human s
 ### Hand-Drawn World Props
 
 Sun, tree, apple, house, door, stars, and ground are authored with CSS geometry, low-saturation pencil fills, graphite outlines, and minimal warm shadows. Their action states are semantic: the door rotates in perspective, the sun descends into a charcoal world, the tree shakes, and the apple travels toward the character. Keep the stage visually clean: do not repeat the uploaded character as a low-opacity `drawing-backdrop`, and do not add decorative wireframe clouds.
+
+The tree uses an irregular layered crown, leaf highlights, bark variation, and a soft grounded shadow rather than three flat circles. The cottage keeps roof and wall in separate bands, with a readable tiled roof, chimney, windows, arched door, flower box, and one shared hand-drawn outline language. Background thumbnails and their applied stages must describe the same place.
+
+### Companion Mini Games
+
+Rock-paper-scissors and card comparison reuse the same warm paper, coral pencil, pale blue frame, and rounded typography as the living world. Score, current round, result, and next action form a clear top-to-bottom sequence. Large empty prototype areas, harsh black borders, and unrelated game-template styling are forbidden. Choice controls keep at least `44px` targets, distinct but restrained color coding, visible focus, short result motion, and zero mobile overflow.
 
 ### Direct-Manipulation Scene Objects
 
@@ -384,6 +391,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** preserve each AI companion's identity across its dedicated motion frames.
 - **Do** use genuinely transparent RGBA character and outfit sheets so the same cutout works on the stage, material cards, and wardrobe preview without a white paper rectangle.
 - **Do** author scene props as simple hand-drawn CSS forms with graphite edges and restrained warm shadows.
+- **Do** start a new world with only background, house, primary person, and dog; make every other prop an explicit addable choice without removing its interaction.
+- **Do** keep the living stage clear of grid lines, fold marks, ghost silhouettes, and outline-only clouds.
 - **Do** use the same graphite inline-SVG stroke style for every quick action.
 - **Do** collapse quick interaction to one normal-sized open/close button, preserve every action when expanded, and remind users that the stage artwork is directly clickable.
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
@@ -404,7 +413,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 - **Do** use normal-sized plain-text header tools and concrete child-facing verbs: `加东西`, `装房子`, `移动东西`, `放前面`, `放后面`, and `拿走`.
-- **Do** keep all 60 library items and 120 house presets visually previewable with code-native hand-drawn forms before selection.
+- **Do** keep every library item and all 120 house presets visually previewable with code-native hand-drawn forms before selection.
 - **Do** give every modal initial focus, `Escape` dismissal, contained tab order, and focus restoration to its launcher.
 
 ### Don't:
@@ -421,6 +430,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
 - **Don't** restore the uploaded figure as a translucent `drawing-backdrop` or decorate the clean stage with wireframe clouds.
+- **Don't** show abstract background swatches when the user is choosing a specific place, or let a material preview disagree with its world rendering.
 - **Don't** let the quick interaction area, music button, music panel, or drawing-step navigation introduce horizontal overflow on desktop or mobile.
 - **Don't** apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.
 - **Don't** destructively replace the uploaded original, allow a stale treatment request to win, or leave enhancement and confirmation controls active while processing.

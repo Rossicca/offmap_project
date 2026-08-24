@@ -2491,3 +2491,108 @@ html, body {
   .quick-actions { margin-top:7px; }
   .quick-actions-toggle { min-height:42px; }
 }
+
+/* Clean storybook world: no graph paper, construction folds, or outline clouds. */
+.world-stage,
+.world-stage.theme-meadow,
+.world-stage.theme-forest,
+.world-stage.theme-ocean,
+.world-stage.theme-space,
+.world-stage.is-night {
+  background-image:none;
+}
+.world-stage::before,
+.world-stage::after { display:none; }
+.sky-wash,
+.world-stage.theme-meadow .sky-wash {
+  background:
+    radial-gradient(ellipse at 18% 18%,rgba(255,255,255,.78) 0 7%,transparent 22%),
+    linear-gradient(180deg,#eaf8fb 0%,#d9f0f1 66%,transparent 66%);
+}
+.world-stage.theme-forest .sky-wash { background:linear-gradient(180deg,#eff7e7 0%,#d9e9cf 66%,transparent 66%); }
+.world-stage.theme-ocean .sky-wash { background:linear-gradient(180deg,#e8f8fb 0%,#ccebf1 66%,transparent 66%); }
+.world-stage.theme-space .sky-wash,.world-stage.is-night .sky-wash { background:linear-gradient(180deg,#2f3d69 0%,#45537b 66%,transparent 66%); }
+.world-stage.has-library-background .sky-wash {
+  background:
+    radial-gradient(circle at 80% 17%,color-mix(in srgb,var(--library-sun) 68%,white) 0 5%,transparent 5.5%),
+    linear-gradient(180deg,color-mix(in srgb,var(--library-sky) 58%,white) 0%,var(--library-sky) 66%,transparent 66%);
+}
+.ground::after { opacity:.24; background-image:radial-gradient(ellipse,#739d62 0 1px,transparent 1.5px); background-size:26px 19px; }
+.drag-tip { max-width:220px; padding:6px 10px; opacity:.82; font-size:.68rem; }
+
+/* Layered pencil-and-watercolour tree, matching the companion illustrations. */
+.world-tree-art { filter:drop-shadow(0 9px 5px rgba(76,73,54,.16)) !important; }
+.world-tree-art b {
+  left:42%; width:22%; border-color:#68483a; border-radius:48% 42% 9px 10px;
+  background:linear-gradient(86deg,#805039 0 18%,#b9784e 22% 58%,#8c583c 64% 100%);
+  box-shadow:inset 5px 0 rgba(255,224,176,.14);
+}
+.world-tree-art b::after { content:""; position:absolute; left:35%; top:8%; width:3px; height:72%; border-radius:50%; background:rgba(93,54,38,.24); transform:rotate(3deg); }
+.world-tree-art i {
+  left:13%; top:0; width:74%; border-color:#4f5f43;
+  border-radius:52% 48% 55% 45% / 48% 56% 44% 52%;
+  background:
+    radial-gradient(circle at 29% 25%,rgba(255,247,174,.46) 0 4%,transparent 17%),
+    radial-gradient(circle at 68% 64%,#5d9f54 0 18%,transparent 19%),
+    linear-gradient(145deg,#9bcf73,#6fae5d 58%,#538f4c);
+  box-shadow:-29px 30px 0 -8px #8fc66d,31px 25px 0 -9px #639f55,0 15px 0 -6px #79b762;
+}
+.world-tree-art i::before { content:""; position:absolute; left:8%; top:47%; width:12px; height:7px; border-radius:100% 0 100% 0; background:#b6d884; transform:rotate(-23deg); box-shadow:24px -43px #c0de8e,55px -28px #8fbe6c,69px 9px #76a95d,31px 31px #9ac873; }
+.world-tree-art i::after { inset:9%; background:radial-gradient(ellipse at 31% 22%,rgba(255,255,220,.4),transparent 35%); }
+
+/* Cottage polish: clear roof/body separation, warm handmade texture and depth. */
+.house-object { filter:drop-shadow(0 10px 6px rgba(84,69,47,.15)); }
+.house-roof { filter:drop-shadow(0 6px 2px rgba(82,57,43,.16)); }
+.house-roof::after {
+  background:
+    linear-gradient(165deg,rgba(255,225,179,.24),transparent 34%),
+    repeating-linear-gradient(165deg,color-mix(in srgb,var(--house-roof) 82%,#efb06c) 0 11px,var(--house-roof) 12px 22px,color-mix(in srgb,var(--house-roof) 84%,white) 23px 29px) !important;
+}
+.house-body { background-image:linear-gradient(92deg,rgba(255,255,255,.28),transparent 35%),radial-gradient(rgba(121,79,54,.1) .8px,transparent 1px); background-size:auto,15px 15px; }
+.house-body::after { box-shadow:0 3px 0 rgba(73,57,40,.12); }
+.window { box-shadow:inset 5px 5px rgba(255,255,255,.44),0 4px 0 rgba(86,67,51,.12); }
+
+/* Illustrated scene thumbnails instead of abstract colour swatches. */
+.material-background { border:2px solid #665144; border-radius:18px; background:linear-gradient(#dceff2 0 58%,#c8dda3 58%); box-shadow:inset 0 0 0 3px rgba(255,255,255,.4); }
+.material-background i { border-color:#665144; }
+.material-background .material-shape-one { left:-12%; right:-12%; bottom:-14%; height:50%; border-width:2px 0 0; background:#bed58f; }
+.material-background .material-shape-two { right:11%; top:10%; width:19%; border-width:2px; background:#f5d26a; box-shadow:0 0 0 5px rgba(245,210,106,.18); }
+.material-background .material-shape-three { left:9%; top:18%; width:30%; height:12%; border-width:2px; background:#fffdf2; }
+.material-background .material-shape-four,.material-background .material-shape-five,.material-background .material-shape-six { display:block; }
+.material-background-2 { background:linear-gradient(#dcebcf 0 58%,#89a976 58%); }.material-background-2 .material-shape-four { left:14%; bottom:23%; width:11%; height:45%; border-radius:50% 50% 8px 8px; background:#64845b; box-shadow:61px 6px 0 #587d58; }.material-background-2 .material-shape-five { left:44%; bottom:-3%; width:25%; height:55%; border:0; border-radius:50% 50% 0 0; background:#e4cf9d; transform:perspective(40px) rotateX(12deg); }
+.material-background-3 { background:linear-gradient(#bfe5ed 0 49%,#79c8d5 49% 69%,#ead39d 69%); }.material-background-3 .material-shape-one { background:#ead39d; }.material-background-3 .material-shape-four { left:17%; top:45%; width:58%; height:4px; border:0; border-radius:50%; background:rgba(255,255,255,.72); transform:rotate(-4deg); }
+.material-background-4 { background:linear-gradient(#4e5c89 0 65%,#596779 65%); }.material-background-4 .material-shape-two { background:#f4e49a; }.material-background-4 .material-shape-three { width:6px; height:6px; border:0; border-radius:50%; background:white; box-shadow:25px -7px white,50px 12px white,7px 25px white; }.material-background-4 .material-shape-four { left:36%; bottom:12%; width:34%; height:34%; clip-path:polygon(50% 0,100% 100%,0 100%); background:#e28b67; }
+.material-background-5 { background:linear-gradient(#d9eaf0 0 58%,#a9cf8a 58%); }.material-background-5 .material-shape-four { left:13%; top:28%; width:72%; height:40%; border:5px solid #e98b77; border-left-color:#efc65e; border-right-color:#86b4cc; border-bottom:0; border-radius:100% 100% 0 0; }
+.material-background-6 { background:linear-gradient(#e9d8bd 0 58%,#c8a26b 58%); }.material-background-6 .material-shape-four { left:16%; bottom:22%; width:15%; height:35%; border-radius:50%; background:#b86c48; box-shadow:24px -12px 0 #d9a347,49px 2px 0 #8f9a5c; }
+.material-background-7 { background:linear-gradient(#dceaf0 0 58%,#f3f1df 58%); }.material-background-7 .material-shape-four { left:18%; bottom:20%; width:43%; height:30%; border:2px solid #665144; background:#f0d4ae; }.material-background-7 .material-shape-five { left:14%; bottom:47%; width:52%; height:31%; clip-path:polygon(50% 0,100% 100%,0 100%); background:#a87468; }
+.material-background-8 { background:linear-gradient(#e9e1ed 0 58%,#a9cd82 58%); }.material-background-8 .material-shape-four { left:13%; bottom:16%; width:12px; height:12px; border:0; border-radius:50%; background:#ef9984; box-shadow:19px -5px #f1c960,41px 2px #9d80b4,63px -4px #e8889f; }
+.material-background-9 { background:linear-gradient(#f4c38b 0 52%,#d2a27f 52% 67%,#9bb77d 67%); }.material-background-9 .material-shape-four { left:5%; right:5%; bottom:30%; height:35%; clip-path:polygon(0 100%,25% 25%,45% 83%,68% 5%,100% 100%); background:#8395a1; }
+.material-background-10 { background:linear-gradient(#59658e 0 57%,#8fb8c6 57% 75%,#74936c 75%); }.material-background-10 .material-shape-two { background:#f4e49a; }.material-background-10 .material-shape-four { left:17%; right:12%; bottom:13%; height:25%; border:0; border-radius:50%; background:rgba(225,236,218,.22); transform:skewX(-18deg); }
+
+.material-interactive-art { display:grid; place-items:center; overflow:visible; filter:none; }
+.material-interactive-art > span { position:relative; left:auto; top:auto; right:auto; bottom:auto; flex:none; transform:scale(.62); transform-origin:center; }
+.material-interactive-art.preview-tree > span { transform:scale(.48); }
+.material-interactive-art.preview-sun > span { transform:scale(.72); }
+.material-interactive-art.preview-toyBasket > span { transform:scale(.68); }
+
+/* Mini games share the same soft paper, coral and blue-pencil language as the world. */
+.rps-overlay,.card-compare-overlay { background:rgba(58,94,106,.42); backdrop-filter:blur(5px); }
+.rps-game-card,.card-compare-game { border:4px solid rgba(110,190,218,.55); border-radius:34px; background:#fffefa; box-shadow:0 24px 70px rgba(53,93,105,.25); }
+.rps-game-card::before,.card-compare-game::before { content:""; position:absolute; z-index:0; inset:10px; border:2px dashed rgba(116,184,203,.15); border-radius:24px; pointer-events:none; }
+.rps-game-card > *,.card-compare-game > * { position:relative; z-index:1; }
+.rps-game-card h2,.card-compare-game h2 { color:#7d4a2d; font-family:KaiTi,STKaiti,"Microsoft YaHei",sans-serif; font-weight:800; }
+.rps-close,.card-compare-close { width:44px; height:44px; border:2px solid #9bcfdd; color:#548b9c; background:#fffefa; box-shadow:0 4px 0 rgba(94,154,172,.13); }
+.rps-score,.card-compare-score { border-color:#efd06c; background:#fff5cb; }
+.rps-round,.card-compare-table { border:2px solid #c8e2e7; background:linear-gradient(145deg,#f4fbf8,#fff9df); box-shadow:inset 0 0 0 5px rgba(255,255,255,.48); }
+.rps-choices button { border:2px solid #b9dce5; border-radius:22px; color:#6b432c; background:#fffefa; box-shadow:0 6px 0 rgba(91,154,176,.12); transition:transform 160ms ease,background 160ms ease,border-color 160ms ease; }
+.rps-choices button:nth-child(1) { background:#fff0e9; border-color:#efb7a7; }.rps-choices button:nth-child(2) { background:#fff7d2; border-color:#ead273; }.rps-choices button:nth-child(3) { background:#eef8e7; border-color:#bdd99b; }
+.rps-choices button:hover:not(:disabled) { border-color:#ef8e77; background:#fff3c7; transform:translateY(-3px) rotate(-1deg); }
+.card-draw-button { border-color:#ef8e77; border-radius:999px; background:#ef8e77; box-shadow:0 5px 0 #cf705d; }
+
+@media (max-width:560px) {
+  .rps-game-card,.card-compare-game { padding:22px 13px 16px; border-width:3px; border-radius:26px; }
+  .rps-game-card h2,.card-compare-game h2 { margin-inline:42px; font-size:1.45rem; }
+  .rps-round { min-height:132px; padding:12px 7px; gap:7px; }
+  .rps-round > div { min-width:72px; }.rps-round > div span { font-size:2.7rem; }.rps-result { min-width:82px; }
+  .rps-choices button { min-height:86px; border-radius:18px; }
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-24T12:00:00+08:00",
+  "generatedAt": "2026-08-24T16:30:00+08:00",
   "title": "Design System: My Living Drawing",
   "extensions": {
     "colorMeta": {
@@ -49,7 +49,7 @@
       { "name": "mobile", "value": "560px" }
     ],
     "surfacePatterns": [
-      { "name": "animator-lightbox", "layout": "framed responsive stage with 28px blue-pencil grid", "surface": "Tracing Paper over Drafting Paper with graphite frame", "behavior": "construction guides stay non-interactive and all artwork remains inside measured stage bounds" },
+      { "name": "animator-lightbox", "layout": "framed responsive clean-sky stage above a soft colored-pencil ground", "surface": "Pale storybook sky over Drafting Paper with a blue-pencil frame", "behavior": "no grid, fold lines, ghost artwork, or wireframe clouds; all artwork remains inside measured stage bounds" },
       { "name": "direct-scene-manipulation", "layout": "stage-relative percentage centers with per-object measured bounds", "surface": "low-saturation illustrated cutouts", "behavior": "pointer-captured mouse/touch drag; 5px threshold; grab/grabbing; blue-pencil dashed drag frame; moved clicks suppressed" },
       { "name": "collapsible-quick-interaction", "layout": "one ordinary-sized open/close control when collapsed; complete action set when expanded", "surface": "compact tracing-paper control and contained action rail", "behavior": "aria-expanded reflects state and expanded copy reminds users they can click characters and objects directly" },
       { "name": "draggable-companion-music", "layout": "viewport-clamped floating launcher with a contained music panel", "surface": "small companion paper button above the stage", "behavior": "exact grab offset, 5px threshold, matching pointer capture/release, drag-click suppression, persisted position, and resize/mobile re-clamping; panel links to 位置和大小, 加东西, 装房子, and 显示/隐藏关节 while preserving SceneEditor size controls" },
@@ -59,7 +59,8 @@
       { "name": "paper-workspace-layer", "layout": "centered dialogs with 24px inset; scene tools dock directionally", "surface": "Warm White over graphite scrim", "behavior": "scroll-safe, keyboard focused, one modal plane at a time" },
       { "name": "kid-first-tool-language", "layout": "normal-sized plain-text actions in the world header with a contained overflow menu", "surface": "quiet paper pills that preserve stage authority", "behavior": "uses 加东西, 装房子, 移动东西, 放前面, 放后面, and 拿走; never exposes 图层" },
       { "name": "companion-growth", "layout": "compact Lv entry in the world header and one detailed progress card inside 我的形象", "surface": "warm paper with a red-pencil level stamp and green linear progress track", "behavior": "one-time local experience from meaningful learning, story, creation, outfit, and save milestones; five levels; explicit next reward; no leaderboard, punitive streak, or repeat-point farming; persists across projects and clears with local data" },
-      { "name": "material-library", "layout": "60 unique items across seven category tabs; five desktop columns and two mobile columns", "surface": "code-native hand-drawn CSS previews on warm paper cards", "behavior": "non-background choices add saved draggable objects; background choices directly replace the stage treatment" },
+      { "name": "material-library", "layout": "six plain-language category tabs; five desktop columns and two mobile columns", "surface": "recognizable code-native storybook previews on warm paper cards", "behavior": "new worlds start with background, house, person, and dog only; optional interactive choices add real saved world objects and expose their matching actions; illustrated backgrounds directly replace the stage treatment" },
+      { "name": "companion-mini-games", "layout": "centered round-and-result dialog with one clear score rail and touch-safe choices", "surface": "Warm White paper with pale-blue frame, coral pencil accents, and restrained choice colors", "behavior": "rock-paper-scissors and card comparison preserve their existing rules while sharing clear hierarchy, short result motion, focus visibility, and zero mobile overflow" },
       { "name": "house-decoration-studio", "layout": "120 presets across five motif tabs with a large live preview", "surface": "complete miniature houses showing roof, patterned wall, door, and windows", "behavior": "preset clicks update the stage house immediately; clicking the house opens the studio" },
       { "name": "contained-dialog-focus", "layout": "one active scroll-safe dialog or bottom sheet", "surface": "warm paper over a graphite scrim", "behavior": "first-control focus, Escape close, Tab containment, and launcher focus restoration" },
       { "name": "mobile-zero-overflow", "layout": "two-row navigation and contained horizontal rails below 560px", "surface": "transparent header with tracing-paper graphite-framed controls", "behavior": "44px controls, no wrapped labels, zero page overflow down to 320px" }
@@ -155,9 +156,9 @@
     {
       "name": "Animator Lightbox Stage",
       "kind": "card",
-      "description": "The tracing-paper world with graphite frame, blue-pencil construction grid, and subdued colored-pencil scenery.",
-      "html": "<section class=\"ds-stage\" aria-label=\"互动世界\"><div class=\"ds-ground\"></div><button class=\"ds-sun\" aria-label=\"让太阳动一动\"><i></i></button><button class=\"ds-tree\" aria-label=\"让树动一动\"><i></i><b></b></button><button class=\"ds-apple\" aria-label=\"让苹果去找小朋友\"><i></i></button></section>",
-      "css": ".ds-stage { width:100%; height:360px; position:relative; isolation:isolate; overflow:hidden; border:1.5px solid #2f3232; border-radius:8px; background-color:#f6f2e8; background-image:linear-gradient(rgba(77,123,151,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(77,123,151,.12) 1px,transparent 1px); background-size:28px 28px; box-shadow:0 18px 40px rgba(58,54,45,.15); } .ds-stage::before { content:''; position:absolute; inset:0; opacity:.38; pointer-events:none; background-image:linear-gradient(87deg,transparent 0 18%,rgba(75,118,145,.28) 18.1%,transparent 18.45%),linear-gradient(176deg,transparent 0 72%,rgba(183,78,65,.2) 72.1%,transparent 72.35%); } .ds-ground { position:absolute; left:-2%; right:-2%; bottom:-4%; height:34%; border-top:2px solid rgba(54,72,61,.66); border-radius:46% 54% 0 0/13% 15% 0 0; background:rgba(133,154,117,.42); } @media(max-width:560px){.ds-stage{border-radius:6px}}"
+      "description": "The clean storybook world with a pale-sky field, blue-pencil frame, and subdued colored-pencil scenery.",
+      "html": "<section class=\"ds-stage\" aria-label=\"互动世界\"><div class=\"ds-sky\"></div><div class=\"ds-ground\"></div><button class=\"ds-house\" aria-label=\"打开小房子的门\"></button><button class=\"ds-person\" aria-label=\"让伙伴动一动\"></button><button class=\"ds-dog\" aria-label=\"和狗狗互动\"></button></section>",
+      "css": ".ds-stage { width:100%; height:360px; position:relative; isolation:isolate; overflow:hidden; border:4px solid rgba(110,190,218,.55); border-radius:30px; background:#eaf8fb; box-shadow:0 18px 40px rgba(58,54,45,.15); } .ds-sky { position:absolute; inset:0; background:radial-gradient(ellipse at 18% 18%,rgba(255,255,255,.78) 0 7%,transparent 22%),linear-gradient(180deg,#eaf8fb 0%,#d9f0f1 66%,transparent 66%); } .ds-ground { position:absolute; left:-2%; right:-2%; bottom:-4%; height:34%; border-top:2px solid rgba(107,154,82,.48); border-radius:46% 54% 0 0/13% 15% 0 0; background:#cde5a9; } @media(max-width:560px){.ds-stage{border-radius:24px}}"
     },
     {
       "name": "Joint Inspector Toggle",
@@ -170,7 +171,7 @@
   ],
   "narrative": {
     "northStar": "The Animator's Light Table",
-    "overview": "My Living Drawing is a quiet animator's workbench: warm drafting paper supports a translucent tracing-paper stage, graphite defines structure, blue-pencil guides reveal construction, and restrained colored-pencil fills make characters and props feel touched by hand. The interface resembles a working animation lightbox rather than a polished AI dashboard or bright game template.\n\nIdentity survives from character choice to motion through low-saturation authored sprites and hand-drawn CSS scenery. Scene objects are native-button pieces with bounded pointer and touch dragging, grab/grabbing feedback, a blue-pencil dashed drag frame, and a synchronized range-control alternative in the scene editor.",
+    "overview": "My Living Drawing is a quiet storybook workbench: warm drafting paper supports a clean pale-sky stage, graphite defines structure, and restrained colored-pencil fills make characters and props feel touched by hand. Construction guides belong only in editing tools; the living world stays free of grids, fold lines, ghost art, and wireframe clouds.\n\nIdentity survives from character choice to motion through low-saturation authored sprites and layered hand-drawn CSS scenery. Scene objects are native-button pieces with bounded pointer and touch dragging, grab/grabbing feedback, a blue-pencil dashed drag frame, and a synchronized range-control alternative in the scene editor.",
     "keyCharacteristics": [
       "Drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
@@ -182,7 +183,8 @@
       "The living world and its white paper conversation card read as one responsive two-column play surface.",
       "Conversation stays continuous through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick topics, and one composer.",
       "The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.",
-      "A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.",
+      "A six-category material library and a 120-preset house decoration studio extend the paper world with recognizable code-native storybook previews.",
+      "A new world contains only background, house, primary person, and dog; all other interactive scenery remains explicitly addable, while saved projects preserve their creator's additions.",
       "Direct scene manipulation supports mouse, pen, and touch while measured bounds keep complete objects inside the stage.",
       "Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.",
       "Before joint placement, the calibration workspace offers 原图 plus three Volcengine Ark Seedream image-to-image redraws—轻度保留画风, 中度绘本卡通, and 重度角色重绘—while permanently retaining 原图 as the non-destructive source.",
