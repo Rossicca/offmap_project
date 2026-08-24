@@ -21,6 +21,7 @@ import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { backgroundStyleFor, defaultHouseDecor } from "../data/materialCatalog";
 import { defaultAvatarLook } from "../data/wardrobeCatalog";
+import { primaryAvatarCatalog } from "../data/avatarCatalog";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -42,7 +43,7 @@ const learningPrompts = {
 };
 
 
-export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
+export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], onAvatarChange, rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
@@ -255,6 +256,19 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     setMessage(`${material.name}放进来啦，可以拖动它！`);
     setBubbleVisible(true);
     later(() => setBubbleVisible(false), 2200);
+  };
+
+  const applyAvatarLook = (look, avatar) => {
+    const previousId = activeCompanion?.id;
+    setAvatarLooks((current) => ({ ...current, [avatar.id]: look }));
+    if (avatar.id !== previousId) {
+      setObjects((current) => current.map((object) => object.type === "person" && object.avatarId === previousId ? { ...object, avatarId: avatar.id, label: avatar.name } : object));
+      setActiveCompanionId(avatar.id);
+      onAvatarChange?.(avatar);
+      setMessage(`主形象已经换成${avatar.name}啦！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2200);
+    }
   };
 
 
@@ -510,7 +524,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
       {showMaterialLibrary && <MaterialLibrary onAdd={addMaterial} onClose={() => setShowMaterialLibrary(false)} />}
       {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
-      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} onApply={(look) => setAvatarLooks((current) => ({ ...current, [activeCompanion.id]: look }))} onClose={() => setShowAvatarWardrobe(false)} />}
+      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} avatars={primaryAvatarCatalog} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} onApply={applyAvatarLook} onClose={() => setShowAvatarWardrobe(false)} />}
       {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects, ...libraryObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}

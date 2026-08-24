@@ -1,14 +1,17 @@
 export const defaultAvatarLook = {
   outfit: "sunny",
   pattern: "plain",
+  hair: "natural",
   shoes: "cocoa",
   headwear: "none",
   accessory: "scarf",
 };
 
 export const wardrobeTabs = [
+  { id: "avatar", name: "形象" },
   { id: "outfit", name: "衣服" },
   { id: "pattern", name: "图案" },
+  { id: "hair", name: "头发" },
   { id: "shoes", name: "鞋子" },
   { id: "headwear", name: "头饰" },
   { id: "accessory", name: "配饰" },
@@ -30,6 +33,12 @@ export const wardrobeCatalog = {
     { id: "stripes", name: "细条纹" },
     { id: "flowers", name: "四瓣花" },
     { id: "leaves", name: "小树叶" },
+  ],
+  hair: [
+    { id: "natural", name: "原来发色", color: "transparent" },
+    { id: "chestnut", name: "栗棕色", color: "#76503b" },
+    { id: "darktea", name: "深茶色", color: "#4d4039" },
+    { id: "honey", name: "暖蜜色", color: "#a97948" },
   ],
   shoes: [
     { id: "cocoa", name: "可可短靴", color: "#8c6245" },

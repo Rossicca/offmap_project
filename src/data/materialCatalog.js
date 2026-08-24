@@ -11,19 +11,16 @@ const pencilColors = ["#e88a72", "#e7bd58", "#75ad87", "#6da9bd", "#9685b5", "#c
 
 export const materialCategories = [
   { id: "character", name: "伙伴", shortName: "伙伴" },
-  { id: "clothes", name: "衣服", shortName: "衣服" },
-  { id: "hair", name: "头发", shortName: "头发" },
-  { id: "shoes", name: "鞋子", shortName: "鞋子" },
   { id: "background", name: "背景", shortName: "背景" },
   { id: "nature", name: "草地自然", shortName: "自然" },
-  { id: "prop", name: "小摆件", shortName: "摆件" },
+  { id: "prop", name: "家具与摆件", shortName: "摆件" },
 ];
 
 export const materialCatalog = [
-  ...makeItems("character", ["探险女孩", "探险男孩", "眼镜老师", "小小画家", "太空伙伴", "雨衣朋友", "魔法学徒", "运动伙伴"], pencilColors),
-  ...makeItems("clothes", ["星星上衣", "云朵卫衣", "条纹衫", "背带裤", "小斗篷", "花朵裙", "运动外套", "雨衣", "睡衣", "探险马甲"], pencilColors),
-  ...makeItems("hair", ["短短卷发", "双丸子头", "小辫子", "蓬蓬卷发", "齐刘海", "高马尾", "波浪长发", "小刺猬头"], ["#5e4639", "#815e42", "#3f3936", "#a97148"]),
-  ...makeItems("shoes", ["红雨靴", "蓝球鞋", "黄布鞋", "棕短靴", "绿凉鞋", "紫舞鞋"], pencilColors),
+  { id: "character-explorer", category: "character", name: "探险男孩", variant: 0, motionSprite: explorerMotion, frame: "0% 0%" },
+  { id: "character-hero", category: "character", name: "星星女孩", variant: 1, motionSprite: heroMotion, frame: "0% 0%" },
+  { id: "character-rabbit", category: "character", name: "兔兔朋友", variant: 2, motionSprite: rabbitMotion, frame: "0% 0%" },
+  { id: "character-dog", category: "character", name: "小狗伙伴", variant: 3, motionSprite: dogMotion, frame: "0% 0%" },
   ...makeItems("background", ["晴天草坡", "森林小路", "海边沙滩", "星空营地", "雨后彩虹", "秋日公园", "雪地木屋", "花园午后", "山谷日出", "月亮湖边"], ["#b9d8e4", "#bed7a3", "#e7c98c", "#8c94bd", "#d5b8d8"]),
   ...makeItems("nature", ["小草丛", "蒲公英", "向日葵", "蘑菇堆", "圆石头", "小池塘", "灌木球", "落叶堆"], ["#78a56e", "#d5b44b", "#d98763", "#7998ad"]),
   ...makeItems("prop", ["野餐篮", "小风筝", "故事书", "画板", "小帐篷", "玩具船", "气球束", "路牌", "小灯笼", "音乐盒"], pencilColors),
@@ -77,3 +74,7 @@ export const backgroundStyleFor = (item) => item ? {
   "--library-ground": item.accent,
   "--library-sun": pencilColors[(item.variant + 1) % pencilColors.length],
 } : undefined;
+import explorerMotion from "../assets/explorer-motion-paper.png";
+import heroMotion from "../assets/hero-motion-paper.png";
+import rabbitMotion from "../assets/rabbit-motion-paper.png";
+import dogMotion from "../assets/dog-motion-paper.png";

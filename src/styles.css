@@ -798,6 +798,7 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 
 .material-art { position: relative; display: block; width: 112px; height: 112px; color: #56443b; filter: drop-shadow(0 5px 3px rgba(77,60,43,.13)); }
 .material-art.is-small { width: 104px; height: 104px; transform: scale(.88); }
+.material-character-art { background-repeat:no-repeat; background-size:200% 200%; background-position:0 0; filter:saturate(.78) contrast(.97) drop-shadow(0 6px 4px rgba(77,60,43,.14)); }
 .material-art i { position: absolute; display: block; }
 .material-character .material-shape-one { left: 29%; top: 45%; width: 43%; height: 43%; border: 3px solid currentColor; border-radius: 38% 38% 20% 20%; background: var(--material-color); }
 .material-character .material-shape-one::before { content:""; position:absolute; left:-24%; right:-24%; top:9%; height:13%; border:3px solid currentColor; border-width:3px 0; transform:rotate(calc((var(--v, 1)) * 2deg)); }
@@ -1854,10 +1855,14 @@ html, body {
 .wardrobe-options > button:hover { border-color:#efad6f; background:#fff7d7; transform:translateY(-2px); }
 .wardrobe-options > button.is-active { border-color:#ef8e75; background:#fff0c6; box-shadow:inset 0 0 0 2px rgba(255,255,255,.72); }
 .wardrobe-options > button b { font-size:.78rem; }
+.wardrobe-options > button small { color:#6c929f; font-size:.66rem; font-weight:900; }
+.wardrobe-avatar-thumb { width:72px; height:72px; display:block; background-repeat:no-repeat; background-size:200% 200%; background-position:0 0; filter:saturate(.78) contrast(.97) drop-shadow(0 4px 3px rgba(77,60,43,.14)); }
 .wardrobe-swatch { width:64px; height:64px; position:relative; display:block; border:2px solid #6d5143; border-radius:18px; background:var(--swatch); box-shadow:inset 0 0 0 5px rgba(255,255,255,.2),0 4px 0 rgba(80,60,45,.09); }
 .swatch-outfit { clip-path:polygon(18% 5%,37% 17%,63% 17%,82% 5%,100% 30%,83% 46%,76% 36%,76% 95%,24% 95%,24% 36%,17% 46%,0 30%); }
 .swatch-outfit::after { content:""; position:absolute; left:10%; right:10%; bottom:20%; height:6px; border-radius:8px; background:var(--swatch-accent); }
 .swatch-pattern { background-color:#e5b94c; }
+.swatch-hair { height:50px; margin-top:8px; border-radius:52% 52% 38% 38%; }
+.swatch-hair.swatch-natural { border-style:dashed; background:linear-gradient(135deg,#76503b 0 50%,#4d4039 50%); }
 .swatch-stars { background:#e5b94c linear-gradient(135deg,transparent 42%,#fff0b2 43% 57%,transparent 58%) 0 0/22px 22px; }
 .swatch-dots { background:#7fa8b3 radial-gradient(circle,#fff0b2 0 3px,transparent 3.5px) 0 0/18px 18px; }
 .swatch-stripes { background:repeating-linear-gradient(135deg,#d77b68 0 8px,#f2d398 8px 12px); }
@@ -1884,6 +1889,8 @@ html, body {
 /* Clothing tint and small wearable pieces follow the same animated avatar container. */
 .avatar-wardrobe-layer { position:absolute; z-index:3; inset:0; display:block; pointer-events:none; }
 .avatar-wardrobe-layer i,.avatar-wardrobe-layer b { position:absolute; display:block; }
+.look-hair { left:32%; top:22%; width:38%; height:20%; opacity:.46; border-radius:56% 56% 34% 34%; background:var(--look-hair); mix-blend-mode:color; }
+.hair-natural .look-hair { display:none; }
 .look-outfit { left:27%; top:45%; width:45%; height:35%; opacity:.48; border-radius:26% 26% 30% 30%; background:var(--look-outfit); mix-blend-mode:color; clip-path:polygon(13% 8%,31% 0,69% 0,87% 8%,100% 35%,84% 45%,79% 31%,79% 100%,21% 100%,21% 31%,16% 45%,0 35%); }
 .look-outfit b { inset:0; opacity:.58; }
 .pattern-stars .look-outfit b { background:linear-gradient(135deg,transparent 43%,#fff1b7 44% 56%,transparent 57%) 0 0/18px 18px; }

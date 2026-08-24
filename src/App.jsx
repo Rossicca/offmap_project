@@ -144,6 +144,17 @@ export default function App() {
   };
 
 
+  const changeWorldAvatar = (avatar) => {
+    const previousId = selectedAvatar?.id;
+    setSelectedAvatar(avatar);
+    setCompanions((current) => [avatar, ...current.filter((item) => item.id !== previousId && item.id !== avatar.id && item.species !== "robot")]);
+    setAnalysis((current) => current ? {
+      ...current,
+      sceneObjects: current.sceneObjects.map((object) => object.type === "person" && (!previousId || object.avatarId === previousId) ? { ...object, avatarId: avatar.id, label: avatar.name } : object),
+    } : current);
+  };
+
+
   const createBackgroundWorld = (background) => {
     const avatar = avatarCatalog[0];
     const sceneObjects = demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object });
@@ -250,7 +261,7 @@ export default function App() {
 
 
   else screen = analysis
-      ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
+      ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} onAvatarChange={changeWorldAvatar} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
       : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 
   return <>{screen}{userName && <CompanionMusic variant="floating" />}</>;
