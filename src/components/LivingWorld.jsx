@@ -488,7 +488,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
-        <div className="found-status"><span aria-hidden="true">●</span> 世界里有 {visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友</div>
+        <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
         <KidToolDock
           onAdd={() => setShowMaterialLibrary(true)}
           onDecorate={() => setShowHouseDecorator(true)}

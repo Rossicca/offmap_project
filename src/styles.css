@@ -1767,3 +1767,33 @@ html, body {
   .learning-companion-toggle { min-height:48px; }
   .learning-topic-list button,.learning-actions button { min-height:44px; }
 }
+
+/* One-line world toolbar: the canvas, not the chrome, owns the vertical space. */
+.world-page { padding-top:10px; }
+.world-header { width:min(1440px,100%); min-height:60px; height:60px; margin:0 auto 14px; padding:7px 10px 7px 14px; display:flex; flex-wrap:nowrap; align-items:center; gap:8px; border-width:3px; border-radius:20px; }
+.world-header .wordmark { flex:0 0 auto; gap:7px; }
+.world-header .wordmark span { font-size:1.05rem; }
+.world-header .wordmark b { font-size:1rem; letter-spacing:.04em; }
+.world-header .world-back-button { flex:0 0 auto; min-height:40px; padding-inline:12px; font-size:.75rem; }
+.world-header .found-status { flex:0 0 auto; min-height:34px; padding:0 10px; display:flex; align-items:center; gap:5px; border-width:1.5px; font-size:.7rem; white-space:nowrap; }
+.world-header .found-status b { font-size:.82rem; }
+.world-header .found-status em { font-style:normal; }
+.world-header .kid-tool-dock { min-width:0; margin-left:auto; flex:0 1 auto; justify-self:auto; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:none; }
+.world-header .kid-tool-dock::-webkit-scrollbar { display:none; }
+.world-header .kid-tool-dock > button,.world-header .kid-more-wrap > button { min-height:40px; padding-inline:11px; flex:0 0 auto; font-size:.75rem; }
+
+@media (max-width:900px) {
+  .world-header .wordmark b { display:none; }
+  .world-header .wordmark { width:34px; justify-content:center; }
+  .world-header .found-status em { display:none; }
+  .world-header .found-status { padding-inline:8px; }
+}
+
+@media (max-width:620px) {
+  .world-page { padding:8px 10px 30px; }
+  .world-header { min-height:58px; height:58px; margin-bottom:10px; padding:6px; gap:5px; border-radius:16px; }
+  .world-header .wordmark,.world-header .found-status { display:none; }
+  .world-header .world-back-button { min-height:44px; padding-inline:10px; }
+  .world-header .kid-tool-dock { grid-column:auto; padding:0; gap:5px; }
+  .world-header .kid-tool-dock > button,.world-header .kid-more-wrap > button { min-height:44px; padding-inline:10px; }
+}
