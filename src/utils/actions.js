@@ -12,7 +12,8 @@ export const actionFeedback = {
   dance: "跟着节奏跳舞吧！",
   spin: "转一圈，世界也跟着转起来！",
   cheer: "太棒啦，我们一起欢呼！",
-  rest: "先安静休息一会儿吧。",
+  rest: "回到温暖的房间休息一会儿吧。",
+  leaveRoom: "休息好啦，出去活动一下！",
 };
 
 export const actionDurations = {
@@ -30,4 +31,5 @@ export const actionDurations = {
   spin: 1100,
   cheer: 1300,
   rest: 1800,
+  leaveRoom: 1000,
 };
