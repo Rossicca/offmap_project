@@ -61,6 +61,17 @@ export default function CompanionMusic({ variant = "tile" }) {
   const [trackIndex, setTrackIndex] = useState(() => Number(localStorage.getItem("living-drawing-music-track") || 0) % tracks.length);
   const [volume, setVolume] = useState(() => Math.max(0, Math.min(1, Number(localStorage.getItem("living-drawing-music-volume") || .28))));
   const audioRef = useRef({ context: null, master: null, timer: null, generation: 0 });
+  const triggerRef = useRef(null);
+  const dragRef = useRef(null);
+  const suppressClickRef = useRef(false);
+  const [position, setPosition] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("living-drawing-music-position"));
+      return saved ? { x: Math.max(8, Math.min(window.innerWidth - 56, saved.x)), y: Math.max(8, Math.min(window.innerHeight - 56, saved.y)) } : { x: Math.max(16, window.innerWidth - 196), y: 92 };
+    }
+    catch { return { x: Math.max(16, window.innerWidth - 196), y: 92 }; }
+  });
+  const positionRef = useRef(position);
 
   const stopAudio = () => {
     const audio = audioRef.current;
@@ -146,10 +157,54 @@ export default function CompanionMusic({ variant = "tile" }) {
     window.addEventListener("living-drawing-open-music", openPlayer);
     return () => window.removeEventListener("living-drawing-open-music", openPlayer);
   }, []);
+  useEffect(() => {
+    const keepOnScreen = () => {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPosition((current) => {
+        const next = { x: Math.max(8, Math.min(window.innerWidth - rect.width - 8, current.x)), y: Math.max(8, Math.min(window.innerHeight - rect.height - 8, current.y)) };
+        positionRef.current = next;
+        return next;
+      });
+    };
+    keepOnScreen();
+    window.addEventListener("resize", keepOnScreen);
+    return () => window.removeEventListener("resize", keepOnScreen);
+  }, [variant]);
+
+  const startDrag = (event) => {
+    if (variant === "tile" || event.button !== 0) return;
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    dragRef.current = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top, startX: event.clientX, startY: event.clientY, moved: false };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const moveDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const moved = drag.moved || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 5;
+    drag.moved = moved;
+    const next = { x: Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - drag.offsetX)), y: Math.max(8, Math.min(window.innerHeight - rect.height - 8, event.clientY - drag.offsetY)) };
+    positionRef.current = next;
+    setPosition(next);
+  };
+  const finishDrag = (event) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    suppressClickRef.current = drag.moved;
+    dragRef.current = null;
+    localStorage.setItem("living-drawing-music-position", JSON.stringify(positionRef.current));
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const openWorldTool = (tool) => {
+    window.dispatchEvent(new CustomEvent("living-drawing-open-world-tool", { detail: tool }));
+    setOpen(false);
+  };
 
   const trigger = variant === "tile"
     ? <button className={`doodle-tile yellow music-tile side-tool${playing ? " is-playing" : ""}`} data-label="伙伴音乐" type="button" onClick={() => setOpen(true)} aria-label="打开伙伴音乐播放器" title="伙伴音乐">♫</button>
-    : <button className={`music-floating-button${playing ? " is-playing" : ""}`} type="button" onClick={() => setOpen(true)} aria-label="打开伙伴音乐播放器"><span>{playing ? "♫" : "♪"}</span><b>伙伴音乐</b><small>{playing ? tracks[trackIndex].name : "10 首音乐"}</small></button>;
+    : <button ref={triggerRef} className={`music-floating-button${playing ? " is-playing" : ""}`} style={{ left: position.x, top: position.y }} type="button" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag} onClick={() => { if (suppressClickRef.current) { suppressClickRef.current = false; return; } setOpen(true); }} aria-label="拖动或打开伙伴音乐与快捷设置"><span>{playing ? "♫" : "♪"}</span><b>伙伴音乐</b><small>{playing ? tracks[trackIndex].name : "拖动我 · 点开设置"}</small></button>;
 
   return <>
     {trigger}
@@ -160,6 +215,7 @@ export default function CompanionMusic({ variant = "tile" }) {
         <div className="music-now"><small>当前曲目</small><b>{tracks[trackIndex].name}</b><span>{tracks[trackIndex].mood}</span></div>
         <div className="music-controls"><button type="button" onClick={() => selectTrack(trackIndex - 1)} aria-label="上一首">‹</button><button className="music-play" type="button" onClick={() => playing ? pause() : startAudio()} aria-label={playing ? "暂停" : "播放"}>{playing ? "Ⅱ" : "▶"}</button><button type="button" onClick={() => selectTrack(trackIndex + 1)} aria-label="下一首">›</button></div>
         <label className="music-volume"><span>{volume === 0 ? "静音" : "音量"}</span><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(event) => changeVolume(Number(event.target.value))} /><b>{Math.round(volume * 100)}%</b></label>
+        <div className="music-quick-settings"><b>当前画面</b><div><button type="button" onClick={() => openWorldTool("arrange")}>位置和大小</button><button type="button" onClick={() => openWorldTool("materials")}>加东西</button><button type="button" onClick={() => openWorldTool("house")}>装房子</button><button type="button" onClick={() => openWorldTool("joints")}>显示或隐藏关节</button></div></div>
         <div className="music-library-heading"><b>全部音乐</b><span>{tracks.length} 首</span></div>
         <div className="music-track-list" aria-label="选择音乐">{tracks.map((track, index) => <button type="button" key={track.name} className={index === trackIndex ? "is-active" : ""} onClick={() => selectTrack(index)}><span>{index === trackIndex && playing ? "♫" : index + 1}</span><b>{track.name}</b><small>{track.mood}</small></button>)}</div>
         <p>音乐在设备本地生成，音量和曲目选择会自动记住。</p>

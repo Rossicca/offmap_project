@@ -216,7 +216,7 @@ export default function App() {
     <main className="creator-page character-background-step">
       <header className="character-background-header">
         <div><span>第 3 步，共 3 步</span><h1>再给你的伙伴画一个背景</h1><p>人物已经保存好了。现在画出的背景会和人物一起进入游戏世界。</p></div>
-        <button type="button" onClick={() => finishCharacterBackground()}>暂时不画，直接进入世界</button>
+        <div><button type="button" onClick={() => setAnalysis((current) => ({ ...current, needsRigSetup: true, needsBackgroundSetup: false }))}>← 返回关节调整</button><button type="button" onClick={() => finishCharacterBackground()}>暂时不画，直接进入世界</button></div>
       </header>
       <WorldDrawingEditor
         initialArt={{ house: null, background: analysis.savedState?.worldArt?.background || null }}
