@@ -868,6 +868,7 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .house-decor-grid button b { align-self:end; }.house-decor-grid button span { align-self:start; color:#6d95a1; font-size:.72rem; font-weight:900; }
 .house-decor-done { flex:0 0 auto; width:100%; margin-top:10px; justify-content:center; }
 
+
 @media (max-width: 1050px) {
   .world-header { grid-template-columns:auto 1fr; }
   .kid-tool-dock { width:100%; min-width:0; overflow-x:auto; justify-self:stretch; justify-content:flex-start; scrollbar-width:none; }
@@ -1677,6 +1678,15 @@ html, body {
 .drawing-enhancement-options button.is-active { color:#8f4a26; border-color:#ef8e77; background:#fff0c5; }
 .drawing-enhancement-options button:disabled { cursor:wait; opacity:.62; }
 .drawing-enhancement-options small { color:inherit; font-size:.66rem; font-weight:800; }
+.drawing-style-lock { min-height:44px; margin-top:9px; padding:7px 10px; display:grid; grid-template-columns:34px auto; grid-template-rows:auto auto; align-items:center; column-gap:9px; border:1.5px solid #c3e2ea; border-radius:13px; color:#31556e; background:#fffdf7; cursor:pointer; }
+.drawing-style-lock input { position:absolute; opacity:0; pointer-events:none; }
+.drawing-style-lock > span { grid-row:1 / 3; width:34px; height:20px; position:relative; border-radius:999px; background:#b7c9cf; transition:background .18s ease; }
+.drawing-style-lock > span::after { content:""; width:14px; height:14px; position:absolute; left:3px; top:3px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(49,85,110,.25); transition:transform .18s ease; }
+.drawing-style-lock input:checked + span { background:#75ad87; }
+.drawing-style-lock input:checked + span::after { transform:translateX(14px); }
+.drawing-style-lock input:focus-visible + span { outline:3px solid rgba(239,142,119,.42); outline-offset:2px; }
+.drawing-style-lock b { font-size:.76rem; }
+.drawing-style-lock small { color:#617783; font-size:.65rem; font-weight:700; }
 .drawing-enhancement-status { min-height:20px; margin:7px 0 0 !important; color:#31556e !important; font-size:.7rem !important; }
 .drawing-enhancement-status.is-error { color:#b64f45 !important; }
 
