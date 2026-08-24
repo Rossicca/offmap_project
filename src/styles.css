@@ -193,7 +193,7 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .object-position-list .object-size-control { grid-template-columns: 34px 1fr 42px; }
 .object-size-control b { color: #315b75; font-size: .67rem; text-align: right; }
 .scene-editor > .primary-button { width: 100%; justify-content: space-between; margin-top: 18px; }
-.parent-backdrop, .break-reminder, .rps-overlay { position: fixed; z-index: 110; inset: 0; padding: 24px; display: grid; place-items: center; background: rgba(23,50,77,.5); }
+.parent-backdrop, .break-reminder, .rps-overlay, .card-compare-overlay { position: fixed; z-index: 110; inset: 0; padding: 24px; display: grid; place-items: center; background: rgba(23,50,77,.5); }
 .parent-controls { width: min(520px, 100%); max-height: calc(100dvh - 48px); padding: 24px; overflow-y: auto; border: 3px solid var(--ink); border-radius: 24px; background: #fffaf0; box-shadow: 0 22px 60px rgba(10,31,49,.28); }
 .parent-controls > header { display: flex; justify-content: space-between; gap: 20px; }
 .parent-controls h2 { margin: 0 0 5px; }
@@ -257,6 +257,28 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .rps-choices button b { font-size:.92rem; }
 @keyframes rps-counting { from { transform:scale(.94); } to { transform:scale(1.08); } }
 @keyframes rps-result-pop { 0% { opacity:0; transform:scale(.25) rotate(-14deg); } 70% { opacity:1; transform:scale(1.15) rotate(5deg); } 100% { transform:scale(1) rotate(0); } }
+
+.card-compare-game { position:relative; width:min(680px,100%); padding:28px; overflow:hidden; border:3px solid var(--ink); border-radius:26px; color:#493d35; background:#fffaf0; box-shadow:0 24px 70px rgba(10,31,49,.32); text-align:center; }
+.card-compare-close { position:absolute; z-index:2; right:15px; top:13px; width:38px; height:38px; border:2px solid var(--ink); border-radius:50%; color:var(--ink); background:#fff; font-size:1.6rem; font-weight:900; line-height:1; cursor:pointer; }
+.card-compare-game header > span { display:block; color:#c85f51; font-size:1.45rem; font-weight:900; letter-spacing:.08em; }
+.card-compare-game h2 { margin:7px 38px 4px; font-size:clamp(1.35rem,3vw,2rem); }
+.card-compare-game header p { margin:0; color:#60798b; font-weight:800; }
+.card-compare-score { width:min(420px,100%); margin:17px auto 13px; padding:9px 15px; display:flex; align-items:center; justify-content:space-between; gap:12px; border:2px solid #d6b266; border-radius:999px; background:#fff1bd; }
+.card-compare-score b { min-width:90px; font-size:.88rem; }.card-compare-score em { color:var(--red); font-size:1.3rem; font-style:normal; }.card-compare-score span { color:#806c4c; font-size:.76rem; font-weight:900; }
+.card-compare-table { min-height:190px; padding:18px; display:grid; grid-template-columns:130px minmax(120px,1fr) 130px; align-items:center; gap:18px; border:2px dashed #8caaad; border-radius:20px; background:#eef7f3; }
+.card-compare-table > div { display:grid; justify-items:center; gap:7px; }.card-compare-table small { color:#60798b; font-weight:900; }
+.card-compare-table i { width:92px; height:126px; display:grid; place-items:center; border:4px solid #fff; outline:2px solid #507783; border-radius:13px; color:#b5443a; background:#fffdf6; box-shadow:0 7px 0 rgba(23,50,77,.15); font-family:Georgia,serif; font-size:3.1rem; font-style:normal; font-weight:900; animation:card-flip-in 480ms cubic-bezier(.2,.8,.2,1); }
+.card-compare-table .card-character i { color:#366e9a; }.card-compare-table i.is-back { color:#fff; background:#6ba3b3 repeating-linear-gradient(45deg,transparent 0 8px,rgba(255,255,255,.16) 8px 12px); }
+.card-compare-table > strong { color:#9e493d; font-size:1rem; line-height:1.45; }.card-compare-table.is-drawing i { animation:card-shuffle 260ms ease-in-out infinite alternate; }
+.card-deck-status { min-height:48px; margin:12px 4px 8px; display:grid; grid-template-columns:1fr 70px 1fr; align-items:center; gap:10px; color:#60798b; font-size:.72rem; font-weight:800; }
+.card-deck-status b { color:#a74b3e; font-size:1rem; }.card-deck-status > div { height:34px; position:relative; }.card-deck-status > div i { position:absolute; left:12px; top:4px; width:23px; height:30px; border:2px solid #fff; border-radius:4px; background:#74aabb; box-shadow:0 0 0 1px #507783; }
+.card-draw-button { min-height:50px; padding:0 28px; border:3px solid var(--ink); border-radius:999px; color:#fff; background:#e47762; box-shadow:0 5px 0 rgba(74,51,39,.18); font-size:.95rem; font-weight:900; cursor:pointer; }.card-draw-button:hover:not(:disabled) { transform:translateY(-2px); background:#d96552; }.card-draw-button:disabled { opacity:.58; cursor:wait; }
+@keyframes card-flip-in { from { opacity:0; transform:rotateY(90deg) translateY(-12px); } }
+@keyframes card-shuffle { from { transform:translateX(-7px) rotate(-4deg); } to { transform:translateX(7px) rotate(4deg); } }
+
+@media (max-width:560px) {
+  .card-compare-overlay { padding:10px; }.card-compare-game { padding:20px 13px; }.card-compare-table { min-height:170px; padding:14px 8px; grid-template-columns:90px minmax(80px,1fr) 90px; gap:7px; }.card-compare-table i { width:68px; height:94px; font-size:2.4rem; }.card-compare-table > strong { font-size:.78rem; }.card-compare-score b { min-width:65px; }.card-deck-status { grid-template-columns:1fr 46px 1fr; }
+}
 .creator-intro { padding: 34px 0 40px; display: flex; align-items: end; justify-content: space-between; gap: 40px; }
 .creator-intro h1 { font-size: clamp(3rem, 6vw, 5.2rem); }
 .creator-intro > div > p { margin-bottom: 0; }
@@ -666,6 +688,9 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
 .world-apple-art { width: clamp(42px, 4vw, 58px); aspect-ratio: 1; position: relative; border: 3px solid var(--ink); border-radius: 48% 52% 54% 46%; background: #ed4437; box-shadow: inset -8px -8px 0 rgba(157,31,28,.17), 0 7px 0 rgba(23,50,77,.12); }
 .world-apple-art::before { content: ""; position: absolute; width: 8px; height: 17px; left: 48%; top: -13px; border-radius: 5px; background: #6d4b31; transform: rotate(12deg); }
 .world-apple-art i { position: absolute; width: 21px; height: 11px; left: 56%; top: -8px; border: 2px solid var(--ink); border-radius: 90% 20%; background: #5dac58; transform: rotate(-24deg); }
+.world-upgraded-food-art { width:clamp(52px,5vw,70px); aspect-ratio:1; display:grid; place-items:center; border:3px solid var(--ink); border-radius:22px; background:#fff8dc; box-shadow:0 7px 0 rgba(23,50,77,.12); font-size:clamp(2.3rem,4vw,3.4rem); line-height:1; }
+.person-food-meter { position:absolute; z-index:65; left:50%; bottom:99%; width:52px; height:6px; display:block; overflow:hidden; transform:translateX(-50%); border:1px solid #604c3e; border-radius:999px; background:#eadfca; box-shadow:0 2px 0 rgba(23,50,77,.1); pointer-events:none; filter:none !important; }
+.person-food-meter > i { height:100%; display:block; border-radius:inherit; background:linear-gradient(90deg,#f0a24f,#e45f4e); transition:width 480ms cubic-bezier(.2,.8,.2,1); }
 .world-dog-toy-art { width:clamp(46px,4.8vw,64px); aspect-ratio:1; position:relative; overflow:hidden; border:3px solid #5b3c32; border-radius:50%; background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.72) 0 7%,transparent 8%),linear-gradient(145deg,#f17b68,#d94f49); box-shadow:inset -7px -8px rgba(110,44,41,.16),0 5px 3px rgba(55,39,31,.16); }
 .world-dog-toy-art > i { position:absolute; left:40%; top:-8%; width:22%; height:116%; border:2px solid #5b3c32; border-width:0 2px; background:#6db4cf; transform:rotate(24deg); }
 .world-dog-toy-art > b { position:absolute; left:-10%; right:-10%; top:42%; height:18%; border:2px solid #5b3c32; border-width:2px 0; background:#f3cf5d; transform:rotate(-12deg); }
