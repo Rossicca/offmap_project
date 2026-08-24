@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.venv/
+.npm-cache/
 artifacts/
 .DS_Store
 *.local
