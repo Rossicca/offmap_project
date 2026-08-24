@@ -2976,59 +2976,20 @@ html, body {
   mix-blend-mode:multiply;
 }
 
-.scene-room .roomDesk-object { z-index:10!important; }
-.scene-room .person-object.is-desk-activity { z-index:12!important; }
-.scene-room.has-desk-activity .roomChair-object { z-index:7!important; opacity:1; visibility:visible; }
-.scene-room.has-study-activity .room-desk-art > em { opacity:0; }
-.scene-room .person-object.is-desk-activity .motion-avatar { transform:translateY(5px); }
-.avatar-reading-book {
-  position:absolute;
-  z-index:18;
-  left:50%;
-  top:58%;
-  width:62%;
-  height:27%;
-  transform:translateX(-50%) perspective(120px) rotateX(22deg);
-  filter:drop-shadow(0 4px 2px rgba(75,55,42,.18));
-}
-.avatar-reading-book i,.avatar-reading-book b {
-  position:absolute;
-  top:0;
-  width:51%;
-  height:100%;
-  border:2px solid #6b5040;
-  background:#fff8dd;
-}
-.avatar-reading-book i { left:0; border-radius:10px 2px 5px 12px; transform:skewY(-5deg); }
-.avatar-reading-book b { right:0; border-radius:2px 10px 12px 5px; transform:skewY(5deg); transform-origin:left center; animation:reading-page-turn 12s ease-in-out infinite; }
-.avatar-reading-book i::after,.avatar-reading-book b::after {
-  content:"";
-  position:absolute;
-  left:20%;
-  right:15%;
-  top:35%;
-  height:2px;
-  border-radius:2px;
-  background:#db8c78;
-  box-shadow:0 8px #76a3af;
-}
-.avatar-reading-book em { position:absolute; z-index:3; left:calc(50% - 1px); top:5%; width:2px; height:90%; border-radius:2px; background:#b48d69; }
-@keyframes reading-page-turn { 0%,88%,100% { transform:skewY(5deg) rotateY(0); } 92% { transform:skewY(5deg) rotateY(-76deg); } 96% { transform:skewY(5deg) rotateY(0); } }
-
 .scene-room .person-object.is-bed-activity { z-index:9!important; }
 .scene-room .person-object.is-bed-activity .motion-avatar { transform:translate(1%,2%) rotate(-2deg); }
-.scene-room .room-bed-art b { left:auto; right:5%; top:12%; width:38%; height:36%; z-index:4; border-radius:18px 22px 22px 18px; }
+.scene-room .room-bed-art b { left:auto; right:4%; top:16%; width:43%; height:24%; z-index:4; border-radius:13px 18px 18px 13px; }
 .scene-room .room-bed-art em { left:5%; right:5%; top:34%; height:43%; z-index:3; border-radius:14px 18px 12px 12px; }
 .avatar-sleep-blanket {
   position:absolute;
   z-index:24;
   left:0;
-  right:34%;
-  top:41%;
-  bottom:7%;
+  right:42%;
+  top:52%;
+  bottom:12%;
   overflow:hidden;
   border:2px solid #754f40;
-  border-radius:18px 36% 24% 18px;
+  border-radius:13px 24px 18px 13px;
   background:linear-gradient(145deg,#f0aa91,#db7f70 72%);
   box-shadow:0 4px 3px rgba(72,51,41,.13);
   animation:tuck-in-blanket 720ms cubic-bezier(.22,1,.36,1) both;
@@ -3076,5 +3037,5 @@ html, body {
 }
 
 @media (prefers-reduced-motion:reduce) {
-  .kid-more-menu,.avatar-reading-book b,.avatar-sleep-blanket,.is-fresh-fruit { animation:none; }
+  .kid-more-menu,.avatar-sleep-blanket,.is-fresh-fruit { animation:none; }
 }

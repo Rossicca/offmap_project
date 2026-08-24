@@ -85,7 +85,6 @@ export default function MotionAvatar({ avatar, action, activity, look }) {
       {avatar.isUploaded
         ? useArmRig ? <SegmentedCharacter avatar={avatar} /> : <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${displayedSprite})`, backgroundPosition: frame, ...(displayedSprite === outfitSprite ? outfitMask : {}) }} aria-hidden="true" />}
-      {poseAction === "study" && <span className="avatar-reading-book" aria-hidden="true"><i /><b /><em /></span>}
       {poseAction === "rest" && <span className="avatar-sleep-blanket" aria-hidden="true"><i /><b /></span>}
       {action === "carryToy" && <span className="person-carry-toy" aria-hidden="true"><i /><b /><small /></span>}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}

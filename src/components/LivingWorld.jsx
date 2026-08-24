@@ -65,8 +65,8 @@ const learningPrompts = {
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
 const ROOM_ACTIVITY_SPOTS = Object.freeze({
-  [ACTION_IDS.STUDY]: { x: 70, y: 66 },
-  [ACTION_IDS.WORK]: { x: 70, y: 66 },
+  [ACTION_IDS.STUDY]: { x: 72, y: 62 },
+  [ACTION_IDS.WORK]: { x: 72, y: 62 },
   [ACTION_IDS.REST]: { x: 23, y: 61 },
 });
 const fruitDetails = {
