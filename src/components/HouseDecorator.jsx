@@ -27,15 +27,19 @@ export default function HouseDecorator({ value, onChange, onClose }) {
   return (
     <div className="house-decor-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section ref={dialogRef} className="house-decorator" role="dialog" aria-modal="true" aria-labelledby="house-decor-title">
-        <header>
-          <div><h2 id="house-decor-title">给小房子换衣服</h2><p>{houseDecorCount} 种装饰，点一个马上看看。</p></div>
-          <button className="round-close" type="button" onClick={onClose} aria-label="关闭房屋装饰">×</button>
-        </header>
-        <nav className="house-pattern-tabs" aria-label="房屋花纹">
-          {patternTabs.map((item) => <button key={item.id} type="button" className={group === item.id ? "is-active" : ""} onClick={() => setGroup(item.id)} aria-pressed={group === item.id}>{item.name}</button>)}
-        </nav>
-        <div className={`decor-house-preview pattern-${current.pattern}`} style={decorStyle(current)} aria-label={`当前装饰：${current.name}，${current.accentName}`}>
-          <i className="decor-preview-roof" /><i className="decor-preview-body"><b /><b /></i><i className="decor-preview-door" />
+        <div className="house-decorator-top">
+          <div className="house-decorator-copy">
+            <header>
+              <div><h2 id="house-decor-title">给小房子换衣服</h2><p>{houseDecorCount} 种装饰，点一个马上看看。</p></div>
+              <button className="round-close" type="button" onClick={onClose} aria-label="关闭房屋装饰">×</button>
+            </header>
+            <nav className="house-pattern-tabs" aria-label="房屋花纹">
+              {patternTabs.map((item) => <button key={item.id} type="button" className={group === item.id ? "is-active" : ""} onClick={() => setGroup(item.id)} aria-pressed={group === item.id}>{item.name}</button>)}
+            </nav>
+          </div>
+          <div className={`decor-house-preview pattern-${current.pattern}`} style={decorStyle(current)} aria-label={`当前装饰：${current.name}，${current.accentName}`}>
+            <i className="decor-preview-roof" /><i className="decor-preview-body"><b /><b /></i><i className="decor-preview-door" />
+          </div>
         </div>
         <div className="house-decor-grid">
           {items.map((item) => (
