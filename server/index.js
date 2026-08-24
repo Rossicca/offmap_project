@@ -20,7 +20,6 @@ const port = Number(process.env.PORT || process.env.API_PORT || 8787);
 const host = process.env.HOST || "127.0.0.1";
 const baseUrl = (process.env.ARK_BASE_URL || "https://ark.cn-beijing.volces.com/api/v3").replace(/\/$/, "");
 const imageModel = process.env.ARK_IMAGE_MODEL || "doubao-seedream-4-0-250828";
-const allowedActions = new Set(["wave", "jump", "eat", "dance", "spin", "cheer", "rest", "openDoor", "closeDoor", "sunset", "sunrise", "shake", "move", "feed"]);
 const staticRoot = resolve("dist");
 const immutableAssetRoot = resolve(staticRoot, "assets");
 const staticMimeTypes = {
@@ -114,8 +113,33 @@ async function readJson(request) {
 
 function extractJson(text) {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
-  const candidate = fenced || text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  return JSON.parse(candidate);
+  const sources = fenced ? [fenced, text] : [text];
+  for (const source of sources) {
+    for (let start = source.indexOf("{"); start >= 0; start = source.indexOf("{", start + 1)) {
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let index = start; index < source.length; index += 1) {
+        const character = source[index];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (character === "\\") escaped = true;
+          else if (character === "\"") inString = false;
+          continue;
+        }
+        if (character === "\"") inString = true;
+        else if (character === "{") depth += 1;
+        else if (character === "}") {
+          depth -= 1;
+          if (depth === 0) {
+            try { return JSON.parse(source.slice(start, index + 1)); }
+            catch { break; }
+          }
+        }
+      }
+    }
+  }
+  throw new Error("方舟返回的 JSON 格式不正确");
 }
 
 async function callArk(model, messages, timeoutMs = 45_000) {
@@ -184,20 +208,69 @@ async function handleArtworkEnhancement(body, clientSignal) {
 function normalizeChat(reply, sceneObjects) {
   const validTargets = new Set(sceneObjects.map((object) => object.id));
   const target = validTargets.has(reply.target) ? reply.target : null;
-  const action = target && allowedActions.has(reply.action) ? reply.action : null;
+  const targetObject = target ? sceneObjects.find((object) => object.id === target) : null;
+  const action = targetObject?.actions?.includes(reply.action) ? reply.action : null;
   return {
     text: String(reply.reply || reply.text || "我听见啦！").slice(0, 300),
     target,
     action,
-    suggestions: Array.isArray(reply.suggestions) ? reply.suggestions.map(String).slice(0, 3) : [],
+    suggestions: Array.isArray(reply.suggestions) ? reply.suggestions.map((suggestion) => String(suggestion).slice(0, 18)).slice(0, 3) : [],
     learning: reply.learning && typeof reply.learning === "object" ? {
       mode: ["quiz", "hint", "explain", "encourage", "chat"].includes(reply.learning.mode) ? reply.learning.mode : "chat",
       result: ["correct", "try-again", "neutral"].includes(reply.learning.result) ? reply.learning.result : "neutral",
-      progressDelta: reply.learning.progressDelta === 1 ? 1 : 0,
+      progressDelta: reply.learning.result === "correct" && reply.learning.progressDelta === 1 ? 1 : 0,
       topic: ["math", "reading", "english", "discovery"].includes(reply.learning.topic) ? reply.learning.topic : undefined,
       expectedAnswer: typeof reply.learning.expectedAnswer === "string" ? reply.learning.expectedAnswer.slice(0, 40) : undefined,
     } : null,
   };
+}
+
+function inferRequestedSceneAction(userText, currentSceneId, sceneObjects) {
+  const people = sceneObjects.filter((object) => object.type === "person" && Array.isArray(object.actions));
+  const person = people[0];
+  if (!person) return null;
+  const supports = (action) => person.actions.includes(action) ? { target: person.id, action } : null;
+  const wantsRoom = /(?:去|进|回|到|进入).{0,8}(?:房间|屋里|屋内)|(?:房间|屋里|屋内).{0,8}(?:读书|学习|休息|睡觉|画画|创作|做作业)/.test(userText);
+  const wantsOutdoor = /(?:去|到|回|走到).{0,8}(?:室外|户外|外面|屋外)|(?:出去|出门).{0,8}(?:玩|走走|活动)?/.test(userText);
+  if (currentSceneId === "outdoor" && wantsRoom) return supports("enterRoom");
+  if (currentSceneId === "room" && wantsOutdoor) return supports("leaveRoom");
+  if (currentSceneId === "room" && /(?:读书|学习|复习|做题|写作业)/.test(userText)) return supports("study");
+  if (currentSceneId === "room" && /(?:画画|创作|做手工|写故事)/.test(userText)) return supports("work");
+  if (currentSceneId === "room" && /(?:休息|睡觉|躺一会|歇一会)/.test(userText)) return supports("rest");
+  if (currentSceneId === "outdoor" && /(?:一起玩|去玩|玩游戏|做游戏|活动一下)/.test(userText)) return supports("play");
+  return null;
+}
+
+function createRealtimeCapabilityReply(text) {
+  const asksCurrentWeather = /(?:今天|现在|当前|明天|实时).{0,12}(?:天气|气温|温度|下雨|降雨|风力)|(?:天气|气温|温度|降雨|风力).{0,12}(?:怎么样|如何|多少|吗|预报)/.test(text);
+  if (!asksCurrentWeather) return null;
+  return {
+    text: "我目前没有接入实时天气数据，所以不能可靠地告诉你当前天气。请查看手机或电脑的天气应用，再把结果告诉我，我们可以一起决定适合室内还是室外活动。",
+    target: null,
+    action: null,
+    suggestions: ["我查到天气了", "安排室内活动", "安排室外活动"],
+    learning: null,
+  };
+}
+
+function buildChatSystemPrompt({ body, clock, actionList, currentSceneId }) {
+  return `你是互动绘画里的陪伴型 AI 伙伴${body.name ? `“${body.name}”` : ""}，既要像日常 AI 一样真正回答问题，也要让画中世界自然参与。
+
+当前北京时间：${clock.dateText} ${clock.timeText}。当前场景：${currentSceneId === "room" ? "房间" : "室外"}。当前学习状态：${JSON.stringify(body.learningState || {})}。
+
+回答原则：
+1. 普通常识、解释、计算或日常问题，先用 1 至 3 句给出清楚、正确的核心答案，再加一句可选的观察、小游戏或场景互动。除非用户明确说“考考我、让我猜、只给提示、先别说答案”，否则不得只反问、只鼓励猜测或故意不回答。
+2. 只有用户明确进入做题、提示或复习时，才采用“先尝试、再提示、最后解释”的学习顺序；普通聊天的 learning 必须为 null。
+3. 情绪陪伴要先承认具体感受，再给一个很小、能做到的下一步。不要说“根本不算什么”“没什么大不了”，不要夸张安慰，也不要使用亲吻、暧昧或过量 emoji。
+4. 语气温暖、有趣但自然，不要每句都卖萌，不要连续使用波浪号。故事可以有画面感，控制在约 60 至 140 个汉字。
+5. 可以在回答中选择一个真实场景动作增强互动，但动作必须来自对应对象的 actions。用户要求动作时优先执行；只是问知识时可不强行动作。
+6. 一次只能返回一个动作。当前在室外时，用户要求去房间读书、学习、休息或创作，应先对人物使用 enterRoom；当前在房间时再用 study、work 或 rest。当前在房间而用户要出去玩，应先用 leaveRoom；室外可用 play。
+7. 涉及今天、明天、星期或时间必须以上面的北京时间为准，不得声称无法获取当前日期。你没有实时天气、新闻或联网搜索能力时要如实说明，但仍可告诉用户如何查看。
+8. 不询问或复述姓名、学校、住址、电话、账号和联系方式等个人信息。
+
+场景对象及允许动作：${JSON.stringify(actionList)}。
+
+必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["短建议1","短建议2","短建议3"],"learning":null或{"mode":"quiz|hint|explain|encourage|chat","result":"correct|try-again|neutral","progressDelta":0或1,"topic":"math|reading|english|discovery","expectedAnswer":"当前小题答案或空字符串"}}。`;
 }
 
 async function handleChat(body) {
@@ -205,14 +278,19 @@ async function handleChat(body) {
   const userText = String(body.text || "").slice(0, 300);
   const clockReply = createClockReply(userText);
   if (clockReply) return clockReply;
+  const realtimeCapabilityReply = createRealtimeCapabilityReply(userText);
+  if (realtimeCapabilityReply) return realtimeCapabilityReply;
   const clock = getBeijingClock();
+  const currentSceneId = body.currentSceneId === "room" ? "room" : "outdoor";
   const actionList = sceneObjects.map(({ id, type, label, actions }) => ({ id, type, label, actions }));
   const reply = await callArk(process.env.ARK_CHAT_MODEL, [
-    { role: "system", content: `你是互动绘画里的学习伙伴${body.name ? `“${body.name}”` : ""}。当前北京时间是${clock.dateText} ${clock.timeText}，涉及今天、明天、星期或时间的问题必须以这个时间为准，不得声称无法获取当前日期。回答温暖、简短、安全，不询问姓名、学校、住址、联系方式等个人信息。当前学习状态：${JSON.stringify(body.learningState || {})}。当用户学习时采用启发式顺序：先鼓励自己尝试，再给一步提示，最后才解释；一次只问一个清楚的小问题，不制造排名、惩罚或压力。答对时简短说明为什么并让角色 cheer 或 jump；答错时不得贬低用户，应给可执行的小提示。非学习聊天保持自然。只能从给定场景对象及其 actions 中选择动作。必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["建议1","建议2","建议3"],"learning":{"mode":"quiz|hint|explain|encourage|chat","result":"correct|try-again|neutral","progressDelta":0或1,"topic":"math|reading|english|discovery","expectedAnswer":"当前小题答案或空字符串"}}。场景：${JSON.stringify(actionList)}` },
+    { role: "system", content: buildChatSystemPrompt({ body, clock, actionList, currentSceneId }) },
     ...(Array.isArray(body.history) ? body.history.slice(-8).map(({ role, text }) => ({ role, content: String(text || "").slice(0, 300) })) : []),
     { role: "user", content: userText },
   ]);
-  return normalizeChat(reply, sceneObjects);
+  const normalized = normalizeChat(reply, sceneObjects);
+  const requestedSceneAction = inferRequestedSceneAction(userText, currentSceneId, sceneObjects);
+  return requestedSceneAction ? { ...normalized, ...requestedSceneAction } : normalized;
 }
 
 async function handleVision(body) {

@@ -33,6 +33,12 @@ const topicRules = [
     },
   },
   {
+    test: (text) => /(?:去|进|回|到|进入).{0,8}(?:房间|屋里|屋内)|(?:房间|屋里|屋内).{0,8}(?:读书|学习|休息|画画|创作|做作业)/.test(text),
+    reply: ({ currentSceneId }) => currentSceneId === "room"
+      ? { text: "我们已经在房间里啦，坐到书桌前挑一本喜欢的书开始吧。", target: "person1", action: "study", suggestions: ["一起读故事书", "出一道小题", "读完去室外玩"] }
+      : { text: "好呀，我们一起走进房间，找个舒服的位置再开始。", target: "person1", action: "enterRoom", suggestions: ["一起读故事书", "坐到书桌前", "先休息一会儿"] },
+  },
+  {
     test: (text) => /出一道.*数学|数学小题|一起学数学/.test(text),
     reply: () => ({ text: "好呀，先来一道小题：树上有 3 个苹果，又长出了 4 个，现在一共有几个？你可以慢慢数。", target: "tree1", action: "shake", suggestions: ["7 个", "给我一点提示", "换一道题"], learning: { mode: "quiz", result: "neutral", progressDelta: 0, topic: "math", expectedAnswer: "7" } }),
   },
@@ -98,7 +104,7 @@ const topicRules = [
   },
   {
     test: (text) => /难过|不开心|伤心|害怕/.test(text),
-    reply: ({ name }) => ({ text: `没关系，${name}会陪着你。我们可以慢慢说，也可以看看小狗做个可爱的动作。`, target: "person1", action: "wave", suggestions: ["谢谢你", "看看小狗", "讲个开心的故事"] }),
+    reply: ({ name }) => ({ text: `听起来这件事让你很难受，${name}会陪着你。我们可以先说说最难受的那一点，也可以先做一次慢慢的深呼吸。`, target: "person1", action: "wave", suggestions: ["我想慢慢说", "陪我深呼吸", "讲个温暖的故事"] }),
   },
   {
     test: (text) => /开心|心情|怎么样/.test(text),
@@ -138,7 +144,7 @@ export function createCharacterReply(rawText, context) {
   }
 
   return {
-    text: "我听见啦！我现在最会聊冒险、画画、心情和小动物，也能听懂“挥挥手”“让太阳下山”这样的指令。",
-    suggestions: ["你喜欢什么？", "我们去冒险吧", "让小狗过来"],
+    text: "我想认真回答你，不过知识助手刚才没有连上。请再发一次试试；等待的时候，我们也可以先让画里的朋友挥挥手或走一走。",
+    suggestions: ["重新发送问题", "让朋友挥挥手", "让小狗过来"],
   };
 }

@@ -947,6 +947,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           text,
           name: characterName,
           sceneObjects: objects,
+          currentSceneId,
+          characterStates,
           persistentState,
           learningState,
           history: messages.slice(-8),
@@ -957,6 +959,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         name: characterName,
         turn: messages.length,
         sceneObjects: objects,
+        currentSceneId,
+        characterStates,
         persistentState,
         learningState,
         });
