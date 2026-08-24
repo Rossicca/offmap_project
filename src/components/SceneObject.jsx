@@ -24,10 +24,12 @@ function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, person
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
+export default function SceneObject({ object, action, activity, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, doghouseDecor, onDoghouseDecorate, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
-  const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
+  const isDeskActivity = object.type === "person" && ["studying", "working"].includes(activity);
+  const isBedActivity = object.type === "person" && activity === "resting";
+  const objectLayer = isDeskActivity ? 11 : isBedActivity ? 9 : isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
 
 
   if (object.type === "house") {
@@ -76,7 +78,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
     : "点击选中";
   return (
     <button
-      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${isDeskActivity ? "is-desk-activity" : ""} ${isBedActivity ? "is-bed-activity" : ""} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
       aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : interactionLabel}`}
@@ -87,7 +89,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />
+        ? <MotionAvatar avatar={avatar} action={action} activity={activity} showJoints={showJoints} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}

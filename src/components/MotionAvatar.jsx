@@ -11,12 +11,22 @@ const frameByAction = {
   dance: "100% 0%",
   spin: "0% 0%",
   cheer: "0% 100%",
-  study: "100% 0%",
-  work: "100% 0%",
-  play: "0% 100%",
-  rest: "0% 0%",
   throwBall: "100% 0%",
   carryToy: "100% 0%",
+};
+
+const activityFrameByAction = {
+  study: "0% 0%",
+  work: "100% 0%",
+  play: "0% 100%",
+  rest: "100% 100%",
+};
+
+const actionByActivity = {
+  studying: "study",
+  working: "work",
+  playing: "play",
+  resting: "rest",
 };
 
 
@@ -86,11 +96,14 @@ function SegmentedCharacter({ avatar }) {
 }
 
 
-export default function MotionAvatar({ avatar, action, showJoints, look }) {
-  const frame = frameByAction[action] || "0% 0%";
+export default function MotionAvatar({ avatar, action, activity, showJoints, look }) {
+  const poseAction = action || actionByActivity[activity] || "idle";
+  const activityFrame = activityFrameByAction[poseAction];
+  const frame = activityFrame || frameByAction[poseAction] || "0% 0%";
   const canSegment = avatar.isUploaded && avatar.rigNodes?.length && !avatar.preserveSourceArt;
   const outfit = wardrobeItem("outfit", look?.outfit || "original");
   const outfitSprite = outfit.avatars?.includes(avatar.id) && outfit.sprite ? outfit.sprite : avatar.motionSprite;
+  const displayedSprite = activityFrame && avatar.activitySprite ? avatar.activitySprite : outfitSprite;
   const outfitMask = outfit.maskWithBase && outfitSprite !== avatar.motionSprite ? {
     WebkitMaskImage: `url(${avatar.motionSprite})`,
     WebkitMaskPosition: frame,
@@ -105,10 +118,10 @@ export default function MotionAvatar({ avatar, action, showJoints, look }) {
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
   return (
-    <div className={`motion-avatar motion-${action || "idle"} ${canSegment ? "has-segmented-rig" : ""} ${avatar.isUploaded ? "preserve-art-colors" : ""} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
+    <div className={`motion-avatar motion-${poseAction} ${canSegment ? "has-segmented-rig" : ""} ${avatar.isUploaded ? "preserve-art-colors" : ""} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? canSegment ? <SegmentedCharacter avatar={avatar} /> : <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
-        : <span className="motion-sprite" style={{ backgroundImage: `url(${outfitSprite})`, backgroundPosition: frame, ...outfitMask }} aria-hidden="true" />}
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${displayedSprite})`, backgroundPosition: frame, ...(displayedSprite === outfitSprite ? outfitMask : {}) }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {action === "carryToy" && <span className="person-carry-toy" aria-hidden="true"><i /><b /><small /></span>}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
