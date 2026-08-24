@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import { extname, resolve, sep } from "node:path";
 
 function loadLocalEnv() {
   try {
@@ -16,14 +16,61 @@ function loadLocalEnv() {
 
 loadLocalEnv();
 
-const port = Number(process.env.API_PORT || 8787);
+const port = Number(process.env.PORT || process.env.API_PORT || 8787);
+const host = process.env.HOST || "127.0.0.1";
 const baseUrl = (process.env.ARK_BASE_URL || "https://ark.cn-beijing.volces.com/api/v3").replace(/\/$/, "");
 const imageModel = process.env.ARK_IMAGE_MODEL || "doubao-seedream-4-0-250828";
 const allowedActions = new Set(["wave", "jump", "eat", "dance", "spin", "cheer", "rest", "openDoor", "closeDoor", "sunset", "sunrise", "shake", "move", "feed"]);
+const staticRoot = resolve("dist");
+const immutableAssetRoot = resolve(staticRoot, "assets");
+const staticMimeTypes = {
+  ".css": "text/css; charset=utf-8",
+  ".gif": "image/gif",
+  ".html": "text/html; charset=utf-8",
+  ".ico": "image/x-icon",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".wasm": "application/wasm",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".webp": "image/webp",
+};
 
 function sendJson(response, status, payload) {
   response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   response.end(JSON.stringify(payload));
+}
+
+function sendStatic(request, response) {
+  if (!existsSync(staticRoot)) {
+    return sendJson(response, 503, { error: "前端尚未构建，请先运行 npm run build" });
+  }
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
+  } catch {
+    return sendJson(response, 400, { error: "无效请求地址" });
+  }
+  const relativePath = pathname.replace(/^\/+/, "") || "index.html";
+  let filePath = resolve(staticRoot, relativePath);
+  if (filePath !== staticRoot && !filePath.startsWith(`${staticRoot}${sep}`)) return sendJson(response, 403, { error: "Forbidden" });
+  if (existsSync(filePath) && statSync(filePath).isDirectory()) filePath = resolve(filePath, "index.html");
+  if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+    if (extname(relativePath)) return sendJson(response, 404, { error: "Not found" });
+    filePath = resolve(staticRoot, "index.html");
+  }
+  const extension = extname(filePath).toLowerCase();
+  const immutableAsset = filePath.startsWith(`${immutableAssetRoot}${sep}`);
+  response.writeHead(200, {
+    "Content-Type": staticMimeTypes[extension] || "application/octet-stream",
+    "Cache-Control": immutableAsset ? "public, max-age=31536000, immutable" : "no-cache",
+  });
+  if (request.method === "HEAD") return response.end();
+  createReadStream(filePath).pipe(response);
 }
 
 async function readJson(request) {
@@ -166,6 +213,7 @@ async function handleVision(body) {
 createServer(async (request, response) => {
   try {
     if (request.method === "GET" && request.url === "/api/health") return sendJson(response, 200, { ok: true, vision: Boolean(process.env.ARK_VISION_MODEL), chat: Boolean(process.env.ARK_CHAT_MODEL), image: Boolean(imageModel) });
+    if (["GET", "HEAD"].includes(request.method) && !request.url.startsWith("/api/")) return sendStatic(request, response);
     if (request.method !== "POST") return sendJson(response, 404, { error: "Not found" });
     const body = await readJson(request);
     if (request.url === "/api/chat") return sendJson(response, 200, await handleChat(body));
@@ -183,4 +231,4 @@ createServer(async (request, response) => {
     console.error(`[api] ${request.method} ${request.url}:`, error.message);
     return sendJson(response, 502, { error: error.message || "服务暂时不可用" });
   }
-}).listen(port, "127.0.0.1", () => console.log(`[api] http://127.0.0.1:${port}`));
+}).listen(port, host, () => console.log(`[app] http://${host}:${port}`));

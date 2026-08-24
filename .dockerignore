@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+!.env.example
+.npm-cache
+.venv
+artifacts
+dist
+node_modules
+*.local
+*.log

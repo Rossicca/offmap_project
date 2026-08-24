@@ -7,6 +7,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:frontend": "vite",
     "server": "node server/index.js",
+    "start": "node server/index.js",
     "build": "npm run check:sprites && npm run check:companion-state && vite build",
     "check:sprites": "node scripts/check-transparent-sprites.mjs",
     "check:companion-state": "node scripts/check-companion-state.mjs",
