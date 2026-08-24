@@ -13,6 +13,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const boardRef = useRef(null);
   const dragRef = useRef(null);
   const enhancementRequestRef = useRef(0);
+  const enhancementAbortRef = useRef(null);
   const enhancementCacheRef = useRef(new Map([
     ["original", originalPreviewUrl],
     ...(analysis.enhancementLevel && analysis.enhancementLevel !== "original"
@@ -56,6 +57,8 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     y: ((imageRect.y + node.y / 100 * imageRect.height) / boardSize.height) * 100,
   });
 
+  useEffect(() => () => enhancementAbortRef.current?.abort(), []);
+
   const chooseTemplate = (nextSpecies) => {
     setSpecies(nextSpecies);
     setNodes(templates[nextSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
@@ -63,6 +66,8 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
 
   const chooseEnhancement = async (level) => {
     const request = ++enhancementRequestRef.current;
+    enhancementAbortRef.current?.abort();
+    enhancementAbortRef.current = null;
     setEnhancementLevel(level);
     setEnhancementError("");
     const cached = enhancementCacheRef.current.get(level);
@@ -72,18 +77,23 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
       return;
     }
     setEnhancementBusy(true);
+    const controller = new AbortController();
+    enhancementAbortRef.current = controller;
     try {
-      const result = await enhanceDrawing(originalPreviewUrl, level);
+      const result = await enhanceDrawing(originalPreviewUrl, level, { signal: controller.signal });
       enhancementCacheRef.current.set(level, result);
       if (request === enhancementRequestRef.current) setPreviewUrl(result);
     } catch (error) {
-      if (request === enhancementRequestRef.current) {
+      if (request === enhancementRequestRef.current && error.name !== "AbortError") {
         setEnhancementLevel("original");
         setPreviewUrl(originalPreviewUrl);
         setEnhancementError(error.message || "画面调整失败，请继续使用原图。");
       }
     } finally {
-      if (request === enhancementRequestRef.current) setEnhancementBusy(false);
+      if (request === enhancementRequestRef.current) {
+        enhancementAbortRef.current = null;
+        setEnhancementBusy(false);
+      }
     }
   };
 
