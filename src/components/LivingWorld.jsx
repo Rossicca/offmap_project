@@ -12,8 +12,13 @@ import WorldDrawingEditor from "./WorldDrawingEditor";
 import ObjectDrawingEditor from "./ObjectDrawingEditor";
 import CustomSceneObject from "./CustomSceneObject";
 import ParentControls from "./ParentControls";
+import MaterialLibrary from "./MaterialLibrary";
+import MaterialSceneObject from "./MaterialSceneObject";
+import HouseDecorator from "./HouseDecorator";
+import KidToolDock from "./KidToolDock";
 import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
+import { backgroundStyleFor, defaultHouseDecor } from "../data/materialCatalog";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -60,6 +65,11 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   const [replacedTypes, setReplacedTypes] = useState(() => initialState?.replacedTypes || []);
   const [customObjectActions, setCustomObjectActions] = useState({});
   const [customHouseStates, setCustomHouseStates] = useState(() => initialState?.customHouseStates || {});
+  const [showMaterialLibrary, setShowMaterialLibrary] = useState(false);
+  const [showHouseDecorator, setShowHouseDecorator] = useState(false);
+  const [libraryObjects, setLibraryObjects] = useState(() => initialState?.libraryObjects || []);
+  const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
+  const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
@@ -159,6 +169,40 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   };
 
 
+  const addMaterial = (material) => {
+    if (material.category === "background") {
+      setMaterialBackground(material);
+      setShowMaterialLibrary(false);
+      setMessage(`背景换成${material.name}啦！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2200);
+      return;
+    }
+    const index = libraryObjects.length;
+    const object = {
+      id: `library-object-${Date.now()}`,
+      isLibrary: true,
+      label: material.name,
+      material,
+      x: 28 + (index % 5) * 11,
+      y: 53 + (index % 3) * 8,
+      layer: 12 + index,
+    };
+    setLibraryObjects((current) => [...current, object]);
+    setShowMaterialLibrary(false);
+    setMessage(`${material.name}放进来啦，可以拖动它！`);
+    setBubbleVisible(true);
+    later(() => setBubbleVisible(false), 2200);
+  };
+
+
+  const playWithMaterial = (object) => {
+    setMessage(`${object.label}在和你打招呼！`);
+    setBubbleVisible(true);
+    later(() => setBubbleVisible(false), 1800);
+  };
+
+
   const animateCustomObject = (object) => {
     if (object.kind === "house") {
       const willOpen = !customHouseStates[object.id]?.doorOpen;
@@ -176,6 +220,10 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
   const deleteCustomObject = (id) => {
+    if (libraryObjects.some((item) => item.id === id)) {
+      setLibraryObjects((current) => current.filter((item) => item.id !== id));
+      return;
+    }
     const target = customObjects.find((item) => item.id === id);
     setCustomObjects((current) => current.filter((item) => item.id !== id));
     setCustomHouseStates((current) => { const next = { ...current }; delete next[id]; return next; });
@@ -184,7 +232,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
   const moveSceneObject = (id, axis, value) => {
-    if (customObjects.some((item) => item.id === id)) {
+    if (libraryObjects.some((item) => item.id === id)) {
+      setLibraryObjects((current) => current.map((item) => item.id === id ? { ...item, [axis]: value } : item));
+    } else if (customObjects.some((item) => item.id === id)) {
       setCustomObjects((current) => current.map((item) => item.id === id ? { ...item, [axis]: value } : item));
     } else {
       setObjects((current) => current.map((object) => object.id === id ? { ...object, [axis]: value } : object));
@@ -194,7 +244,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
   const changeObjectLayer = (id, direction) => {
     const updateLayer = (item) => item.id === id ? { ...item, layer: Math.max(1, Math.min(40, (item.layer || 3) + direction)) } : item;
-    if (customObjects.some((item) => item.id === id)) setCustomObjects((current) => current.map(updateLayer));
+    if (libraryObjects.some((item) => item.id === id)) setLibraryObjects((current) => current.map(updateLayer));
+    else if (customObjects.some((item) => item.id === id)) setCustomObjects((current) => current.map(updateLayer));
     else setObjects((current) => current.map(updateLayer));
   };
 
@@ -273,7 +324,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     const stageBounds = stage?.getBoundingClientRect();
     if (stage && stageBounds) {
       const nextBounds = {};
-      [...objects.filter((object) => !replacedTypes.includes(object.type)), ...customObjects].forEach((object) => {
+      [...objects.filter((object) => !replacedTypes.includes(object.type)), ...customObjects, ...libraryObjects].forEach((object) => {
         const element = stage.querySelector(`[data-object-id="${object.id}"]`);
         const bounds = element?.getBoundingClientRect();
         const halfWidth = Math.min(42, ((bounds?.width || 0) / 2 / stageBounds.width) * 100 + 1.5);
@@ -293,7 +344,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
     const halfHeight = Math.min(42, ((objectSize?.height || 0) / 2 / rect.height) * 100 + 1.5);
     const x = Math.max(halfWidth, Math.min(100 - halfWidth, ((clientX - rect.left) / rect.width) * 100));
     const y = Math.max(halfHeight, Math.min(100 - halfHeight, ((clientY - rect.top) / rect.height) * 100));
-    if (customObjects.some((object) => object.id === objectId)) {
+    if (libraryObjects.some((object) => object.id === objectId)) {
+      setLibraryObjects((current) => current.map((object) => object.id === objectId ? { ...object, x, y } : object));
+    } else if (customObjects.some((object) => object.id === objectId)) {
       setCustomObjects((current) => current.map((object) => object.id === objectId ? { ...object, x, y } : object));
     } else {
       setObjects((current) => current.map((object) => object.id === objectId ? { ...object, x, y } : object));
@@ -303,7 +356,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
   const finishMovingObject = (objectId) => {
-    const object = [...objects, ...customObjects].find((item) => item.id === objectId);
+    const object = [...objects, ...customObjects, ...libraryObjects].find((item) => item.id === objectId);
     if (!object) return;
     setMessage(`${object.label}已经移动到新位置啦！`);
     setBubbleVisible(true);
@@ -312,6 +365,21 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
   const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type));
+  const saveWorld = () => onSave?.({
+    persistentState,
+    messages,
+    storyStep,
+    storyEnding,
+    sceneObjects: objects,
+    sceneTheme,
+    worldArt,
+    customObjects,
+    replacedTypes,
+    customHouseStates,
+    libraryObjects,
+    materialBackground,
+    houseDecor,
+  });
 
 
   return (
@@ -320,11 +388,23 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
           <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
-        <div className="found-status"><span aria-hidden="true">●</span> 找到 {visibleObjects.length + customObjects.length} 个朋友</div>
-        <div className="world-header-actions"><button type="button" onClick={() => setWorldDrawingMode("background")}>画背景图层</button><button type="button" onClick={() => setShowObjectDrawing(true)}>添加画作图层</button><button type="button" onClick={() => setShowParentControls(true)}>家长设置</button><button type="button" onClick={openSceneEditor}>编辑图层</button><button type="button" onClick={() => onSave?.({ persistentState, messages, storyStep, storyEnding, sceneObjects: objects, sceneTheme, worldArt, customObjects, replacedTypes, customHouseStates })}>保存作品</button><button type="button" onClick={() => setShowExport(true)}>导出分享</button><button className="new-drawing" type="button" onClick={onReset}>换个角色 <span aria-hidden="true">↗</span></button></div>
+        <div className="found-status"><span aria-hidden="true">●</span> 世界里有 {visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友</div>
+        <KidToolDock
+          onAdd={() => setShowMaterialLibrary(true)}
+          onDecorate={() => setShowHouseDecorator(true)}
+          onDraw={() => setShowObjectDrawing(true)}
+          onDrawBackground={() => setWorldDrawingMode("background")}
+          onSave={saveWorld}
+          onArrange={openSceneEditor}
+          onExport={() => setShowExport(true)}
+          onParent={() => setShowParentControls(true)}
+          onReset={onReset}
+        />
       </header>
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
-      {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
+      {showMaterialLibrary && <MaterialLibrary onAdd={addMaterial} onClose={() => setShowMaterialLibrary(false)} />}
+      {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
+      {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects, ...libraryObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}
       {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
@@ -332,8 +412,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
       <div className="world-experience">
-      <section ref={stageRef} className={`world-stage theme-${sceneTheme} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="可拖动的互动世界">
-        <div className="demo-mode-badge"><span aria-hidden="true">●</span> {worldArt.background ? "原始世界 + 自绘背景图层" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
+      <section ref={stageRef} style={backgroundStyleFor(materialBackground)} className={`world-stage theme-${sceneTheme} ${materialBackground ? "has-library-background" : ""} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="可拖动的互动世界">
+        <div className="demo-mode-badge"><span aria-hidden="true">●</span> {worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住任意角色或物件直接拖动；位置会跟随作品保存</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
@@ -360,6 +440,8 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
               showJoints={showJoints}
               houseArt={worldArt.house}
+              houseDecor={houseDecor}
+              onDecorate={() => setShowHouseDecorator(true)}
             />
           ))}
           {customObjects.map((object) => (
@@ -372,6 +454,9 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
             />
+          ))}
+          {libraryObjects.map((object) => (
+            <MaterialSceneObject key={object.id} object={object} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
         {showJoints && (

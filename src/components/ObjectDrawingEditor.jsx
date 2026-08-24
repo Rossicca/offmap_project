@@ -119,7 +119,7 @@ export default function ObjectDrawingEditor({ onAdd, onClose }) {
         </div>
 
         <div className="object-placement-mode" aria-label="加入方式">
-          <button type="button" className={placementMode === "add" ? "is-active" : ""} onClick={() => setPlacementMode("add")} aria-pressed={placementMode === "add"}>保留原物件，新增图层</button>
+          <button type="button" className={placementMode === "add" ? "is-active" : ""} onClick={() => setPlacementMode("add")} aria-pressed={placementMode === "add"}>保留原来的，另外加入</button>
           <button type="button" className={placementMode === "replace" ? "is-active" : ""} onClick={() => setPlacementMode("replace")} aria-pressed={placementMode === "replace"}>替换原物件</button>
           <label>名字 <input value={name} maxLength="16" onChange={(event) => setName(event.target.value)} /></label>
         </div>
@@ -133,7 +133,7 @@ export default function ObjectDrawingEditor({ onAdd, onClose }) {
 
         <div className="world-drawing-paper is-house"><canvas ref={canvasRef} width="900" height="600" onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerCancel={stopDrawing} aria-label="绘画新对象的画布" /></div>
 
-        <footer><p>{placementMode === "add" ? `会保留原来的${kind === "house" ? "房子" : "物件"}，把你的画作为一个可拖动的新图层加入。` : `会隐藏原来的${kind === "house" ? "房子" : "同类物件"}，由你的画接替原位置和交互。`}</p><div><button type="button" onClick={clear}>清空</button><button className="primary-button" type="button" disabled={!hasDrawing} onClick={addToWorld}>加入游戏世界 <span aria-hidden="true">＋</span></button></div></footer>
+        <footer><p>{placementMode === "add" ? `会保留原来的${kind === "house" ? "房子" : "物件"}，把你的画也放进世界，还可以拖动。` : `会隐藏原来的${kind === "house" ? "房子" : "同类物件"}，由你的画接替原位置和交互。`}</p><div><button type="button" onClick={clear}>清空</button><button className="primary-button" type="button" disabled={!hasDrawing} onClick={addToWorld}>加入游戏世界 <span aria-hidden="true">＋</span></button></div></footer>
       </section>
     </div>
   );

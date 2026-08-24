@@ -129,7 +129,7 @@ export default function WorldDrawingEditor({ initialArt, initialMode = "backgrou
         </div>
 
         <footer>
-          <p>{backgroundOnly ? "这是透明的背景装饰层，会叠在原始天空和草地上；默认房子、人物和道具都会继续保留。" : mode === "house" ? "房子画布是透明的，画好后会替换世界里的小房子。" : "背景装饰会叠在原始世界上，场景里的对象继续作为独立图层。"}</p>
+          <p>{backgroundOnly ? "背景装饰会放在原始天空和草地上；房子、人物和道具都会继续保留。" : mode === "house" ? "画好后会换掉世界里的小房子。" : "背景装饰会放进原始世界，场景里的东西都会继续保留。"}</p>
           <div><button type="button" onClick={resetCurrent}>清空重画</button><button className="primary-button" type="button" disabled={backgroundOnly && !hasContentRef.current.background} onClick={apply}>{backgroundOnly ? "带背景进入世界" : "应用到游戏"} <span aria-hidden="true">✓</span></button></div>
         </footer>
       </section>

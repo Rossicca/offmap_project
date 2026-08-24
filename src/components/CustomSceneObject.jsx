@@ -12,7 +12,7 @@ export default function CustomSceneObject({ object, action, doorOpen, onInteract
       type="button"
       data-object-id={object.id}
       aria-describedby="drag-help"
-      aria-label={`${object.label}，图层${object.layer || 10}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；点击${object.kind === "house" ? (doorOpen ? "关门" : "开门") : "让它动起来"}`}
+      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；点击${object.kind === "house" ? (doorOpen ? "关门" : "开门") : "让它动起来"}`}
       onClick={() => activate(() => onInteract(object))}
       {...dragHandlers}
     >
