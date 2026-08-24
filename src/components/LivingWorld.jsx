@@ -33,6 +33,7 @@ import { migrateCompanionSnapshot, normalizeCharacterStates, normalizeSceneId } 
 import { executeCompanionAction } from "../utils/executeCompanionAction";
 import { formatStudyTotal, isStudyRewardUnlocked, remainingStudyMinutes, studyRewardForAction, studySubjects } from "../data/studyRewards";
 import useStudyFocus from "../hooks/useStudyFocus";
+import { roomActivitySpotFor } from "../utils/roomActivityPosition";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -64,12 +65,6 @@ const learningPrompts = {
   hint: { math: "这道题我还没想明白，请只给我一步提示，不要直接说答案。", reading: "请提示我应该回到哪句话找线索，不要直接说答案。", english: "请给我一个联想或首字母提示，不要直接说答案。", discovery: "请给我一个观察提示，让我自己发现答案。" },
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
-const ROOM_ACTIVITY_SPOTS = Object.freeze({
-  [ACTION_IDS.STUDY]: { x: 72, y: 62 },
-  [ACTION_IDS.WORK]: { x: 72, y: 62 },
-  [ACTION_IDS.REST]: { x: 22, y: 62 },
-});
-
 const prepareCompanionSnapshot = (initialState, sceneObjects) => {
   const hasSavedScene = Array.isArray(initialState?.sceneObjects);
   const migrated = migrateCompanionSnapshot({
@@ -317,7 +312,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       : null;
     if (isCompanionAction) companionActionTokens.current[objectId] = companionActionToken;
 
-    const activitySpot = currentSceneId === SCENE_IDS.ROOM ? ROOM_ACTIVITY_SPOTS[action] : null;
+    const objectAvatar = object?.type === "person"
+      ? companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar
+      : null;
+    const activitySpot = currentSceneId === SCENE_IDS.ROOM ? roomActivitySpotFor(action, objectAvatar) : null;
     if (companionResult && !companionResult.transitionTo && activitySpot) {
       setActiveActions((current) => ({ ...current, [objectId]: "move" }));
       setObjects((current) => current.map((item) => item.id === objectId ? {

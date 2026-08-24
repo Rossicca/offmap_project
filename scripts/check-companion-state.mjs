@@ -13,6 +13,7 @@ import {
   normalizeSceneObjects,
 } from "../src/utils/companionState.js";
 import { executeCompanionAction } from "../src/utils/executeCompanionAction.js";
+import { roomActivitySpotFor } from "../src/utils/roomActivityPosition.js";
 
 const empty = migrateCompanionSnapshot(null);
 assert.equal(empty.companionStateVersion, COMPANION_STATE_SCHEMA_VERSION);
@@ -73,6 +74,9 @@ assert.deepEqual(normalizeActiveActions({ person1: "wave", person2: "teleport" }
 assert.equal(normalizeSceneObjects([{ id: "old-object", type: "house" }])[0].sceneId, SCENE_IDS.OUTDOOR);
 assert.equal(ROOM_SCENE_OBJECTS.length, 4);
 assert.equal(ROOM_SCENE_OBJECTS.every((object) => object.sceneId === SCENE_IDS.ROOM), true);
+assert.deepEqual(roomActivitySpotFor("study", { isUploaded: false }), { x: 72, y: 62 });
+assert.deepEqual(roomActivitySpotFor("study", { isUploaded: true }), { x: 72, y: 42 });
+assert.equal(roomActivitySpotFor("wave", { isUploaded: true }), null);
 
 const studying = executeCompanionAction({
   action: "study",
