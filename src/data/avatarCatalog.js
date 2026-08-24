@@ -26,10 +26,10 @@ export const avatarCatalog = [
   },
   {
     id: "hero",
-    name: "星星女孩",
+    name: "星星男孩",
     kind: "人物",
     species: "human",
-    gender: "女生",
+    gender: "男生",
     spritePosition: "100% 100%",
     motionSprite: heroMotion,
     colors: { accent: "#297ec5", secondary: "#ed4437", skin: "#ffd0a9", hair: "#513325" },

@@ -89,6 +89,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
   const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
+  const [selectedObjectId, setSelectedObjectId] = useState(null);
+  const undoHistory = useRef([]);
+  const redoHistory = useRef([]);
+  const [, setHistoryVersion] = useState(0);
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
@@ -104,6 +108,35 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     const timer = window.setTimeout(() => setTimeUp(true), safety.sessionMinutes * 60 * 1000);
     return () => window.clearTimeout(timer);
   }, [safety.sessionMinutes]);
+
+  const captureEditState = () => ({ objects, customObjects, libraryObjects, materialBackground });
+  const restoreEditState = (snapshot) => {
+    setObjects(snapshot.objects);
+    setCustomObjects(snapshot.customObjects);
+    setLibraryObjects(snapshot.libraryObjects);
+    setMaterialBackground(snapshot.materialBackground);
+  };
+  const rememberEdit = () => {
+    undoHistory.current = [...undoHistory.current.slice(-19), captureEditState()];
+    redoHistory.current = [];
+    setHistoryVersion((value) => value + 1);
+  };
+  const undoEdit = () => {
+    const snapshot = undoHistory.current.pop();
+    if (!snapshot) return;
+    redoHistory.current.push(captureEditState());
+    restoreEditState(snapshot);
+    setSelectedObjectId(null);
+    setHistoryVersion((value) => value + 1);
+  };
+  const redoEdit = () => {
+    const snapshot = redoHistory.current.pop();
+    if (!snapshot) return;
+    undoHistory.current.push(captureEditState());
+    restoreEditState(snapshot);
+    setSelectedObjectId(null);
+    setHistoryVersion((value) => value + 1);
+  };
 
 
   const later = (callback, delay) => {
@@ -205,6 +238,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const addCustomObject = (drawing) => {
+    rememberEdit();
     const replacesType = drawing.placementMode === "replace" ? replacementTypeByKind[drawing.kind] : null;
     const sameKindCount = customObjects.filter((item) => item.kind === drawing.kind && !item.replacesType).length;
     const replacedObject = replacesType ? objects.find((item) => item.type === replacesType) : null;
@@ -233,6 +267,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const addMaterial = (material) => {
+    rememberEdit();
     if (material.category === "background") {
       setMaterialBackground(material);
       setShowMaterialLibrary(false);
@@ -304,6 +339,38 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     setCustomObjects((current) => current.filter((item) => item.id !== id));
     setCustomHouseStates((current) => { const next = { ...current }; delete next[id]; return next; });
     if (target?.replacesType) setReplacedTypes((current) => current.filter((type) => type !== target.replacesType));
+  };
+
+  const updateSelectedObject = (updater) => {
+    if (!selectedObjectId) return;
+    const update = (item) => item.id === selectedObjectId ? updater(item) : item;
+    if (libraryObjects.some((item) => item.id === selectedObjectId)) setLibraryObjects((current) => current.map(update));
+    else if (customObjects.some((item) => item.id === selectedObjectId)) setCustomObjects((current) => current.map(update));
+    else setObjects((current) => current.map(update));
+  };
+  const resizeSelectedObject = (direction) => {
+    rememberEdit();
+    updateSelectedObject((item) => ({ ...item, scale: Math.max(.5, Math.min(2.2, Number(((item.scale || 1) + direction * .15).toFixed(2)))) }));
+  };
+  const duplicateSelectedObject = () => {
+    const source = [...objects, ...customObjects, ...libraryObjects].find((item) => item.id === selectedObjectId);
+    if (!source) return;
+    rememberEdit();
+    const copy = { ...source, id: `${source.isLibrary ? "library" : source.isCustom ? "custom" : "scene"}-copy-${Date.now()}`, label: `${source.label} 2`, x: Math.min(92, source.x + 6), y: Math.min(84, source.y + 5) };
+    if (source.isLibrary) setLibraryObjects((current) => [...current, copy]);
+    else if (source.isCustom) setCustomObjects((current) => [...current, copy]);
+    else setObjects((current) => [...current, copy]);
+    setSelectedObjectId(copy.id);
+  };
+  const deleteSelectedObject = () => {
+    if (!selectedObjectId) return;
+    rememberEdit();
+    const target = customObjects.find((item) => item.id === selectedObjectId);
+    setObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    setCustomObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    setLibraryObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    if (target?.replacesType) setReplacedTypes((current) => current.filter((type) => type !== target.replacesType));
+    setSelectedObjectId(null);
   };
 
 
@@ -545,6 +612,21 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         <div className="ground" aria-hidden="true" />
         {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
         <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />
+        {selectedObjectId && (() => {
+          const selectedObject = [...visibleObjects, ...customObjects, ...libraryObjects].find((item) => item.id === selectedObjectId);
+          if (!selectedObject) return null;
+          return <div className="object-quick-toolbar" role="toolbar" aria-label={`调整${selectedObject.label}`}>
+            <b>{selectedObject.label}</b>
+            <button type="button" onClick={() => resizeSelectedObject(-1)} aria-label="缩小">−</button>
+            <button type="button" onClick={() => resizeSelectedObject(1)} aria-label="放大">＋</button>
+            <button type="button" onClick={duplicateSelectedObject}>复制</button>
+            <button type="button" onClick={() => setShowMaterialLibrary(true)}>加伙伴</button>
+            <button type="button" onClick={undoEdit} disabled={!undoHistory.current.length} aria-label="撤销">↶</button>
+            <button type="button" onClick={redoEdit} disabled={!redoHistory.current.length} aria-label="恢复">↷</button>
+            <button className="is-delete" type="button" onClick={deleteSelectedObject}>删除</button>
+            <button className="is-close" type="button" onClick={() => setSelectedObjectId(null)} aria-label="关闭工具条">×</button>
+          </div>;
+        })()}
         <div className={persistentState.dogMoved ? "dog-route is-moved" : "dog-route"}>
           {visibleObjects.map((object) => (
             <SceneObject
@@ -552,6 +634,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={activeActions[object.id]}
               persistentState={persistentState}
+              selected={selectedObjectId === object.id}
+              onSelect={setSelectedObjectId}
               onInteract={handleDirectAction}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
@@ -569,13 +653,15 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={customObjectActions[object.id]}
               doorOpen={Boolean(customHouseStates[object.id]?.doorOpen)}
+              selected={selectedObjectId === object.id}
+              onSelect={setSelectedObjectId}
               onInteract={animateCustomObject}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
             />
           ))}
           {libraryObjects.map((object) => (
-            <MaterialSceneObject key={object.id} object={object} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
+            <MaterialSceneObject key={object.id} object={object} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
         {showJoints && (

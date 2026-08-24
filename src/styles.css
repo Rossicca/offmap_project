@@ -1910,3 +1910,20 @@ html, body {
   .avatar-wardrobe footer > div { display:grid; grid-template-columns:repeat(3,1fr); }
   .avatar-wardrobe footer .primary-button { width:100%; }
 }
+
+/* Direct object controls: tap a scene item, then edit it without leaving the canvas. */
+.scene-object.is-selected::after { content:""; position:absolute; inset:-9px; border:2px dashed #6ba9be; border-radius:14px; pointer-events:none; filter:none; }
+.object-quick-toolbar { position:absolute; z-index:95; left:50%; bottom:16px; max-width:calc(100% - 24px); min-height:48px; padding:6px; display:flex; align-items:center; gap:5px; border:3px solid rgba(110,190,218,.62); border-radius:16px; color:#67452f; background:rgba(255,254,248,.96); box-shadow:0 12px 28px rgba(43,92,108,.18); transform:translateX(-50%); backdrop-filter:blur(8px); }
+.object-quick-toolbar > b { max-width:118px; padding:0 7px; overflow:hidden; font-size:.72rem; text-overflow:ellipsis; white-space:nowrap; }
+.object-quick-toolbar button { min-width:38px; min-height:38px; padding:0 9px; border:2px solid #bedde5; border-radius:10px; color:#397b91; background:#f5fbfb; font-size:.72rem; font-weight:950; cursor:pointer; white-space:nowrap; }
+.object-quick-toolbar button:hover { border-color:#e9ae68; background:#fff4c9; }
+.object-quick-toolbar button:disabled { opacity:.38; cursor:not-allowed; }
+.object-quick-toolbar button.is-delete { color:#b95345; border-color:#f0c2b9; background:#fff2ed; }
+.object-quick-toolbar button.is-close { min-width:32px; padding:0; border-color:transparent; background:transparent; font-size:1.15rem; }
+
+@media (max-width:760px) {
+  .object-quick-toolbar { left:10px; right:10px; bottom:10px; max-width:none; overflow-x:auto; transform:none; scrollbar-width:none; }
+  .object-quick-toolbar::-webkit-scrollbar { display:none; }
+  .object-quick-toolbar > b { flex:0 0 auto; }
+  .object-quick-toolbar button { flex:0 0 auto; min-width:44px; min-height:44px; }
+}
