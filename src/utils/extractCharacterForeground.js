@@ -2,6 +2,19 @@ import { removeBackground } from "@imgly/background-removal";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+export function restoreForegroundColors(foregroundPixels, sourcePixels) {
+  const length = Math.min(foregroundPixels.data.length, sourcePixels.data.length);
+  for (let offset = 0; offset < length; offset += 4) {
+    const maskAlpha = foregroundPixels.data[offset + 3];
+    if (!maskAlpha) continue;
+    foregroundPixels.data[offset] = sourcePixels.data[offset];
+    foregroundPixels.data[offset + 1] = sourcePixels.data[offset + 1];
+    foregroundPixels.data[offset + 2] = sourcePixels.data[offset + 2];
+    foregroundPixels.data[offset + 3] = Math.min(maskAlpha, sourcePixels.data[offset + 3]);
+  }
+  return foregroundPixels;
+}
+
 function loadImage(source) {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -237,6 +250,10 @@ function trimForeground(foreground, sourceCanvas, bounds, nodes, sourceSize) {
   const pixels = scanContext.getImageData(0, 0, scan.width, scan.height);
   const sourcePixels = sourceCanvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
   keepJointConnectedForeground(pixels, sourcePixels, scan.width, scan.height, nodes, bounds, sourceSize);
+  // The segmentation model supplies only the alpha mask. Always take visible RGB
+  // values from the source artwork so white fills and original line colors cannot
+  // be replaced by the model's black/premultiplied foreground pixels.
+  restoreForegroundColors(pixels, sourcePixels);
   scanContext.putImageData(pixels, 0, 0);
   let left = scan.width;
   let top = scan.height;
