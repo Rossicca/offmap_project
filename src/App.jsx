@@ -8,6 +8,7 @@ import CompanionMusic from "./components/CompanionMusic";
 import { avatarCatalog } from "./data/avatarCatalog";
 import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
+import { clearProjects, loadProjects, migrateLegacyProjects, removeProject, storeProject } from "./utils/projectStorage";
 
 
 const releasePreview = (url) => { if (url?.startsWith("blob:")) URL.revokeObjectURL(url); };
@@ -30,7 +31,14 @@ export default function App() {
   const previewUrlRef = useRef(null);
 
 
-  useEffect(() => { localStorage.setItem("living-drawing-projects", JSON.stringify(projects)); }, [projects]);
+  useEffect(() => {
+    let active = true;
+    loadProjects()
+      .then(async (stored) => stored.length ? stored : migrateLegacyProjects())
+      .then((stored) => { if (active && stored.length) setProjects(stored); })
+      .catch((storageError) => console.warn("作品数据库暂时不可用：", storageError.message));
+    return () => { active = false; };
+  }, []);
   useEffect(() => { localStorage.setItem("living-drawing-safety", JSON.stringify(safety)); }, [safety]);
 
 
@@ -167,9 +175,11 @@ export default function App() {
       const existing = current.find((project) => project.id === id);
       const avatarData = selectedAvatar?.isUploaded ? { ...selectedAvatar } : null;
       const project = { id, name: existing?.name || (analysis?.source === "background-canvas" ? "我的手绘背景世界" : `${selectedAvatar?.name || "我的角色"}的世界`), avatarId: selectedAvatar?.id || "explorer", avatarData, companionIds: companions.map((avatar) => avatar.id), createdAt: existing?.createdAt || now, updatedAt: now, snapshot };
-      const next = [project, ...current.filter((item) => item.id !== id)].slice(0, 20);
-      while (next.length > 1 && JSON.stringify(next).length > 4_200_000) next.pop();
-      return next;
+      void storeProject(project).catch((storageError) => {
+        console.error("作品保存失败：", storageError);
+        window.alert("作品没有成功保存，请检查浏览器存储权限后再试一次。");
+      });
+      return [project, ...current.filter((item) => item.id !== id)];
     });
     setCurrentProjectId(id);
   };
@@ -190,12 +200,20 @@ export default function App() {
   const renameProject = (id) => {
     const current = projects.find((project) => project.id === id);
     const name = window.prompt("给作品取一个新名字", current?.name || "我的作品")?.trim();
-    if (name) setProjects((items) => items.map((project) => project.id === id ? { ...project, name, updatedAt: new Date().toISOString() } : project));
+    if (name) setProjects((items) => items.map((project) => {
+      if (project.id !== id) return project;
+      const renamed = { ...project, name, updatedAt: new Date().toISOString() };
+      void storeProject(renamed).catch((storageError) => console.error("作品重命名保存失败：", storageError));
+      return renamed;
+    }));
   };
 
 
   const deleteProject = (id) => {
-    if (window.confirm("确定删除这个本地作品吗？")) setProjects((items) => items.filter((project) => project.id !== id));
+    if (window.confirm("确定删除这个本地作品吗？")) {
+      setProjects((items) => items.filter((project) => project.id !== id));
+      void removeProject(id).catch((storageError) => console.error("作品删除失败：", storageError));
+    }
   };
 
 
@@ -203,6 +221,8 @@ export default function App() {
     if (!window.confirm("确定清除所有本地作品、聊天和语音设置吗？此操作无法撤销。")) return;
     setProjects([]);
     setCurrentProjectId(null);
+    void clearProjects().catch((storageError) => console.error("作品数据库清理失败：", storageError));
+    localStorage.removeItem("living-drawing-projects");
     localStorage.removeItem("living-drawing-voice");
     if (analysis) reset();
   };

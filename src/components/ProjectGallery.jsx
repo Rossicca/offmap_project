@@ -3,7 +3,7 @@ import { avatarCatalog } from "../data/avatarCatalog";
 export default function ProjectGallery({ projects, onOpen, onRename, onDelete, onClose }) {
   return (
     <section className="project-gallery" aria-labelledby="gallery-title">
-      <header><div><span>MY LITTLE WORLDS</span><h2 id="gallery-title">我的作品</h2><p>每个小世界都只保存在当前浏览器中。</p></div><button type="button" onClick={onClose}>← 返回伙伴主页</button></header>
+      <header><div><span>MY LITTLE WORLDS</span><h2 id="gallery-title">我的作品</h2><p>{projects.length ? `已保存 ${projects.length} 个小世界，全部保存在当前浏览器中。` : "每个小世界都只保存在当前浏览器中。"}</p></div><button type="button" onClick={onClose}>← 返回伙伴主页</button></header>
       {projects.length === 0 ? <div className="gallery-empty"><span aria-hidden="true">✦</span><h3>还没有保存的世界</h3><p>选择一个角色进入互动世界，然后点击“保存作品”。</p><button className="primary-button" type="button" onClick={onClose}>开始第一个作品</button></div> : <div className="project-grid">{projects.map((project) => {
         const avatar = avatarCatalog.find((item) => item.id === project.avatarId) || avatarCatalog[0];
         const projectAvatarName = project.avatarData?.name || avatar.name;
