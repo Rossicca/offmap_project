@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@imgly/background-removal':
         specifier: ^1.7.0
-        version: 1.7.0(onnxruntime-web@1.27.0)
+        version: 1.7.0(onnxruntime-web@1.21.0)
       '@vitejs/plugin-react':
         specifier: latest
         version: 6.1.0(vite@8.2.2(@types/node@26.2.0))
       onnxruntime-web:
-        specifier: ^1.21.0
-        version: 1.27.0
+        specifier: 1.21.0
+        version: 1.21.0
       react:
         specifier: latest
         version: 19.2.8
@@ -300,11 +300,11 @@ packages:
   ndarray@1.0.19:
     resolution: {integrity: sha512-B4JHA4vdyZU30ELBw3g7/p9bZupyew5a7tX1Y/gGeF2hafrPaQZhgrGQfsvgfYbgdFZjYwuEcnaobeM/WMW+HQ==}
 
-  onnxruntime-common@1.27.0:
-    resolution: {integrity: sha512-3KxL5wIVqa8Ex08jxSzncm9CMgw8CjOFyOQ7SxvG9o0cVLlhTNKXyIQuTbtX4tGPJEf73OER2xrjt4HJSBL4ow==}
+  onnxruntime-common@1.21.0:
+    resolution: {integrity: sha512-Q632iLLrtCAVOTO65dh2+mNbQir/QNTVBG3h/QdZBpns7mZ0RYbLRBgGABPbpU9351AgYy7SJf1WaeVwMrBFPQ==}
 
-  onnxruntime-web@1.27.0:
-    resolution: {integrity: sha512-ogDLsqIozHZwifPuN37OproAo0byX6t43/bP8GzeZWBWD6MOGExswFAx3up4NS/vvWBOg2u2PXomDt3rMmdQSg==}
+  onnxruntime-web@1.21.0:
+    resolution: {integrity: sha512-adzOe+7uI7lKz6pQNbAsLMQd2Fq5Jhmoxd8LZjJr8m3KvbFyiYyRxRiC57/XXD+jb18voppjeGAjoZmskXG+7A==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -400,11 +400,11 @@ packages:
 
 snapshots:
 
-  '@imgly/background-removal@1.7.0(onnxruntime-web@1.27.0)':
+  '@imgly/background-removal@1.7.0(onnxruntime-web@1.21.0)':
     dependencies:
       lodash-es: 4.18.1
       ndarray: 1.0.19
-      onnxruntime-web: 1.27.0
+      onnxruntime-web: 1.21.0
       zod: 3.25.76
 
   '@oxc-project/types@0.146.0': {}
@@ -562,14 +562,14 @@ snapshots:
       iota-array: 1.0.0
       is-buffer: 1.1.6
 
-  onnxruntime-common@1.27.0: {}
+  onnxruntime-common@1.21.0: {}
 
-  onnxruntime-web@1.27.0:
+  onnxruntime-web@1.21.0:
     dependencies:
       flatbuffers: 25.9.23
       guid-typescript: 1.0.9
       long: 5.3.2
-      onnxruntime-common: 1.27.0
+      onnxruntime-common: 1.21.0
       platform: 1.3.6
       protobufjs: 7.6.5
 
