@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   ACTIVITY_IDS,
   COMPANION_STATE_SCHEMA_VERSION,
+  ROOM_SCENE_OBJECTS,
   SCENE_IDS,
 } from "../src/data/companionSystem.js";
 import {
@@ -69,5 +70,7 @@ assert.deepEqual(normalizeCharacterStates(
 ).person2, { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.STUDYING });
 assert.deepEqual(normalizeActiveActions({ person1: "wave", person2: "teleport" }), { person1: "wave", person2: null });
 assert.equal(normalizeSceneObjects([{ id: "old-object", type: "house" }])[0].sceneId, SCENE_IDS.OUTDOOR);
+assert.equal(ROOM_SCENE_OBJECTS.length, 4);
+assert.equal(ROOM_SCENE_OBJECTS.every((object) => object.sceneId === SCENE_IDS.ROOM), true);
 
 console.log("Companion state checks passed.");

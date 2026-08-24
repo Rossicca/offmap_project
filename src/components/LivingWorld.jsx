@@ -28,6 +28,8 @@ import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { playDogBark } from "../utils/soundEffects";
 import { backgroundStyleFor, defaultDoghouseDecor, defaultHouseDecor } from "../data/materialCatalog";
+import { ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS } from "../data/companionSystem";
+import { migrateCompanionSnapshot, normalizeCharacterStates, normalizeSceneId } from "../utils/companionState";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -60,6 +62,24 @@ const learningPrompts = {
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
 
+const prepareCompanionSnapshot = (initialState, sceneObjects) => {
+  const hasSavedScene = Array.isArray(initialState?.sceneObjects);
+  const migrated = migrateCompanionSnapshot({
+    ...(initialState || {}),
+    sceneObjects: hasSavedScene ? initialState.sceneObjects : sceneObjects || [],
+  });
+  const initialObjects = migrated.sceneObjects.filter((object) => !removedDefaultObjectIds.has(object.id));
+  const baseObjects = hasSavedScene ? initialObjects : initialObjects.filter((object) => initialSceneTypes.has(object.type));
+  const hasRoomFurniture = baseObjects.some((object) => ROOM_SCENE_OBJECTS.some((roomObject) => roomObject.id === object.id));
+  return {
+    ...migrated,
+    sceneObjects: [
+      ...baseObjects,
+      ...(hasRoomFurniture ? [] : ROOM_SCENE_OBJECTS.map((object) => ({ ...object }))),
+    ],
+  };
+};
+
 const loadAvatarGrowth = (savedGrowth) => {
   try {
     const stored = JSON.parse(localStorage.getItem("living-drawing-avatar-growth") || "null");
@@ -77,14 +97,14 @@ const loadAvatarGrowth = (savedGrowth) => {
 
 
 export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], onAvatarChange, rigAnalysis, userName, initialState, onSave, editingProjectName = "", safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
+  const [preparedInitialState] = useState(() => prepareCompanionSnapshot(initialState, sceneObjects));
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
-  const [objects, setObjects] = useState(() => {
-    const hasSavedScene = Array.isArray(initialState?.sceneObjects);
-    const initialObjects = (hasSavedScene ? initialState.sceneObjects : sceneObjects || []).filter((object) => !removedDefaultObjectIds.has(object.id));
-    return hasSavedScene ? initialObjects : initialObjects.filter((object) => initialSceneTypes.has(object.type));
-  });
+  const [objects, setObjects] = useState(() => preparedInitialState.sceneObjects);
+  const [currentSceneId, setCurrentSceneId] = useState(() => normalizeSceneId(preparedInitialState.currentSceneId));
+  const [characterStates, setCharacterStates] = useState(() => normalizeCharacterStates(preparedInitialState.characterStates, preparedInitialState.sceneObjects));
+  const [sceneTransition, setSceneTransition] = useState(null);
   const [sceneTheme, setSceneTheme] = useState(initialState?.sceneTheme || "meadow");
   const [activeActions, setActiveActions] = useState({});
   const [persistentState, setPersistentState] = useState(() => initialState?.persistentState || { night: false, doorOpen: false, appleHidden: false, dogMoved: false, restingCharacters: [] });
@@ -111,7 +131,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [worldDrawingMode, setWorldDrawingMode] = useState(null);
   const [worldArt, setWorldArt] = useState(() => initialState?.worldArt || { house: null, background: null });
   const [showObjectDrawing, setShowObjectDrawing] = useState(false);
-  const [customObjects, setCustomObjects] = useState(() => initialState?.customObjects || []);
+  const [customObjects, setCustomObjects] = useState(() => preparedInitialState.customObjects || []);
   const [replacedTypes, setReplacedTypes] = useState(() => initialState?.replacedTypes || []);
   const [customObjectActions, setCustomObjectActions] = useState({});
   const [customHouseStates, setCustomHouseStates] = useState(() => initialState?.customHouseStates || {});
@@ -121,7 +141,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [avatarLooks, setAvatarLooks] = useState(() => initialState?.avatarLooks || {});
   const [showDoghouseDecorator, setShowDoghouseDecorator] = useState(false);
   const [editingDoghouseId, setEditingDoghouseId] = useState(null);
-  const [libraryObjects, setLibraryObjects] = useState(() => initialState?.libraryObjects || []);
+  const [libraryObjects, setLibraryObjects] = useState(() => preparedInitialState.libraryObjects || []);
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
   const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
@@ -165,6 +185,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+  useEffect(() => { setSelectedObjectId(null); }, [currentSceneId]);
   useEffect(() => { localStorage.setItem("living-drawing-avatar-growth", JSON.stringify(avatarGrowth)); }, [avatarGrowth]);
   useEffect(() => {
     if (!safety.sessionMinutes) return undefined;
@@ -209,6 +230,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const playAction = (objectId, action, customMessage) => {
+    if (sceneTransition && ["rest", "leaveRoom"].includes(action)) return;
     const object = objects.find((item) => item.id === objectId);
     const feedTarget = action === "feed"
       ? objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person")
@@ -224,37 +246,33 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (isToyBasketAction && (activeActions[objectId] || activeActions.dog1)) return;
     if (action === "feed" && activeActions[objectId]) return;
 
-    const isPerson = object.type === "person";
-    const isAlreadyInRoom = persistentState.restingCharacters?.includes(objectId);
-    if (isPerson && action !== "rest" && isAlreadyInRoom) {
-      const returnPosition = roomReturnPositions.current[objectId];
-      const leaveRoom = () => {
+    const isAlreadyInRoom = normalizeSceneId(object.sceneId) === SCENE_IDS.ROOM;
+    if (isRoomExit) {
+      const savedOutdoorPosition = object.scenePositions?.[SCENE_IDS.OUTDOOR] || roomReturnPositions.current[objectId];
+      const currentRoomPosition = { x: object.x, y: object.y };
+      setSceneTransition("leaving-room");
+      setPersistentState((state) => ({ ...state, doorOpen: true }));
+      later(() => {
         setObjects((current) => current.map((item) => item.id === objectId ? {
           ...item,
-          x: returnPosition?.x ?? Math.max(12, item.x - 15),
-          y: returnPosition?.y ?? Math.min(78, item.y + 18),
+          sceneId: SCENE_IDS.OUTDOOR,
+          x: savedOutdoorPosition?.x ?? 43,
+          y: savedOutdoorPosition?.y ?? 61,
+          scenePositions: {
+            ...(item.scenePositions || {}),
+            [SCENE_IDS.ROOM]: currentRoomPosition,
+            [SCENE_IDS.OUTDOOR]: savedOutdoorPosition || { x: 43, y: 61 },
+          },
         } : item));
+        setCharacterStates((current) => ({
+          ...current,
+          [objectId]: { location: SCENE_IDS.OUTDOOR, activity: ACTIVITY_IDS.IDLE },
+        }));
         setPersistentState((state) => ({ ...state, restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId) }));
-      };
-
-      if (action === "leaveRoom") {
-        const room = customObjects.find((item) => item.kind === "house") || objects.find((item) => item.type === "house");
-        if (room?.isCustom) {
-          setCustomHouseStates((current) => ({ ...current, [room.id]: { ...(current[room.id] || {}), doorOpen: true } }));
-        } else {
-          setPersistentState((state) => ({ ...state, doorOpen: true }));
-        }
-        later(leaveRoom, 500);
-        later(() => {
-          if (room?.isCustom) {
-            setCustomHouseStates((current) => ({ ...current, [room.id]: { ...(current[room.id] || {}), doorOpen: false } }));
-          } else {
-            setPersistentState((state) => ({ ...state, doorOpen: false }));
-          }
-        }, 1200);
-      } else {
-        leaveRoom();
-      }
+        setCurrentSceneId(SCENE_IDS.OUTDOOR);
+        setSceneTransition(null);
+      }, 620);
+      later(() => setPersistentState((state) => ({ ...state, doorOpen: false })), 1250);
     }
 
 
@@ -280,7 +298,17 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (action === "rest") {
       const room = customObjects.find((item) => item.kind === "house") || objects.find((item) => item.type === "house");
       if (room) {
-        if (!isAlreadyInRoom) roomReturnPositions.current[objectId] = { x: object.x, y: object.y };
+        if (isAlreadyInRoom) {
+          setCurrentSceneId(SCENE_IDS.ROOM);
+          setSceneTransition(null);
+          later(() => setActiveActions((current) => ({ ...current, [objectId]: null })), actionDurations.rest);
+          later(() => setBubbleVisible(false), 2300);
+          return;
+        }
+        const outdoorPosition = { x: object.x, y: object.y };
+        const savedRoomPosition = object.scenePositions?.[SCENE_IDS.ROOM] || { x: 43, y: 69 };
+        roomReturnPositions.current[objectId] = outdoorPosition;
+        setSceneTransition("entering-room");
         if (room.isCustom) {
           setCustomHouseStates((current) => ({ ...current, [room.id]: { ...(current[room.id] || {}), doorOpen: true } }));
         }
@@ -288,8 +316,30 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         setPersistentState((state) => ({
           ...state,
           doorOpen: room.isCustom ? state.doorOpen : true,
-          restingCharacters: [...new Set([...(state.restingCharacters || []), objectId])],
         }));
+        later(() => {
+          setObjects((current) => current.map((item) => item.id === objectId ? {
+            ...item,
+            sceneId: SCENE_IDS.ROOM,
+            x: savedRoomPosition.x,
+            y: savedRoomPosition.y,
+            scenePositions: {
+              ...(item.scenePositions || {}),
+              [SCENE_IDS.OUTDOOR]: outdoorPosition,
+              [SCENE_IDS.ROOM]: savedRoomPosition,
+            },
+          } : item));
+          setCharacterStates((current) => ({
+            ...current,
+            [objectId]: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.RESTING },
+          }));
+          setPersistentState((state) => ({
+            ...state,
+            restingCharacters: [...new Set([...(state.restingCharacters || []), objectId])],
+          }));
+          setCurrentSceneId(SCENE_IDS.ROOM);
+          setSceneTransition(null);
+        }, 820);
         later(() => {
           if (room.isCustom) {
             setCustomHouseStates((current) => ({ ...current, [room.id]: { ...(current[room.id] || {}), doorOpen: false } }));
@@ -513,6 +563,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       kind: drawing.kind,
       label: drawing.label,
       imageUrl: drawing.imageUrl,
+      sceneId: currentSceneId,
       replacesType,
       x: Math.min(88, position.x + sameKindCount * 4),
       y: Math.min(78, position.y + sameKindCount * 3),
@@ -544,7 +595,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
     if (material.category === "doghouse") {
       setDoghouseDecor(material);
-      setObjects((current) => current.some((object) => object.id === defaultDoghouseObject.id) ? current : [...current, defaultDoghouseObject]);
+      setObjects((current) => current.some((object) => object.id === defaultDoghouseObject.id) ? current : [...current, { ...defaultDoghouseObject, sceneId: SCENE_IDS.OUTDOOR }]);
       setPersistentState((state) => ({ ...state, dogInHouse: false }));
       setShowMaterialLibrary(false);
       setMessage(`${material.name}放进来啦，点小窝还能继续换样子！`);
@@ -562,7 +613,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         later(() => setBubbleVisible(false), 2200);
         return;
       }
-      setObjects((current) => [...current, { ...sceneObject }]);
+      setObjects((current) => [...current, { ...sceneObject, sceneId: currentSceneId }]);
       setPersistentState((state) => ({
         ...state,
         ...(sceneObject.type === "food" ? { appleHidden: false } : {}),
@@ -581,6 +632,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       isLibrary: true,
       label: material.name,
       material,
+      sceneId: currentSceneId,
       x: 28 + (index % 5) * 11,
       y: 53 + (index % 3) * 8,
       layer: 12 + index,
@@ -925,7 +977,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
     if (objectId === "dog1") setPersistentState((state) => state.dogMoved ? { ...state, dogMoved: false } : state);
     if (objectId === "dog1" && persistentState.dogInHouse) setPersistentState((state) => ({ ...state, dogInHouse: false }));
-    if (persistentState.restingCharacters?.includes(objectId)) {
+    if (currentSceneId === SCENE_IDS.OUTDOOR && persistentState.restingCharacters?.includes(objectId)) {
       setPersistentState((state) => ({ ...state, restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId) }));
     }
   };
@@ -940,15 +992,31 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   };
 
 
-  const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type));
-  const visibleObjectIds = new Set(["world", ...visibleObjects.map((object) => object.id), ...customObjects.map((object) => object.id), ...libraryObjects.map((object) => object.id)]);
+  const isInCurrentScene = (object) => normalizeSceneId(object.sceneId) === currentSceneId;
+  const visibleObjects = objects.filter((object) => isInCurrentScene(object) && !replacedTypes.includes(object.type));
+  const visibleCustomObjects = customObjects.filter(isInCurrentScene);
+  const visibleLibraryObjects = libraryObjects.filter(isInCurrentScene);
+  const visibleObjectIds = new Set(["world", ...visibleObjects.map((object) => object.id), ...visibleCustomObjects.map((object) => object.id), ...visibleLibraryObjects.map((object) => object.id)]);
+  const scenePerson = objects.find((object) => object.type === "person" && object.avatarId === activeCompanionId && isInCurrentScene(object))
+    || objects.find((object) => object.type === "person" && isInCurrentScene(object));
+  const travelPerson = scenePerson || objects.find((object) => object.type === "person" && object.avatarId === activeCompanionId) || objects.find((object) => object.type === "person");
+  const travelBetweenScenes = () => {
+    if (!travelPerson) {
+      setCurrentSceneId(currentSceneId === SCENE_IDS.OUTDOOR ? SCENE_IDS.ROOM : SCENE_IDS.OUTDOOR);
+      return;
+    }
+    playAction(travelPerson.id, currentSceneId === SCENE_IDS.OUTDOOR ? "rest" : "leaveRoom");
+  };
   const saveWorld = () => {
+    if (sceneTransition) return;
     const nextGrowth = grantGrowth("save-first-project", 15, "保存了自己的作品") || avatarGrowth;
     onSave?.({
     persistentState,
     messages,
     storyStep,
     storyEnding,
+    currentSceneId,
+    characterStates,
     sceneObjects: objects,
     sceneTheme,
     worldArt,
@@ -979,7 +1047,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         {editingProjectName && <div className="editing-project-status" title={editingProjectName}><span aria-hidden="true">✎</span><em>正在修改</em><b>{editingProjectName}</b></div>}
-        <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
+        <div className="found-status" aria-label={`${currentSceneId === SCENE_IDS.ROOM ? "房间" : "室外"}里有 ${visibleObjects.length + visibleCustomObjects.length + visibleLibraryObjects.length} 个物件`}><span aria-hidden="true">●</span><b>{visibleObjects.length + visibleCustomObjects.length + visibleLibraryObjects.length}</b><em>个物件</em></div>
         <button className="world-growth-status" type="button" onClick={() => setShowAvatarWardrobe(true)} aria-label="查看伙伴成长"><AvatarGrowthCard growth={avatarGrowth} compact /></button>
         <KidToolDock
           onAvatar={() => setShowAvatarWardrobe(true)}
@@ -988,6 +1056,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           onDraw={() => setShowObjectDrawing(true)}
           onDrawBackground={() => setWorldDrawingMode("background")}
           onSave={saveWorld}
+          saveDisabled={Boolean(sceneTransition)}
           saveLabel={editingProjectName ? "保存修改" : "保存"}
           onArrange={openSceneEditor}
           onExport={() => setShowExport(true)}
@@ -1000,7 +1069,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
       {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} avatars={primaryAvatarCatalog} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} growth={avatarGrowth} onApply={applyAvatarLook} onClose={() => setShowAvatarWardrobe(false)} />}
       {showDoghouseDecorator && <DoghouseDecorator value={editingDoghouseId ? libraryObjects.find((object) => object.id === editingDoghouseId)?.material : doghouseDecor} onChange={changeDoghouseDecor} onClose={closeDoghouseDecorator} />}
-      {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects, ...libraryObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
+      {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...visibleCustomObjects, ...visibleLibraryObjects]} theme={sceneTheme} sceneId={currentSceneId} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}
       {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
@@ -1011,27 +1080,38 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
       <div className="world-experience">
-      <section ref={stageRef} style={backgroundStyleFor(materialBackground)} className={`world-stage theme-${sceneTheme} ${materialBackground ? "has-library-background" : ""} ${worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""} ${windActive ? "is-windy" : ""}`} aria-label="可拖动的互动世界">
-        <div className="demo-mode-badge"><span aria-hidden="true">●</span> {worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
+      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={currentSceneId === SCENE_IDS.ROOM ? "可拖动的室内互动房间" : "可拖动的室外互动世界"}>
+        <div className="demo-mode-badge"><span aria-hidden="true">●</span> {currentSceneId === SCENE_IDS.ROOM ? "伙伴的房间" : worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住画中物体即可移动</div>
+        <button className="scene-travel-button" type="button" onClick={travelBetweenScenes} disabled={Boolean(sceneTransition)}>
+          <span aria-hidden="true">{currentSceneId === SCENE_IDS.ROOM ? "←" : "⌂"}</span>
+          {sceneTransition ? "正在切换…" : currentSceneId === SCENE_IDS.ROOM ? "去室外" : "进入房间"}
+        </button>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
           <span aria-hidden="true">⌘</span> {showJoints ? "隐藏关节" : "显示关节"}
         </button>
-        <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />
-        <div className="sky-wash" aria-hidden="true" />
-        <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
-        <div className="ground" aria-hidden="true" />
-        {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
-        <div className="background-grass" aria-hidden="true">
-          {Array.from({ length: 5 }, (_, index) => <span key={index}><i /><b /><em /></span>)}
-        </div>
-        {windActive && <div className="wind-outline" aria-hidden="true">
+        {currentSceneId === SCENE_IDS.OUTDOOR && <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />}
+        {currentSceneId === SCENE_IDS.OUTDOOR ? <>
+          <div className="sky-wash" aria-hidden="true" />
+          <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
+          <div className="ground" aria-hidden="true" />
+          {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
+          <div className="background-grass" aria-hidden="true">
+            {Array.from({ length: 5 }, (_, index) => <span key={index}><i /><b /><em /></span>)}
+          </div>
+        </> : <div className="room-shell" aria-hidden="true">
+          <span className="room-window"><i /><b /></span>
+          <span className={`room-exit-door ${sceneTransition === "leaving-room" ? "is-open" : ""}`}><i /></span>
+          <span className="room-rug" />
+          <span className="room-pinboard"><i /><b /><em /></span>
+        </div>}
+        {currentSceneId === SCENE_IDS.OUTDOOR && windActive && <div className="wind-outline" aria-hidden="true">
           <svg viewBox="0 0 520 210"><path d="M10 62C95 4 196 115 295 49c55-37 111-22 144 2 24 18 19 52-9 56-23 3-38-12-35-30"/><path d="M-20 112c105-44 204 41 326 2 65-21 137-9 204 30"/><path d="M20 163c85-28 161 24 242 5 47-11 92-10 135 7"/></svg>
           <span /><span /><span /><span />
         </div>}
-        <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />
+        <SpeechBubble message={message} visible={bubbleVisible && (currentSceneId === SCENE_IDS.ROOM || !storyActive)} />
         {selectedObjectId && (() => {
-          const selectedObject = [...visibleObjects, ...customObjects, ...libraryObjects].find((item) => item.id === selectedObjectId);
+          const selectedObject = [...visibleObjects, ...visibleCustomObjects, ...visibleLibraryObjects].find((item) => item.id === selectedObjectId);
           if (!selectedObject) return null;
           return <div className="object-quick-toolbar" role="toolbar" aria-label={`调整${selectedObject.label}`}>
             <b>{selectedObject.label}</b>
@@ -1067,7 +1147,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               currentFood={foodLevels[foodGrowth.level] || foodLevels[0]}
             />
           ))}
-          {customObjects.map((object) => (
+          {visibleCustomObjects.map((object) => (
             <CustomSceneObject
               key={object.id}
               object={object}
@@ -1080,7 +1160,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               onMoveEnd={finishMovingObject}
             />
           ))}
-          {libraryObjects.map((object) => (
+          {visibleLibraryObjects.map((object) => (
             <MaterialSceneObject key={object.id} object={object} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
@@ -1110,7 +1190,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       </div>
 
 
-      <ActionButtons onAction={handleDirectAction} visibleObjectIds={visibleObjectIds} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} />
+      <ActionButtons onAction={handleDirectAction} visibleObjectIds={visibleObjectIds} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} currentSceneId={currentSceneId} activeCharacterId={scenePerson?.id || travelPerson?.id} transitioning={Boolean(sceneTransition)} />
     </main>
   );
 }

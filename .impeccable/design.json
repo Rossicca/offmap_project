@@ -50,6 +50,7 @@
     ],
     "surfacePatterns": [
       { "name": "animator-lightbox", "layout": "framed responsive clean-sky stage above a soft colored-pencil ground", "surface": "Pale storybook sky over Drafting Paper with a blue-pencil frame", "behavior": "no grid, fold lines, ghost artwork, or wireframe clouds; all artwork remains inside measured stage bounds" },
+      { "name": "outdoor-room-scenes", "layout": "one stage rendering the active outdoor or room scene", "surface": "outdoor scenery plus a warm-paper, graphite, low-saturation colored-pencil room", "behavior": "stage and SceneEditor filter objects by currentSceneId; bed, desk, chair, and bookcase drag in room; opening and moving through the door enters room; 去室外 returns; currentSceneId, object sceneId, and character scenePositions for outdoor/room persist; missing legacy sceneId defaults to outdoor; four sceneTheme choices affect outdoor only" },
       { "name": "direct-scene-manipulation", "layout": "stage-relative percentage centers with per-object measured bounds", "surface": "low-saturation illustrated cutouts", "behavior": "pointer-captured mouse/touch drag; 5px threshold; grab/grabbing; blue-pencil dashed drag frame; moved clicks suppressed" },
       { "name": "collapsible-quick-interaction", "layout": "one ordinary-sized open/close control when collapsed; complete action set when expanded", "surface": "compact tracing-paper control and contained action rail", "behavior": "aria-expanded reflects state and expanded copy reminds users they can click characters and objects directly" },
       { "name": "draggable-companion-music", "layout": "viewport-clamped floating launcher with a contained music panel", "surface": "small companion paper button above the stage", "behavior": "exact grab offset, 5px threshold, matching pointer capture/release, drag-click suppression, persisted position, and resize/mobile re-clamping; panel links to 位置和大小, 加东西, 装房子, and 显示/隐藏关节 while preserving SceneEditor size controls" },
@@ -63,7 +64,7 @@
       { "name": "companion-mini-games", "layout": "centered round-and-result dialog with one clear score rail and touch-safe choices", "surface": "Warm White paper with pale-blue frame, coral pencil accents, and restrained choice colors", "behavior": "rock-paper-scissors and card comparison preserve their existing rules while sharing clear hierarchy, short result motion, focus visibility, and zero mobile overflow" },
       { "name": "house-decoration-studio", "layout": "120 presets across five motif tabs with a large live preview", "surface": "complete miniature houses showing roof, patterned wall, door, and windows", "behavior": "preset clicks update the stage house immediately; only the explicit header tool 装房子 opens the studio; single-clicking the stage house selects it and double-clicking toggles its door" },
       { "name": "contained-dialog-focus", "layout": "one active scroll-safe dialog or bottom sheet", "surface": "warm paper over a graphite scrim", "behavior": "first-control focus, Escape close, Tab containment, and launcher focus restoration" },
-      { "name": "mobile-zero-overflow", "layout": "two-row navigation and contained horizontal rails below 560px", "surface": "transparent header with tracing-paper graphite-framed controls", "behavior": "44px controls, no wrapped labels, zero page overflow down to 320px" }
+      { "name": "mobile-zero-overflow", "layout": "two-row navigation and contained horizontal rails below 560px", "surface": "transparent header with tracing-paper graphite-framed controls", "behavior": "44px controls, no wrapped labels, zero page overflow down to 320px; the implemented 390px scene and editor layout remains overflow-free" }
     ]
   },
   "components": [
@@ -175,6 +176,7 @@
     "keyCharacteristics": [
       "Drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
+      "The implemented living world switches between real outdoor and room stages; rendering and SceneEditor stay scoped to currentSceneId.",
       "AI-authored character identities remain recognizable across dedicated motion frames, with genuine RGBA cutouts shared by the stage, materials, and wardrobe.",
       "CSS scenery and hand-drawn props use graphite construction and subdued fill rather than glossy clip art.",
       "All quick actions use one graphite inline-SVG stroke family.",
@@ -189,6 +191,8 @@
       "Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.",
       "Before joint placement, the calibration workspace offers 原图 plus three Volcengine Ark Seedream image-to-image redraws—轻度保留画风, 中度绘本卡通, and 重度角色重绘—while permanently retaining 原图 as the non-destructive source.",
       "The scene editor exposes the same coordinates and bounds through labeled range controls for keyboard users.",
+      "The room inherits warm paper, graphite structure, and low-saturation colored pencil; bed, desk, chair, and bookcase are draggable scene objects, while the four sceneTheme choices remain outdoor-only.",
+      "Door entry switches to room after opening and moving inside, 去室外 returns, and persisted state includes currentSceneId, object sceneId, and separate outdoor/room character scenePositions; legacy objects without sceneId default to outdoor.",
       "The companion music launcher supports exact-offset pointer capture, a 5px drag threshold, viewport clamping, persisted position, and resize/mobile re-clamping; its panel links to 位置和大小, 加东西, 装房子, and joint visibility without removing SceneEditor size controls.",
       "World- and background-drawing steps share one quiet, consistently placed return button; the stage omits translucent drawing-backdrop duplication and wireframe clouds.",
       "Compact mobile treatment begins at `560px` with two-row navigation, `44px` controls, contained horizontal rails, and zero page overflow down to `320px`."
@@ -214,6 +218,8 @@
       "Do keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.",
       "Do preserve speaker attribution when switching between two companions in one transcript.",
       "Do keep scene dragging bounded, touch-capable, and visible through grab/grabbing, temporary lift, and a blue-pencil dashed frame.",
+      "Do render and edit only objects matching currentSceneId, preserve independent outdoor/room character positions, and migrate missing legacy sceneId to outdoor.",
+      "Do keep the room in the Animator's Light Table visual language and scope all four sceneTheme choices to outdoor only.",
       "Do make the music launcher precisely draggable with a 5px threshold, matching pointer capture, viewport clamping, persisted position, and resize/mobile re-clamping; keep the existing SceneEditor size control.",
       "Do use one consistent return control for both world- and background-drawing steps.",
       "Do preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.",
@@ -225,6 +231,7 @@
       "Do keep story tasks progressive and subordinate to the scene they control.",
       "Do reuse the shared graphite scrim and warm-paper shell for export, safety, and rest reminders; use a directional drawer for scene editing.",
       "Do preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` controls, zero horizontal overflow, shared gold focus ring, and reduced-motion override.",
+      "Do keep the implemented 390px mobile scene and editor free of horizontal overflow with 44px controls.",
       "Do keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.",
       "Do use normal-sized plain-text header tools and concrete child-facing verbs: `加东西`, `装房子`, `移动东西`, `放前面`, `放后面`, and `拿走`.",
       "Do keep all 60 library items and 120 house presets visually previewable with code-native hand-drawn forms before selection.",
@@ -243,6 +250,7 @@
       "Don't stack story, editor, export, or safety layers into a competing control dashboard.",
       "Don't compress mobile utility controls below the touch-safe envelope to force one-line navigation.",
       "Don't let any object cross the measured stage boundary or let drag completion fire its click action.",
+      "Don't render inactive-scene objects in the stage or SceneEditor, or apply an outdoor sceneTheme to the room.",
       "Don't restore a low-opacity drawing-backdrop from the uploaded character or add wireframe clouds to the clean canvas.",
       "Don't allow quick interaction, the floating music control, its panel, or drawing navigation to create desktop or mobile horizontal overflow.",
       "Don't apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.",
