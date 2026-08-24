@@ -3,6 +3,8 @@ import CreatorHub from "./components/CreatorHub";
 import LoginScreen from "./components/LoginScreen";
 import LivingWorld from "./components/LivingWorld";
 import RigEditor from "./components/RigEditor";
+import WorldDrawingEditor from "./components/WorldDrawingEditor";
+import CompanionMusic from "./components/CompanionMusic";
 import { avatarCatalog } from "./data/avatarCatalog";
 import { companionObject, demoScene } from "./data/demoScene";
 import { analyzeDrawing } from "./utils/analyzeDrawing";
@@ -89,7 +91,28 @@ export default function App() {
     setCompanions([uploadedAvatar]);
     setAnalysis({
       ...nextAnalysis,
+      needsBackgroundSetup: true,
       sceneObjects: nextAnalysis.sceneObjects.map((object) => object.type === "person" ? { ...object, avatarId: uploadedAvatar.id, label: uploadedAvatar.name } : object),
+    });
+  };
+
+
+  const finishCharacterBackground = (art = null) => {
+    setAnalysis((current) => {
+      if (!current) return current;
+      const background = art?.background || null;
+      return {
+        ...current,
+        needsBackgroundSetup: false,
+        savedState: {
+          ...(current.savedState || {}),
+          sceneObjects: current.sceneObjects,
+          sceneTheme: current.savedState?.sceneTheme || "meadow",
+          worldArt: { ...(current.savedState?.worldArt || { house: null }), background },
+          customObjects: current.savedState?.customObjects || [],
+          replacedTypes: current.savedState?.replacedTypes || [],
+        },
+      };
     });
   };
 
@@ -185,13 +208,29 @@ export default function App() {
   };
 
 
-  if (!userName) return <LoginScreen onLogin={setUserName} />;
+  let screen;
+  if (!userName) screen = <LoginScreen onLogin={setUserName} />;
+  else if (analysis?.needsRigSetup) screen = <RigEditor analysis={analysis} onConfirm={confirmRig} onCancel={reset} />;
+  else if (analysis?.needsBackgroundSetup) screen = (
+    <main className="creator-page character-background-step">
+      <header className="character-background-header">
+        <div><span>第 3 步，共 3 步</span><h1>再给你的伙伴画一个背景</h1><p>人物已经保存好了。现在画出的背景会和人物一起进入游戏世界。</p></div>
+        <button type="button" onClick={() => finishCharacterBackground()}>暂时不画，直接进入世界</button>
+      </header>
+      <WorldDrawingEditor
+        initialArt={{ house: null, background: analysis.savedState?.worldArt?.background || null }}
+        initialMode="background"
+        embedded
+        backgroundOnly
+        onApply={finishCharacterBackground}
+      />
+    </main>
+  );
 
 
-  if (analysis?.needsRigSetup) return <RigEditor analysis={analysis} onConfirm={confirmRig} onCancel={reset} />;
+  else screen = analysis
+      ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
+      : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
 
-
-  return analysis
-    ? <LivingWorld sceneObjects={analysis.sceneObjects} previewUrl={analysis.previewUrl} onReset={reset} selectedAvatar={selectedAvatar} companions={companions.length ? companions : [selectedAvatar].filter(Boolean)} rigAnalysis={analysis.rigAnalysis} userName={userName} initialState={analysis.savedState} onSave={saveProject} safety={safety} onSafetyChange={(patch) => setSafety((current) => ({ ...current, ...patch }))} onClearLocalData={clearLocalData} />
-    : <CreatorHub userName={userName} onUpload={upload} onChooseAvatar={chooseAvatar} onCreateBackground={createBackgroundWorld} busy={busy} error={error} onLogout={() => setUserName("")} projects={projects} onOpenProject={openProject} onRenameProject={renameProject} onDeleteProject={deleteProject} />;
+  return <>{screen}{userName && <CompanionMusic variant="floating" />}</>;
 }
