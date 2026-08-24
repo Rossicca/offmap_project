@@ -305,7 +305,7 @@ Selecting a non-background material adds a named, saved scene object and closes 
 
 The house studio contains exactly 120 unique presets: six pencil palettes × five motif families × four window accents. Its five tabs are 圆点, 条纹, 方格, 花朵, and 星星. Every preset button shows a complete miniature house—not a color chip—with roof, patterned wall, door, and two windows, plus its preset and accent names.
 
-A large live house preview updates immediately when a preset is clicked, and the selected treatment applies to the real house without a separate commit step. The stage house itself opens the same studio on click, while its door state remains separately legible in the artwork. The full-width `装好啦` action simply closes the studio after exploration.
+A large live house preview updates immediately when a preset is clicked, and the selected treatment applies to the real house without a separate commit step. The studio opens only from the explicit header tool `装房子`; the house inside the world follows normal object behavior instead of duplicating that entry point. A single click selects it for move, resize, copy, undo, or removal, while a double click opens or closes its door. The full-width `装好啦` action simply closes the studio after exploration.
 
 ### Motion Sprite Characters
 
@@ -324,6 +324,8 @@ Rock-paper-scissors and card comparison reuse the same warm paper, coral pencil,
 ### Direct-Manipulation Scene Objects
 
 Every visible `.scene-object` is a native button that supports click actions plus pointer-based dragging on mouse, pen, and touch. At rest it uses `cursor: grab`, `touch-action: none`, and `user-select: none`. Dragging begins only after a `5px` movement threshold, captures the pointer, raises the object above overlays, changes to `grabbing`, adds Drag Lift, and draws a blue-pencil `1px` dashed frame `8px` outside the object (`5px` on mobile). Releasing or cancelling always clears the drag state; a completed drag suppresses the accidental click that would otherwise fire the object's action.
+
+The stage house is the explicit exception to single-click action playback: single click selects it, double click toggles the door, and `装房子` remains an explicit header tool. Keyboard users can select the house with its button and use the expanded quick-interaction action for opening or closing the door.
 
 Movement is calculated from the object's center plus the initial pointer offset. Clamp the resulting stage-relative percentages using the rendered object's half-width and half-height, with a small safety inset, so no artwork can be dragged outside the stage. Recompute bounds when the scene or viewport changes.
 
@@ -413,6 +415,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
 - **Do** use normal-sized plain-text header tools and concrete child-facing verbs: `加东西`, `装房子`, `移动东西`, `放前面`, `放后面`, and `拿走`.
+- **Do** keep house selection, door interaction, and decoration as three distinct actions: single click selects, double click toggles the door, and the header's `装房子` opens decoration.
 - **Do** keep every library item and all 120 house presets visually previewable with code-native hand-drawn forms before selection.
 - **Do** give every modal initial focus, `Escape` dismissal, contained tab order, and focus restoration to its launcher.
 
@@ -439,3 +442,4 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** describe Seedream redraw as a local filter, conceal its Volcengine Ark upload, or imply that the locally saved work makes the AI request device-only.
 - **Don't** use “图层” in child-facing UI or substitute oversized, infantilized controls for clear novice-friendly wording.
 - **Don't** render material choices as generic chips or house presets as partial color swatches; show the whole object being chosen.
+- **Don't** open the decoration studio when the user clicks the house in the world; that click belongs to object selection.
