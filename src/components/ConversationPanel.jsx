@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
 const defaultSuggestions = ["你好呀！", "你喜欢什么？", "我们去冒险吧"];
+const learningTopics = [
+  { id: "math", name: "数学" },
+  { id: "reading", name: "阅读" },
+  { id: "english", name: "英语" },
+  { id: "discovery", name: "自由探索" },
+];
 
-export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend, voiceAllowed = true }) {
+export default function ConversationPanel({ characterName, companions = [], activeCompanionId, onCompanionChange, messages, suggestions = defaultSuggestions, typing, onSend, voiceAllowed = true, learningState, onLearningAction }) {
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   const [voiceReply, setVoiceReply] = useState(() => voiceAllowed && localStorage.getItem("living-drawing-voice") === "on");
   const [voiceNotice, setVoiceNotice] = useState("");
+  const [learningOpen, setLearningOpen] = useState(false);
   const logRef = useRef(null);
   const recognitionRef = useRef(null);
   const spokenMessageRef = useRef(0);
@@ -75,6 +82,28 @@ export default function ConversationPanel({ characterName, companions = [], acti
       </header>
       {companions.length > 1 && <div className="conversation-people" aria-label="选择聊天对象">{companions.map((avatar) => <button type="button" key={avatar.id} className={activeCompanionId === avatar.id ? "is-active" : ""} onClick={() => onCompanionChange(avatar.id)} aria-pressed={activeCompanionId === avatar.id}>{avatar.name}</button>)}</div>}
 
+      {learningState && <section className={`learning-companion ${learningOpen ? "is-open" : ""}`} aria-label="陪伴学习">
+        <button className="learning-companion-toggle" type="button" onClick={() => setLearningOpen((value) => !value)} aria-expanded={learningOpen}>
+          <span aria-hidden="true">✎</span>
+          <b>陪我学习</b>
+          <small>{learningTopics.find((item) => item.id === learningState.topic)?.name || "自由探索"} · {learningState.stars || 0} 颗星</small>
+          <i aria-hidden="true">{learningOpen ? "−" : "+"}</i>
+        </button>
+        {learningOpen && <div className="learning-companion-body">
+          <div className="learning-topic-list" aria-label="选择学习方向">
+            {learningTopics.map((topic) => <button key={topic.id} type="button" className={learningState.topic === topic.id ? "is-active" : ""} onClick={() => onLearningAction("start", topic.id)} aria-pressed={learningState.topic === topic.id}>{topic.name}</button>)}
+          </div>
+          <div className="learning-progress" aria-label={`已获得 ${learningState.stars || 0} 颗学习星`}>
+            {Array.from({ length: 5 }, (_, index) => <i key={index} aria-hidden="true" className={index < (learningState.stars || 0) ? "is-earned" : ""}>★</i>)}
+          </div>
+          <div className="learning-actions">
+            <button type="button" onClick={() => onLearningAction("quiz", learningState.topic)} disabled={typing}>出一道小题</button>
+            <button type="button" onClick={() => onLearningAction("hint", learningState.topic)} disabled={typing}>给我一点提示</button>
+            <button type="button" onClick={() => onLearningAction("review", learningState.topic)} disabled={typing}>帮我复习</button>
+          </div>
+        </div>}
+      </section>}
+
       <div className="conversation-log" ref={logRef} role="log" aria-live="polite" aria-label="对话记录">
         {messages.map((message) => (
           <div className={`chat-message is-${message.role}`} key={message.id}>
@@ -96,7 +125,7 @@ export default function ConversationPanel({ characterName, companions = [], acti
         <button type="submit" disabled={!text.trim() || typing} aria-label="发送消息"><span>发送</span><b aria-hidden="true">↑</b></button>
       </form>
       {voiceNotice && <p className="voice-notice" role="status">{voiceNotice}</p>}
-      <small>本地对话 Demo · 也能听懂场景动作指令</small>
+      <small>陪伴学习与作品进度保存在本机 · 不需要填写学校或个人信息</small>
     </aside>
   );
 }

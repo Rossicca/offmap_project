@@ -1780,3 +1780,56 @@ html, body {
   .world-drawing-editor > header { margin:-14px -14px 4px; padding:17px; border-radius:23px 23px 0 0; }
   .world-drawing-editor h2 { font-size:1.8rem; }.world-drawing-tools { border-width:2px; }.world-drawing-paper,.world-drawing-editor.is-embedded .world-drawing-paper { border-width:3px; border-radius:21px; }
 }
+
+/* Compact learning companion inside the existing conversation surface. */
+.learning-companion { margin:10px 0 0; border:2px solid #c7e3d1; border-radius:16px; overflow:hidden; background:#f4f8e9; }
+.learning-companion-toggle { width:100%; min-height:46px; padding:7px 10px; display:grid; grid-template-columns:30px auto minmax(0,1fr) 24px; align-items:center; gap:7px; border:0; color:#5f4934; background:transparent; text-align:left; cursor:pointer; }
+.learning-companion-toggle > span { width:30px; height:30px; display:grid; place-items:center; border-radius:10px; color:#fff; background:#7fab75; font-size:1rem; }
+.learning-companion-toggle b { font-size:.78rem; white-space:nowrap; }
+.learning-companion-toggle small { min-width:0; overflow:hidden; color:#71856a; font-size:.65rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.learning-companion-toggle > i { width:24px; height:24px; display:grid; place-items:center; border-radius:50%; color:#fff; background:#e99a72; font-style:normal; font-weight:900; }
+.learning-companion-body { padding:9px 10px 10px; border-top:1.5px dashed #b7d5c1; animation:learning-open 200ms ease-out; }
+.learning-topic-list,.learning-actions { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+.learning-topic-list button,.learning-actions button { flex:0 0 auto; min-height:36px; padding:0 10px; border:1.5px solid #b7d5c1; border-radius:999px; color:#58715c; background:#fffdf5; font-size:.68rem; font-weight:900; cursor:pointer; }
+.learning-topic-list button.is-active { color:#fff; border-color:#7fab75; background:#7fab75; }
+.learning-progress { margin:7px 2px; display:flex; gap:3px; color:#c7d2c3; font-size:.82rem; }
+.learning-progress i { font-style:normal; }
+.learning-progress i.is-earned { color:#e8b94d; filter:drop-shadow(0 1px 0 #fff); }
+.learning-actions button { min-height:38px; color:#77503a; border-color:#efd19b; background:#fff6d9; }
+.learning-actions button:disabled { opacity:.55; cursor:wait; }
+@keyframes learning-open { from { opacity:0; transform:translateY(-4px); } }
+
+@media (max-width:560px) {
+  .learning-companion-toggle { min-height:48px; }
+  .learning-topic-list button,.learning-actions button { min-height:44px; }
+}
+
+/* One-line world toolbar: the canvas, not the chrome, owns the vertical space. */
+.world-page { padding-top:10px; }
+.world-header { width:min(1440px,100%); min-height:60px; height:60px; margin:0 auto 14px; padding:7px 10px 7px 14px; display:flex; flex-wrap:nowrap; align-items:center; gap:8px; border-width:3px; border-radius:20px; }
+.world-header .wordmark { flex:0 0 auto; gap:7px; }
+.world-header .wordmark span { font-size:1.05rem; }
+.world-header .wordmark b { font-size:1rem; letter-spacing:.04em; }
+.world-header .world-back-button { flex:0 0 auto; min-height:40px; padding-inline:12px; font-size:.75rem; }
+.world-header .found-status { flex:0 0 auto; min-height:34px; padding:0 10px; display:flex; align-items:center; gap:5px; border-width:1.5px; font-size:.7rem; white-space:nowrap; }
+.world-header .found-status b { font-size:.82rem; }
+.world-header .found-status em { font-style:normal; }
+.world-header .kid-tool-dock { min-width:0; margin-left:auto; flex:0 1 auto; justify-self:auto; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:none; }
+.world-header .kid-tool-dock::-webkit-scrollbar { display:none; }
+.world-header .kid-tool-dock > button,.world-header .kid-more-wrap > button { min-height:40px; padding-inline:11px; flex:0 0 auto; font-size:.75rem; }
+
+@media (max-width:900px) {
+  .world-header .wordmark b { display:none; }
+  .world-header .wordmark { width:34px; justify-content:center; }
+  .world-header .found-status em { display:none; }
+  .world-header .found-status { padding-inline:8px; }
+}
+
+@media (max-width:620px) {
+  .world-page { padding:8px 10px 30px; }
+  .world-header { min-height:58px; height:58px; margin-bottom:10px; padding:6px; gap:5px; border-radius:16px; }
+  .world-header .wordmark,.world-header .found-status { display:none; }
+  .world-header .world-back-button { min-height:44px; padding-inline:10px; }
+  .world-header .kid-tool-dock { grid-column:auto; padding:0; gap:5px; }
+  .world-header .kid-tool-dock > button,.world-header .kid-more-wrap > button { min-height:44px; padding-inline:10px; }
+}

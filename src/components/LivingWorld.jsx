@@ -31,6 +31,13 @@ const defaultPositionByKind = {
   character: { x: 34, y: 60 },
   prop: { x: 52, y: 69 },
 };
+const defaultLearningState = { topic: "discovery", stars: 0, streak: 0, attempts: 0, currentAnswer: null, lastResult: "neutral" };
+const learningPrompts = {
+  start: { math: "我们一起学数学吧，请先用一个简单问题了解我的程度。", reading: "我们一起练阅读吧，请给我一小段适合朗读的内容。", english: "我们一起学英语吧，请从一个简单的生活词语开始。", discovery: "我想自由探索，请从这幅画里的事物开始教我一个小知识。" },
+  quiz: { math: "请给我出一道简短的数学小题，先不要告诉我答案。", reading: "请给我一道简短的阅读理解小题，先让我自己想。", english: "请给我一道简单的英语词语小题，先不要公布答案。", discovery: "请根据画面给我出一道观察或常识小题。" },
+  hint: { math: "这道题我还没想明白，请只给我一步提示，不要直接说答案。", reading: "请提示我应该回到哪句话找线索，不要直接说答案。", english: "请给我一个联想或首字母提示，不要直接说答案。", discovery: "请给我一个观察提示，让我自己发现答案。" },
+  review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
+};
 
 
 export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
@@ -76,6 +83,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [libraryObjects, setLibraryObjects] = useState(() => initialState?.libraryObjects || []);
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
+  const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
@@ -338,6 +346,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           name: characterName,
           sceneObjects: objects,
           persistentState,
+          learningState,
           history: messages.slice(-8),
         });
       } catch (error) {
@@ -347,12 +356,22 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         turn: messages.length,
         sceneObjects: objects,
         persistentState,
+        learningState,
         });
       }
       if (reply.target === "person1" && activeCompanionId !== selectedAvatar?.id) reply.target = "person2";
       setTyping(false);
       appendMessage("assistant", reply.text);
       setSuggestions(reply.suggestions || []);
+      if (reply.learning) setLearningState((state) => ({
+        ...state,
+        topic: reply.learning.topic || state.topic,
+        stars: Math.max(0, Math.min(5, state.stars + (reply.learning.progressDelta || 0))),
+        attempts: state.attempts + (reply.learning.mode === "quiz" ? 1 : 0),
+        streak: reply.learning.result === "correct" ? state.streak + 1 : reply.learning.result === "try-again" ? 0 : state.streak,
+        currentAnswer: Object.hasOwn(reply.learning, "expectedAnswer") ? (reply.learning.expectedAnswer || null) : state.currentAnswer,
+        lastResult: reply.learning.result || "neutral",
+      }));
       setMessage(reply.text);
       setBubbleVisible(true);
       if (reply.target && reply.action) playAction(reply.target, reply.action, reply.text);
@@ -360,6 +379,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     } finally {
       setTyping(false);
     }
+  };
+
+  const handleLearningAction = (action, topic = learningState.topic) => {
+    const nextTopic = learningPrompts[action]?.[topic] ? topic : "discovery";
+    if (action === "start") setLearningState((state) => ({ ...state, topic: nextTopic, currentAnswer: null, lastResult: "neutral" }));
+    handleConversation(learningPrompts[action]?.[nextTopic] || learningPrompts.quiz.discovery);
   };
 
 
@@ -452,6 +477,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     libraryObjects,
     materialBackground,
     houseDecor,
+    learningState,
   });
 
 
@@ -462,7 +488,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           <span aria-hidden="true">✦</span><b>AI 画伴</b>
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
-        <div className="found-status"><span aria-hidden="true">●</span> 世界里有 {visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友</div>
+        <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
         <KidToolDock
           onAdd={() => setShowMaterialLibrary(true)}
           onDecorate={() => setShowHouseDecorator(true)}
@@ -550,6 +576,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         typing={typing}
         onSend={handleConversation}
         voiceAllowed={safety.voiceAllowed}
+        learningState={learningState}
+        onLearningAction={handleLearningAction}
       />
       </div>
 

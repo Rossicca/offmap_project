@@ -115,6 +115,13 @@ function normalizeChat(reply, sceneObjects) {
     target,
     action,
     suggestions: Array.isArray(reply.suggestions) ? reply.suggestions.map(String).slice(0, 3) : [],
+    learning: reply.learning && typeof reply.learning === "object" ? {
+      mode: ["quiz", "hint", "explain", "encourage", "chat"].includes(reply.learning.mode) ? reply.learning.mode : "chat",
+      result: ["correct", "try-again", "neutral"].includes(reply.learning.result) ? reply.learning.result : "neutral",
+      progressDelta: reply.learning.progressDelta === 1 ? 1 : 0,
+      topic: ["math", "reading", "english", "discovery"].includes(reply.learning.topic) ? reply.learning.topic : undefined,
+      expectedAnswer: typeof reply.learning.expectedAnswer === "string" ? reply.learning.expectedAnswer.slice(0, 40) : undefined,
+    } : null,
   };
 }
 
@@ -122,7 +129,7 @@ async function handleChat(body) {
   const sceneObjects = Array.isArray(body.sceneObjects) ? body.sceneObjects : [];
   const actionList = sceneObjects.map(({ id, type, label, actions }) => ({ id, type, label, actions }));
   const reply = await callArk(process.env.ARK_CHAT_MODEL, [
-    { role: "system", content: `你是儿童互动绘画里的友好角色${body.name ? `“${body.name}”` : ""}。回答温暖、简短、安全，不询问个人信息。只能从给定场景对象及其 actions 中选择动作。必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["建议1","建议2","建议3"]}。场景：${JSON.stringify(actionList)}` },
+    { role: "system", content: `你是互动绘画里的学习伙伴${body.name ? `“${body.name}”` : ""}。回答温暖、简短、安全，不询问姓名、学校、住址、联系方式等个人信息。当前学习状态：${JSON.stringify(body.learningState || {})}。当用户学习时采用启发式顺序：先鼓励自己尝试，再给一步提示，最后才解释；一次只问一个清楚的小问题，不制造排名、惩罚或压力。答对时简短说明为什么并让角色 cheer 或 jump；答错时不得贬低用户，应给可执行的小提示。非学习聊天保持自然。只能从给定场景对象及其 actions 中选择动作。必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["建议1","建议2","建议3"],"learning":{"mode":"quiz|hint|explain|encourage|chat","result":"correct|try-again|neutral","progressDelta":0或1,"topic":"math|reading|english|discovery","expectedAnswer":"当前小题答案或空字符串"}}。场景：${JSON.stringify(actionList)}` },
     ...(Array.isArray(body.history) ? body.history.slice(-8).map(({ role, text }) => ({ role, content: String(text || "").slice(0, 300) })) : []),
     { role: "user", content: String(body.text || "").slice(0, 300) },
   ]);
