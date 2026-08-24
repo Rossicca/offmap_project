@@ -16,9 +16,11 @@ import MaterialLibrary from "./MaterialLibrary";
 import MaterialSceneObject from "./MaterialSceneObject";
 import HouseDecorator from "./HouseDecorator";
 import KidToolDock from "./KidToolDock";
+import AvatarWardrobe from "./AvatarWardrobe";
 import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { backgroundStyleFor, defaultHouseDecor } from "../data/materialCatalog";
+import { defaultAvatarLook } from "../data/wardrobeCatalog";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -80,6 +82,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [customHouseStates, setCustomHouseStates] = useState(() => initialState?.customHouseStates || {});
   const [showMaterialLibrary, setShowMaterialLibrary] = useState(false);
   const [showHouseDecorator, setShowHouseDecorator] = useState(false);
+  const [showAvatarWardrobe, setShowAvatarWardrobe] = useState(false);
+  const [avatarLooks, setAvatarLooks] = useState(() => initialState?.avatarLooks || {});
   const [libraryObjects, setLibraryObjects] = useState(() => initialState?.libraryObjects || []);
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
@@ -478,6 +482,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     materialBackground,
     houseDecor,
     learningState,
+    avatarLooks,
   });
 
 
@@ -490,6 +495,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
         <KidToolDock
+          onAvatar={() => setShowAvatarWardrobe(true)}
           onAdd={() => setShowMaterialLibrary(true)}
           onDecorate={() => setShowHouseDecorator(true)}
           onDraw={() => setShowObjectDrawing(true)}
@@ -504,6 +510,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
       {showMaterialLibrary && <MaterialLibrary onAdd={addMaterial} onClose={() => setShowMaterialLibrary(false)} />}
       {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
+      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} onApply={(look) => setAvatarLooks((current) => ({ ...current, [activeCompanion.id]: look }))} onClose={() => setShowAvatarWardrobe(false)} />}
       {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects, ...libraryObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}
@@ -535,6 +542,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
+              avatarLook={avatarLooks[(companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar)?.id] || defaultAvatarLook}
               showJoints={showJoints}
               houseArt={worldArt.house}
               houseDecor={houseDecor}

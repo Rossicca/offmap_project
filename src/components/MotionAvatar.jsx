@@ -1,4 +1,5 @@
 import dogMotion from "../assets/dog-motion-paper.png";
+import { wardrobeItem } from "../data/wardrobeCatalog";
 
 
 const frameByAction = {
@@ -41,8 +42,17 @@ function JointOverlay({ species, calibratedNodes }) {
   );
 }
 
+function WardrobeLayer({ look }) {
+  if (!look) return null;
+  const outfit = wardrobeItem("outfit", look.outfit);
+  const shoes = wardrobeItem("shoes", look.shoes);
+  const headwear = wardrobeItem("headwear", look.headwear);
+  const accessory = wardrobeItem("accessory", look.accessory);
+  return <span className={`avatar-wardrobe-layer pattern-${look.pattern || "plain"} headwear-${look.headwear || "none"} accessory-${look.accessory || "none"}`} style={{ "--look-outfit": outfit.color, "--look-accent": outfit.accent, "--look-shoes": shoes.color, "--look-headwear": headwear.color || "#d77b68", "--look-accessory": accessory.color || "#7c9569" }} aria-hidden="true"><i className="look-outfit"><b /></i><i className="look-shoe is-left" /><i className="look-shoe is-right" /><i className="look-headwear"><b /></i><i className="look-accessory"><b /></i></span>;
+}
 
-export default function MotionAvatar({ avatar, action, showJoints }) {
+
+export default function MotionAvatar({ avatar, action, showJoints, look }) {
   const frame = frameByAction[action] || "0% 0%";
   const uploadedAspect = avatar.isUploaded && avatar.imageSize?.width && avatar.imageSize?.height
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
@@ -52,6 +62,7 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
       {avatar.isUploaded
         ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
+      {!avatar.isUploaded && avatar.species === "human" && <WardrobeLayer look={look} />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>

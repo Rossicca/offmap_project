@@ -14,7 +14,7 @@ function WorldProp({ type }) {
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, onDecorate }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, onDecorate }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -71,7 +71,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
+        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} />}
