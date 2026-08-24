@@ -1,7 +1,7 @@
 import explorerMotion from "../assets/explorer-motion-paper.png";
 import rabbitMotion from "../assets/rabbit-motion-paper.png";
-import robotMotion from "../assets/robot-motion-paper.png";
 import heroMotion from "../assets/hero-motion-paper.png";
+import girlMotion from "../assets/girl-coral-motion-transparent.png";
 
 export const avatarCatalog = [
   {
@@ -9,9 +9,21 @@ export const avatarCatalog = [
     name: "小小探险家",
     kind: "人物",
     species: "human",
+    gender: "男生",
     spritePosition: "0% 0%",
     motionSprite: explorerMotion,
     colors: { accent: "#f2be38", secondary: "#3e9b62", skin: "#ffd6b1", hair: "#6a3f28" },
+    joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
+  },
+  {
+    id: "girl",
+    name: "小芽",
+    kind: "人物",
+    species: "human",
+    gender: "女生",
+    spritePosition: "0% 0%",
+    motionSprite: girlMotion,
+    colors: { accent: "#df7864", secondary: "#78949a", skin: "#ffd3ad", hair: "#5f4638" },
     joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
   },
   {
@@ -25,23 +37,16 @@ export const avatarCatalog = [
     joints: ["头", "身体", "左耳", "右耳", "左前爪", "右前爪", "左后腿", "右后腿", "尾巴"],
   },
   {
-    id: "robot",
-    name: "波波机器人",
-    kind: "机器人",
-    species: "robot",
-    spritePosition: "0% 100%",
-    motionSprite: robotMotion,
-    colors: { accent: "#3e9ad7", secondary: "#82bd48", skin: "#f8f4e8", hair: "#17324d" },
-    joints: ["头", "身体", "左肩轴", "左肘轴", "右肩轴", "右肘轴", "左髋轴", "左膝轴", "右髋轴", "右膝轴"],
-  },
-  {
     id: "hero",
-    name: "星星小英雄",
+    name: "星星男孩",
     kind: "人物",
     species: "human",
+    gender: "男生",
     spritePosition: "100% 100%",
     motionSprite: heroMotion,
     colors: { accent: "#297ec5", secondary: "#ed4437", skin: "#ffd0a9", hair: "#513325" },
     joints: ["头", "身体", "左肩", "左肘", "右肩", "右肘", "左髋", "左膝", "右髋", "右膝"],
   },
 ];
+
+export const primaryAvatarCatalog = avatarCatalog.filter((avatar) => ["explorer", "girl"].includes(avatar.id));

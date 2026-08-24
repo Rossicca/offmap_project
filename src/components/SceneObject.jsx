@@ -14,7 +14,7 @@ function WorldProp({ type }) {
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, onDecorate }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onSelect, selected, onMove, onMoveEnd, avatar, avatarLook, showJoints, houseArt, houseDecor, onDecorate }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -24,7 +24,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
     const doorOpen = persistentState.doorOpen;
     return (
       <button
-        className={`scene-object house-object action-${action || "idle"} ${dragging ? "is-dragging" : ""}`}
+        className={`scene-object house-object action-${action || "idle"} ${selected ? "is-selected" : ""} ${dragging ? "is-dragging" : ""}`}
         style={{
           "--x": `${object.x}%`,
           "--y": `${object.y}%`,
@@ -36,7 +36,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
         aria-label={`${object.label}，可拖动；点击装饰房子。${doorOpen ? "门已打开" : "门已关闭"}`}
         aria-describedby="drag-help"
         data-object-id={object.id}
-        onClick={() => activate(() => onDecorate?.())}
+        onClick={() => activate(() => { onSelect?.(object.id); onDecorate?.(); })}
         {...dragHandlers}
       >
         {houseArt
@@ -60,18 +60,18 @@ export default function SceneObject({ object, action, persistentState, onInterac
   const isInRoom = object.type === "person" && persistentState.restingCharacters?.includes(object.id);
   return (
     <button
-      className={`scene-object ${object.type}-object action-${action || "idle"} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${dragging ? "is-dragging" : ""}`}
+      className={`scene-object ${object.type}-object action-${action || "idle"} ${selected ? "is-selected" : ""} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${dragging ? "is-dragging" : ""}`}
       style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}) }}
       type="button"
       aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；点击${object.actions[0] === "feed" ? "去找小朋友" : "触发动作"}`}
       aria-describedby="drag-help"
       data-object-id={object.id}
-      onClick={() => activate(() => onInteract(object.id, object.actions[0]))}
+      onClick={() => activate(() => { onSelect?.(object.id); onInteract(object.id, object.actions[0]); })}
       {...dragHandlers}
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
+        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} look={avatarLook} />
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
           : <WorldProp type={object.type} />}

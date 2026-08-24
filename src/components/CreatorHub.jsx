@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { avatarCatalog } from "../data/avatarCatalog";
+import { primaryAvatarCatalog } from "../data/avatarCatalog";
 import DrawingCanvas from "./DrawingCanvas";
 import ProjectGallery from "./ProjectGallery";
 import WorldDrawingEditor from "./WorldDrawingEditor";
@@ -15,7 +15,7 @@ const DoodleIcon = ({ name }) => {
 
 export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreateBackground, busy, error, onLogout, projects = [], onOpenProject, onRenameProject, onDeleteProject }) {
   const inputRef = useRef(null);
-  const [selected, setSelected] = useState(avatarCatalog[2]);
+  const [selected, setSelected] = useState(primaryAvatarCatalog[0]);
   const [panel, setPanel] = useState(null);
   const [dreamMode, setDreamMode] = useState(false);
   const [friendship, setFriendship] = useState(() => Number(localStorage.getItem("living-drawing-friendship") || 0));
@@ -67,7 +67,7 @@ export default function CreatorHub({ userName, onUpload, onChooseAvatar, onCreat
             </div>
           </section>
           <section className="friend-message" aria-label="伙伴留言"><div className="message-avatar" style={{ backgroundImage: `url(${selected.motionSprite})` }} /><div><b>{selected.name}</b><p>今天也想陪你玩呀！</p><span aria-label="三个爱心">♥ ♥ ♥</span></div><div className="mini-character" style={{ backgroundImage: `url(${selected.motionSprite})` }} aria-hidden="true" /></section>
-          <section className="companion-picker" aria-label="选择小伙伴"><span>换个伙伴</span>{avatarCatalog.map((avatar) => <button key={avatar.id} type="button" className={selected.id === avatar.id ? "is-selected" : ""} onClick={() => setSelected(avatar)} aria-label={`选择${avatar.name}`}><i style={{ backgroundImage: `url(${avatar.motionSprite})` }} /></button>)}</section>
+          <section className="companion-picker" aria-label="选择主形象"><span>选择我的形象</span>{primaryAvatarCatalog.map((avatar) => <button key={avatar.id} type="button" className={selected.id === avatar.id ? "is-selected" : ""} onClick={() => setSelected(avatar)} aria-label={`选择${avatar.name}，${avatar.gender}`} title={`${avatar.name} · ${avatar.gender}`}><i style={{ backgroundImage: `url(${avatar.motionSprite})` }} /></button>)}</section>
         </div>
       </section>
       <div className="side-doodles right"><button className="doodle-tile yellow side-tool heart-tool" data-label="送爱心" type="button" onClick={addFriendship} aria-label={`送爱心，当前亲密度${friendship}`} title="送给伙伴爱心">♥<small>{friendship || ""}</small></button><i aria-hidden="true">✦</i><button className={`doodle-tile blue side-tool${dreamMode ? " is-active" : ""}`} data-label="云朵梦境" type="button" onClick={toggleDreamMode} aria-label="切换云朵梦境" title="云朵梦境">☁</button><button className="doodle-tile green side-tool camera-tool" data-label="上传画作" type="button" onClick={() => inputRef.current?.click()} aria-label="上传画作" title="上传画作"><span aria-hidden="true" /></button><i aria-hidden="true">〰</i></div>

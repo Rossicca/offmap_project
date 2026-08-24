@@ -1,9 +1,10 @@
 import { useState } from "react";
 
-export default function KidToolDock({ onAdd, onDecorate, onDraw, onDrawBackground, onSave, onArrange, onExport, onParent, onReset }) {
+export default function KidToolDock({ onAvatar, onAdd, onDecorate, onDraw, onDrawBackground, onSave, onArrange, onExport, onParent, onReset }) {
   const [moreOpen, setMoreOpen] = useState(false);
   return (
     <div className="kid-tool-dock" aria-label="游戏工具">
+      <button type="button" onClick={onAvatar}>我的形象</button>
       <button type="button" onClick={onAdd}>加东西</button>
       <button type="button" onClick={onDecorate}>装房子</button>
       <button type="button" onClick={onDraw}>自己画</button>

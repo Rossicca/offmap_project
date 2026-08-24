@@ -16,9 +16,14 @@ import MaterialLibrary from "./MaterialLibrary";
 import MaterialSceneObject from "./MaterialSceneObject";
 import HouseDecorator from "./HouseDecorator";
 import KidToolDock from "./KidToolDock";
+import AvatarWardrobe from "./AvatarWardrobe";
+import AvatarGrowthCard from "./AvatarGrowthCard";
 import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { backgroundStyleFor, defaultHouseDecor } from "../data/materialCatalog";
+import { defaultAvatarLook } from "../data/wardrobeCatalog";
+import { primaryAvatarCatalog } from "../data/avatarCatalog";
+import { awardGrowth, defaultAvatarGrowth, getGrowthProgress } from "../utils/avatarGrowth";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -39,8 +44,23 @@ const learningPrompts = {
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
 
+const loadAvatarGrowth = (savedGrowth) => {
+  try {
+    const stored = JSON.parse(localStorage.getItem("living-drawing-avatar-growth") || "null");
+    return {
+      ...defaultAvatarGrowth,
+      ...(stored || {}),
+      ...(savedGrowth || {}),
+      totalXp: Math.max(Number(stored?.totalXp) || 0, Number(savedGrowth?.totalXp) || 0),
+      earnedEvents: { ...(stored?.earnedEvents || {}), ...(savedGrowth?.earnedEvents || {}) },
+    };
+  } catch {
+    return { ...defaultAvatarGrowth, ...(savedGrowth || {}) };
+  }
+};
 
-export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
+
+export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, companions = [], onAvatarChange, rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
   const characterName = activeCompanion?.name || "画中小伙伴";
@@ -80,10 +100,18 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [customHouseStates, setCustomHouseStates] = useState(() => initialState?.customHouseStates || {});
   const [showMaterialLibrary, setShowMaterialLibrary] = useState(false);
   const [showHouseDecorator, setShowHouseDecorator] = useState(false);
+  const [showAvatarWardrobe, setShowAvatarWardrobe] = useState(false);
+  const [avatarLooks, setAvatarLooks] = useState(() => initialState?.avatarLooks || {});
   const [libraryObjects, setLibraryObjects] = useState(() => initialState?.libraryObjects || []);
   const [materialBackground, setMaterialBackground] = useState(() => initialState?.materialBackground || null);
   const [houseDecor, setHouseDecor] = useState(() => initialState?.houseDecor || defaultHouseDecor);
   const [learningState, setLearningState] = useState(() => initialState?.learningState || defaultLearningState);
+  const [avatarGrowth, setAvatarGrowth] = useState(() => loadAvatarGrowth(initialState?.avatarGrowth));
+  const [growthNotice, setGrowthNotice] = useState("");
+  const [selectedObjectId, setSelectedObjectId] = useState(null);
+  const undoHistory = useRef([]);
+  const redoHistory = useRef([]);
+  const [, setHistoryVersion] = useState(0);
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const timers = useRef([]);
@@ -91,14 +119,57 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const roomReturnPositions = useRef({});
   const feedReturnPositions = useRef({});
   const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
+  const avatarGrowthRef = useRef(avatarGrowth);
+
+  const grantGrowth = (eventId, xp, reason) => {
+    const result = awardGrowth(avatarGrowthRef.current, eventId, xp);
+    avatarGrowthRef.current = result.growth;
+    setAvatarGrowth(result.growth);
+    if (result?.awarded) {
+      const level = getGrowthProgress(result.growth).current;
+      setGrowthNotice(result.leveledUp ? `升级啦！现在是 Lv.${level.level} ${level.title}` : `${reason} · +${result.awarded} 经验`);
+      later(() => setGrowthNotice(""), 2600);
+    }
+    return result.growth;
+  };
 
 
   useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+  useEffect(() => { localStorage.setItem("living-drawing-avatar-growth", JSON.stringify(avatarGrowth)); }, [avatarGrowth]);
   useEffect(() => {
     if (!safety.sessionMinutes) return undefined;
     const timer = window.setTimeout(() => setTimeUp(true), safety.sessionMinutes * 60 * 1000);
     return () => window.clearTimeout(timer);
   }, [safety.sessionMinutes]);
+
+  const captureEditState = () => ({ objects, customObjects, libraryObjects, materialBackground });
+  const restoreEditState = (snapshot) => {
+    setObjects(snapshot.objects);
+    setCustomObjects(snapshot.customObjects);
+    setLibraryObjects(snapshot.libraryObjects);
+    setMaterialBackground(snapshot.materialBackground);
+  };
+  const rememberEdit = () => {
+    undoHistory.current = [...undoHistory.current.slice(-19), captureEditState()];
+    redoHistory.current = [];
+    setHistoryVersion((value) => value + 1);
+  };
+  const undoEdit = () => {
+    const snapshot = undoHistory.current.pop();
+    if (!snapshot) return;
+    redoHistory.current.push(captureEditState());
+    restoreEditState(snapshot);
+    setSelectedObjectId(null);
+    setHistoryVersion((value) => value + 1);
+  };
+  const redoEdit = () => {
+    const snapshot = redoHistory.current.pop();
+    if (!snapshot) return;
+    undoHistory.current.push(captureEditState());
+    restoreEditState(snapshot);
+    setSelectedObjectId(null);
+    setHistoryVersion((value) => value + 1);
+  };
 
 
   const later = (callback, delay) => {
@@ -131,7 +202,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (storyActive && !storyEnding) {
       if (storyStep === 0 && objectId === "house1" && action === "openDoor") setStoryStep(1);
       if (storyStep === 1 && objectId === "dog1" && action === "move") setStoryStep(2);
-      if (storyStep === 2 && objectId === "sun1" && ["sunset", "sunrise"].includes(action)) setStoryEnding(action === "sunset" ? "night" : "morning");
+      if (storyStep === 2 && objectId === "sun1" && ["sunset", "sunrise"].includes(action)) {
+        setStoryEnding(action === "sunset" ? "night" : "morning");
+        grantGrowth("story-first-ending", 25, "完成第一个互动故事");
+      }
     }
 
 
@@ -200,6 +274,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const addCustomObject = (drawing) => {
+    rememberEdit();
     const replacesType = drawing.placementMode === "replace" ? replacementTypeByKind[drawing.kind] : null;
     const sameKindCount = customObjects.filter((item) => item.kind === drawing.kind && !item.replacesType).length;
     const replacedObject = replacesType ? objects.find((item) => item.type === replacesType) : null;
@@ -224,16 +299,19 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     setMessage(`${drawing.label}已经加入游戏世界啦！`);
     setBubbleVisible(true);
     later(() => setBubbleVisible(false), 2400);
+    grantGrowth(`draw-${drawing.kind}`, 6, "亲手画下新素材");
   };
 
 
   const addMaterial = (material) => {
+    rememberEdit();
     if (material.category === "background") {
       setMaterialBackground(material);
       setShowMaterialLibrary(false);
       setMessage(`背景换成${material.name}啦！`);
       setBubbleVisible(true);
       later(() => setBubbleVisible(false), 2200);
+      grantGrowth(`material-${material.id}`, 4, "布置了新的世界背景");
       return;
     }
     const index = libraryObjects.length;
@@ -247,10 +325,25 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       layer: 12 + index,
     };
     setLibraryObjects((current) => [...current, object]);
+    grantGrowth(`material-${material.id}`, 4, "把新伙伴放进世界");
     setShowMaterialLibrary(false);
     setMessage(`${material.name}放进来啦，可以拖动它！`);
     setBubbleVisible(true);
     later(() => setBubbleVisible(false), 2200);
+  };
+
+  const applyAvatarLook = (look, avatar) => {
+    const previousId = activeCompanion?.id;
+    setAvatarLooks((current) => ({ ...current, [avatar.id]: look }));
+    if (avatar.id !== previousId) {
+      setObjects((current) => current.map((object) => object.type === "person" && object.avatarId === previousId ? { ...object, avatarId: avatar.id, label: avatar.name } : object));
+      setActiveCompanionId(avatar.id);
+      onAvatarChange?.(avatar);
+      setMessage(`主形象已经换成${avatar.name}啦！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2200);
+    }
+    grantGrowth(`outfit-${avatar.id}-${look.outfit}`, 6, "完成一次形象搭配");
   };
 
 
@@ -286,6 +379,38 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     setCustomObjects((current) => current.filter((item) => item.id !== id));
     setCustomHouseStates((current) => { const next = { ...current }; delete next[id]; return next; });
     if (target?.replacesType) setReplacedTypes((current) => current.filter((type) => type !== target.replacesType));
+  };
+
+  const updateSelectedObject = (updater) => {
+    if (!selectedObjectId) return;
+    const update = (item) => item.id === selectedObjectId ? updater(item) : item;
+    if (libraryObjects.some((item) => item.id === selectedObjectId)) setLibraryObjects((current) => current.map(update));
+    else if (customObjects.some((item) => item.id === selectedObjectId)) setCustomObjects((current) => current.map(update));
+    else setObjects((current) => current.map(update));
+  };
+  const resizeSelectedObject = (direction) => {
+    rememberEdit();
+    updateSelectedObject((item) => ({ ...item, scale: Math.max(.5, Math.min(2.2, Number(((item.scale || 1) + direction * .15).toFixed(2)))) }));
+  };
+  const duplicateSelectedObject = () => {
+    const source = [...objects, ...customObjects, ...libraryObjects].find((item) => item.id === selectedObjectId);
+    if (!source) return;
+    rememberEdit();
+    const copy = { ...source, id: `${source.isLibrary ? "library" : source.isCustom ? "custom" : "scene"}-copy-${Date.now()}`, label: `${source.label} 2`, x: Math.min(92, source.x + 6), y: Math.min(84, source.y + 5) };
+    if (source.isLibrary) setLibraryObjects((current) => [...current, copy]);
+    else if (source.isCustom) setCustomObjects((current) => [...current, copy]);
+    else setObjects((current) => [...current, copy]);
+    setSelectedObjectId(copy.id);
+  };
+  const deleteSelectedObject = () => {
+    if (!selectedObjectId) return;
+    rememberEdit();
+    const target = customObjects.find((item) => item.id === selectedObjectId);
+    setObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    setCustomObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    setLibraryObjects((current) => current.filter((item) => item.id !== selectedObjectId));
+    if (target?.replacesType) setReplacedTypes((current) => current.filter((type) => type !== target.replacesType));
+    setSelectedObjectId(null);
   };
 
 
@@ -363,7 +488,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       setTyping(false);
       appendMessage("assistant", reply.text);
       setSuggestions(reply.suggestions || []);
-      if (reply.learning) setLearningState((state) => ({
+      if (reply.learning) {
+        setLearningState((state) => ({
         ...state,
         topic: reply.learning.topic || state.topic,
         stars: Math.max(0, Math.min(5, state.stars + (reply.learning.progressDelta || 0))),
@@ -371,7 +497,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         streak: reply.learning.result === "correct" ? state.streak + 1 : reply.learning.result === "try-again" ? 0 : state.streak,
         currentAnswer: Object.hasOwn(reply.learning, "expectedAnswer") ? (reply.learning.expectedAnswer || null) : state.currentAnswer,
         lastResult: reply.learning.result || "neutral",
-      }));
+        }));
+        const replyTopic = reply.learning.topic || learningState.topic;
+        if (reply.learning.result === "correct") grantGrowth(`correct-${replyTopic}`, 18, `学会了${replyTopic === "math" ? "数学" : replyTopic === "reading" ? "阅读" : replyTopic === "english" ? "英语" : "探索"}知识`);
+      }
       setMessage(reply.text);
       setBubbleVisible(true);
       if (reply.target && reply.action) playAction(reply.target, reply.action, reply.text);
@@ -384,6 +513,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const handleLearningAction = (action, topic = learningState.topic) => {
     const nextTopic = learningPrompts[action]?.[topic] ? topic : "discovery";
     if (action === "start") setLearningState((state) => ({ ...state, topic: nextTopic, currentAnswer: null, lastResult: "neutral" }));
+    if (action === "start") grantGrowth(`learning-start-${nextTopic}`, 8, "开始新的学习方向");
+    if (action === "review") grantGrowth(`learning-review-${nextTopic}`, 8, "完成一次知识复习");
     handleConversation(learningPrompts[action]?.[nextTopic] || learningPrompts.quiz.discovery);
   };
 
@@ -463,7 +594,9 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type));
-  const saveWorld = () => onSave?.({
+  const saveWorld = () => {
+    const nextGrowth = grantGrowth("save-first-project", 15, "保存了自己的作品") || avatarGrowth;
+    onSave?.({
     persistentState,
     messages,
     storyStep,
@@ -478,7 +611,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     materialBackground,
     houseDecor,
     learningState,
-  });
+    avatarLooks,
+    avatarGrowth: nextGrowth,
+    });
+  };
 
 
   return (
@@ -489,7 +625,9 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         <div className="found-status" aria-label={`世界里有 ${visibleObjects.length + customObjects.length + libraryObjects.length} 个朋友`}><span aria-hidden="true">●</span><b>{visibleObjects.length + customObjects.length + libraryObjects.length}</b><em>个朋友</em></div>
+        <button className="world-growth-status" type="button" onClick={() => setShowAvatarWardrobe(true)} aria-label="查看伙伴成长"><AvatarGrowthCard growth={avatarGrowth} compact /></button>
         <KidToolDock
+          onAvatar={() => setShowAvatarWardrobe(true)}
           onAdd={() => setShowMaterialLibrary(true)}
           onDecorate={() => setShowHouseDecorator(true)}
           onDraw={() => setShowObjectDrawing(true)}
@@ -504,11 +642,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
       {showMaterialLibrary && <MaterialLibrary onAdd={addMaterial} onClose={() => setShowMaterialLibrary(false)} />}
       {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
+      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} avatars={primaryAvatarCatalog} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} growth={avatarGrowth} onApply={applyAvatarLook} onClose={() => setShowAvatarWardrobe(false)} />}
       {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...customObjects, ...libraryObjects]} theme={sceneTheme} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}
       {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
       {timeUp && <div className="break-reminder" role="dialog" aria-modal="true" aria-labelledby="break-title"><section><span aria-hidden="true">✦</span><h2 id="break-title">让眼睛休息一下吧</h2><p>已经创作了一段时间。看看远处、活动一下，准备好后再回来。</p><div><button type="button" onClick={onReset}>回到作品库</button><button type="button" onClick={() => setTimeUp(false)}>再创作一会儿</button></div></section></div>}
+      {growthNotice && <div className="growth-toast" role="status"><span aria-hidden="true">★</span>{growthNotice}</div>}
 
 
       <div className="world-experience">
@@ -524,6 +664,21 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         <div className="ground" aria-hidden="true" />
         {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
         <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />
+        {selectedObjectId && (() => {
+          const selectedObject = [...visibleObjects, ...customObjects, ...libraryObjects].find((item) => item.id === selectedObjectId);
+          if (!selectedObject) return null;
+          return <div className="object-quick-toolbar" role="toolbar" aria-label={`调整${selectedObject.label}`}>
+            <b>{selectedObject.label}</b>
+            <button type="button" onClick={() => resizeSelectedObject(-1)} aria-label="缩小">−</button>
+            <button type="button" onClick={() => resizeSelectedObject(1)} aria-label="放大">＋</button>
+            <button type="button" onClick={duplicateSelectedObject}>复制</button>
+            <button type="button" onClick={() => setShowMaterialLibrary(true)}>加伙伴</button>
+            <button type="button" onClick={undoEdit} disabled={!undoHistory.current.length} aria-label="撤销">↶</button>
+            <button type="button" onClick={redoEdit} disabled={!redoHistory.current.length} aria-label="恢复">↷</button>
+            <button className="is-delete" type="button" onClick={deleteSelectedObject}>删除</button>
+            <button className="is-close" type="button" onClick={() => setSelectedObjectId(null)} aria-label="关闭工具条">×</button>
+          </div>;
+        })()}
         <div className={persistentState.dogMoved ? "dog-route is-moved" : "dog-route"}>
           {visibleObjects.map((object) => (
             <SceneObject
@@ -531,10 +686,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={activeActions[object.id]}
               persistentState={persistentState}
+              selected={selectedObjectId === object.id}
+              onSelect={setSelectedObjectId}
               onInteract={handleDirectAction}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
               avatar={companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar}
+              avatarLook={avatarLooks[(companions.find((avatar) => avatar.id === object.avatarId) || selectedAvatar)?.id] || defaultAvatarLook}
               showJoints={showJoints}
               houseArt={worldArt.house}
               houseDecor={houseDecor}
@@ -547,13 +705,15 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               object={object}
               action={customObjectActions[object.id]}
               doorOpen={Boolean(customHouseStates[object.id]?.doorOpen)}
+              selected={selectedObjectId === object.id}
+              onSelect={setSelectedObjectId}
               onInteract={animateCustomObject}
               onMove={moveObject}
               onMoveEnd={finishMovingObject}
             />
           ))}
           {libraryObjects.map((object) => (
-            <MaterialSceneObject key={object.id} object={object} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
+            <MaterialSceneObject key={object.id} object={object} selected={selectedObjectId === object.id} onSelect={setSelectedObjectId} onMove={moveObject} onMoveEnd={finishMovingObject} onInteract={playWithMaterial} />
           ))}
         </div>
         {showJoints && (

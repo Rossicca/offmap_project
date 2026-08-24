@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import dogMotion from "../assets/dog-motion-paper.png";
+import { wardrobeItem } from "../data/wardrobeCatalog";
 import { segmentCharacterRig } from "../utils/segmentCharacterRig";
 
 
@@ -79,8 +80,20 @@ function SegmentedCharacter({ avatar }) {
 }
 
 
-export default function MotionAvatar({ avatar, action, showJoints }) {
+export default function MotionAvatar({ avatar, action, showJoints, look }) {
   const frame = frameByAction[action] || "0% 0%";
+  const outfit = wardrobeItem("outfit", look?.outfit || "original");
+  const outfitSprite = outfit.avatars?.includes(avatar.id) && outfit.sprite ? outfit.sprite : avatar.motionSprite;
+  const outfitMask = outfit.maskWithBase && outfitSprite !== avatar.motionSprite ? {
+    WebkitMaskImage: `url(${avatar.motionSprite})`,
+    WebkitMaskPosition: frame,
+    WebkitMaskRepeat: "no-repeat",
+    WebkitMaskSize: "200% 200%",
+    maskImage: `url(${avatar.motionSprite})`,
+    maskPosition: frame,
+    maskRepeat: "no-repeat",
+    maskSize: "200% 200%",
+  } : {};
   const uploadedAspect = avatar.isUploaded && avatar.imageSize?.width && avatar.imageSize?.height
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
@@ -88,7 +101,7 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
     <div className={`motion-avatar motion-${action || "idle"} ${avatar.isUploaded && avatar.rigNodes?.length ? "has-segmented-rig" : ""} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
         ? <SegmentedCharacter avatar={avatar} />
-        : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
+        : <span className="motion-sprite" style={{ backgroundImage: `url(${outfitSprite})`, backgroundPosition: frame, ...outfitMask }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import robotMotion from "../assets/robot-motion-paper.png";
+import explorerMotion from "../assets/explorer-motion-paper.png";
 
 export default function LoginScreen({ onLogin }) {
   const [name, setName] = useState("");
@@ -25,7 +25,7 @@ export default function LoginScreen({ onLogin }) {
 
         <div className="companion-login-body">
           <section className="login-character-side">
-            <div className="login-character-art" style={{ backgroundImage: `url(${robotMotion})` }} role="img" aria-label="挥手欢迎你的波波机器人" />
+            <div className="login-character-art" style={{ backgroundImage: `url(${explorerMotion})` }} role="img" aria-label="挥手欢迎你的小小探险家" />
             <i className="login-spark-one" aria-hidden="true">★</i>
             <i className="login-spark-two" aria-hidden="true">〰</i>
             <div className="login-speech">嗨！我一直在等你呀</div>

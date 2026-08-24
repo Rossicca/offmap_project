@@ -7,7 +7,8 @@
     "dev": "node scripts/dev.mjs",
     "dev:frontend": "vite",
     "server": "node server/index.js",
-    "build": "vite build",
+    "build": "npm run check:sprites && vite build",
+    "check:sprites": "node scripts/check-transparent-sprites.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
