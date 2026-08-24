@@ -116,9 +116,9 @@
     {
       "name": "Joint Calibration Workspace",
       "kind": "custom",
-      "description": "An honest local rig editor that keeps the uploaded drawing dominant and exposes anatomy-aware draggable nodes.",
+      "description": "An honest local rig editor whose native-button nodes preserve the exact grab offset, use the canvas content box, match pointer capture through up or cancel, and stay fully inside measured half-size bounds; precision verifies 0px pointer-down displacement and requested 93px / -47px versus actual 93.046875px / -47.015625px.",
       "html": "<section class=\"ds-rig\"><div class=\"ds-rig-canvas\" aria-label=\"关节校准画布\"><button class=\"ds-rig-node\" style=\"left:50%;top:18%\" aria-label=\"拖动头部\"><b>头部</b></button></div><aside><h2>选择角色类型</h2><button class=\"is-active\" type=\"button\">人物 <small>10 个节点</small></button><button type=\"button\">小狗 <small>11 个节点</small></button></aside></section>",
-      "css": ".ds-rig { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr); gap:22px; color:#2f3232; font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-rig-canvas { min-height:460px; position:relative; border:1.5px solid #2f3232; border-radius:12px; background:#faf8f1 center/contain no-repeat; box-shadow:0 14px 34px rgba(58,54,45,.12); } .ds-rig-node { position:absolute; width:20px; height:20px; border:3px solid #fff; border-radius:50%; background:#c65343; box-shadow:0 0 0 2px #2f3232; transform:translate(-50%,-50%); cursor:grab; } .ds-rig-node b { position:absolute; left:24px; top:-5px; padding:3px 6px; border-radius:5px; color:#fff; background:#2f3232; font-size:.66rem; white-space:nowrap; } .ds-rig aside { padding:24px; display:grid; align-content:start; gap:8px; border:1.5px solid #2f3232; border-radius:12px; background:#f6f2e8; box-shadow:0 14px 34px rgba(58,54,45,.12); } .ds-rig aside button { min-height:56px; padding:0 13px; display:flex; align-items:center; justify-content:space-between; border:1.5px solid #718a98; border-radius:7px; background:#faf8f1; font-weight:900; } .ds-rig aside button.is-active { color:#fff; border-color:#2f3232; background:#c65343; } @media(max-width:820px){.ds-rig{grid-template-columns:1fr}}"
+      "css": ".ds-rig { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr); gap:22px; color:#2f3232; font-family:ui-rounded,'Arial Rounded MT Bold','Microsoft YaHei',system-ui,sans-serif; } .ds-rig-canvas { min-height:460px; position:relative; border:1.5px solid #2f3232; border-radius:12px; background:#faf8f1 center/contain no-repeat; box-shadow:0 14px 34px rgba(58,54,45,.12); } .ds-rig-node { position:absolute; width:20px; height:20px; border:3px solid #fff; border-radius:50%; background:#c65343; box-shadow:0 0 0 2px #2f3232; transform:translate(-50%,-50%); cursor:grab; touch-action:none; user-select:none; } .ds-rig-node:active { transform:translate(-50%,-50%); } .ds-rig-node.is-dragging { cursor:grabbing; } .ds-rig-node b { position:absolute; left:24px; top:-5px; padding:3px 6px; border-radius:5px; color:#fff; background:#2f3232; font-size:.66rem; white-space:nowrap; } .ds-rig aside { padding:24px; display:grid; align-content:start; gap:8px; border:1.5px solid #2f3232; border-radius:12px; background:#f6f2e8; box-shadow:0 14px 34px rgba(58,54,45,.12); } .ds-rig aside button { min-height:56px; padding:0 13px; display:flex; align-items:center; justify-content:space-between; border:1.5px solid #718a98; border-radius:7px; background:#faf8f1; font-weight:900; } .ds-rig aside button.is-active { color:#fff; border-color:#2f3232; background:#c65343; } @media(max-width:820px){.ds-rig{grid-template-columns:1fr}}"
     },
     {
       "name": "Story Task Card",
@@ -165,6 +165,7 @@
       "The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.",
       "A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.",
       "Direct scene manipulation supports mouse, pen, and touch while measured bounds keep complete objects inside the stage.",
+      "Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.",
       "The scene editor exposes the same coordinates and bounds through labeled range controls for keyboard users.",
       "Compact mobile treatment begins at `560px` with two-row navigation, `44px` controls, contained horizontal rails, and zero page overflow down to `320px`."
     ],
@@ -175,7 +176,8 @@
       { "name": "The Friendly Weight Rule", "body": "Use strong weight, compact line length, and scale for hierarchy; do not introduce thin editorial typography.", "section": "typography" },
       { "name": "The Plain-Language Tool Rule", "body": "Header utilities stay at normal control scale and use short concrete verbs. Child-friendly means immediately understandable, not oversized, babyish, or visually loud.", "section": "typography" },
       { "name": "The One Stage Rule", "body": "Each step has one dominant framed task surface; secondary controls orbit it instead of creating competing dashboards.", "section": "layout" },
-      { "name": "The Layered Paper Rule", "body": "Use thin graphite borders and warm ambient shadows for sheet order; reserve stronger lift for active dragging.", "section": "elevation" }
+      { "name": "The Layered Paper Rule", "body": "Use thin graphite borders and warm ambient shadows for sheet order; reserve stronger lift for active dragging.", "section": "elevation" },
+      { "name": "The Exact Joint Grab Rule", "body": "On `pointerdown`, preserve the exact pointer-to-node-center grab offset and capture that pointer. Resolve movement against the rig canvas padding/content box—not its border box—using `clientWidth` / `clientHeight` and the origin at `rect.left + clientLeft`, `rect.top + clientTop`. Clamp with the measured rendered node half-width and half-height so the complete node remains inside the content box. On matching `pointerup` or `pointercancel`, release capture and clear the drag state; ignore completion from any other pointer. The automated precision check records `0px` displacement at pointer-down, a requested delta of `93px / -47px`, an actual delta of `93.046875px / -47.015625px`, and passing bounds.", "section": "components" }
     ],
     "dos": [
       "Do keep drafting paper, tracing paper, graphite, blue-pencil guides, and subdued colored-pencil fills consistent across every surface.",
@@ -186,6 +188,7 @@
       "Do keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.",
       "Do preserve speaker attribution when switching between two companions in one transcript.",
       "Do keep scene dragging bounded, touch-capable, and visible through grab/grabbing, temporary lift, and a blue-pencil dashed frame.",
+      "Do preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.",
       "Do keep labeled scene-editor ranges synchronized as the keyboard-accessible alternative to direct dragging.",
       "Do keep story tasks progressive and subordinate to the scene they control.",
       "Do reuse the shared graphite scrim and warm-paper shell for export, safety, and rest reminders; use a directional drawer for scene editing.",
@@ -207,6 +210,7 @@
       "Don't stack story, editor, export, or safety layers into a competing control dashboard.",
       "Don't compress mobile utility controls below the touch-safe envelope to force one-line navigation.",
       "Don't let any object cross the measured stage boundary or let drag completion fire its click action.",
+      "Don't apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.",
       "Don't make drag the only positioning method or allow horizontal rails to widen the page.",
       "Don't imply live AI capability or saved personal data when the shipped experience is local and replaceable.",
       "Don't use “图层” in child-facing UI or substitute oversized, infantilized controls for clear novice-friendly wording.",

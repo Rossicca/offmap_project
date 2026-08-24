@@ -36,7 +36,7 @@ button:focus-visible, input:focus-visible {
 }
 
 
-button:active:not(:disabled):not(.scene-object) { transform: translateY(1px) scale(0.985); }
+button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: translateY(1px) scale(0.985); }
 
 
 .visually-hidden {
@@ -114,7 +114,7 @@ button:active:not(:disabled):not(.scene-object) { transform: translateY(1px) sca
 .rig-canvas { min-height: 620px; position: relative; overflow: hidden; touch-action: none; border: 3px solid var(--ink); border-radius: 28px; background-color: #fff; background-position: center; background-size: contain; background-repeat: no-repeat; box-shadow: 12px 14px 0 #cbeef3; }
 .rig-canvas::after { content: "拖动节点进行校准"; position: absolute; left: 16px; bottom: 16px; padding: 7px 11px; border: 1px solid rgba(23,50,77,.35); border-radius: 999px; background: rgba(255,255,255,.9); font-size: .72rem; font-weight: 900; }
 .rig-node { position: absolute; z-index: 2; width: 20px; height: 20px; padding: 0; border: 3px solid #fff; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px var(--ink); transform: translate(-50%,-50%); cursor: grab; touch-action: none; }
-.rig-node:active { cursor: grabbing; }
+.rig-node:active, .rig-node.is-dragging { cursor: grabbing; transform: translate(-50%,-50%); }
 .rig-node b { position: absolute; left: 24px; top: -5px; padding: 3px 6px; border-radius: 5px; color: #fff; background: var(--ink); font-size: .66rem; white-space: nowrap; }
 .rig-controls { padding: 24px; display: flex; flex-direction: column; border: 3px solid var(--ink); border-radius: 28px; background: var(--sky); }
 .rig-controls h2, .rig-controls h3 { margin: 0 0 6px; }

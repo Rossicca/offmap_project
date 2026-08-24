@@ -153,6 +153,7 @@ The same identity survives from character choice to motion. Product-provided com
 - The living world and its white paper conversation card read as one responsive two-column play surface.
 - Conversation stays continuous and lightweight through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick-topic pills, and one composer.
 - Uploaded drawings pass through an explicit paper-board calibration workspace; draggable red-pencil joints preserve the child’s artwork while making the local template model understandable.
+- Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
 - The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
 - A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
@@ -314,7 +315,9 @@ The joint toggle is a small tracing-paper control at rest and red-pencil when ac
 
 ### Joint Calibration Editor
 
-The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes use a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
+The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes are native direct-manipulation buttons with a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. They are excluded from global button press transforms so pressing a node cannot shift its calibrated center. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
+
+**The Exact Joint Grab Rule.** On `pointerdown`, preserve the exact pointer-to-node-center grab offset and capture that pointer. Resolve movement against the rig canvas padding/content box—not its border box—using `clientWidth` / `clientHeight` and the origin at `rect.left + clientLeft`, `rect.top + clientTop`. Clamp with the measured rendered node half-width and half-height so the complete node remains inside the content box. On matching `pointerup` or `pointercancel`, release capture and clear the drag state; ignore completion from any other pointer. The automated precision check records `0px` displacement at pointer-down, a requested delta of `93px / -47px`, an actual delta of `93.046875px / -47.015625px`, and passing bounds.
 
 ### Command Composer & Feedback
 
@@ -357,6 +360,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
 - **Do** keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.
 - **Do** keep human and animal calibration templates anatomy-aware, draggable, and honest about local processing.
+- **Do** preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.
 - **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
 - **Do** preserve speaker attribution when switching between two companions in one transcript.
 - **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
@@ -381,6 +385,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
+- **Don't** apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.
 - **Don't** make drag the only way to position an object; keep labeled range controls available to keyboard users.
 - **Don't** shrink mobile actions below the touch-safe envelope merely to fit every utility label on one line.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.
