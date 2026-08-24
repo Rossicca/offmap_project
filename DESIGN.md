@@ -153,6 +153,7 @@ The same identity survives from character choice to motion. Product-provided com
 - The living world and its white paper conversation card read as one responsive two-column play surface.
 - Conversation stays continuous and lightweight through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick-topic pills, and one composer.
 - Uploaded drawings pass through an explicit paper-board calibration workspace; draggable red-pencil joints preserve the child’s artwork while making the local template model understandable.
+- Before joint placement, the calibration workspace offers four ordinary-sized artwork treatments—原图, 轻度, 中度, and 重度—while permanently retaining 原图 as the non-destructive source.
 - Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
 - The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
@@ -226,6 +227,8 @@ The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-a
 The stage and desktop conversation card are fluid from `560px` to `760px` tall. The story task is a compact `270px` paper card inside the stage’s upper-left safe area, with a progress line and one obvious next action. Every movable object stores its center as stage-relative percentages. Its measured half-width and half-height define per-object minimum and maximum coordinates, so the whole illustration remains inside the lightbox at every viewport size. A drag threshold separates taps from moves and preserves object actions after ordinary clicks.
 
 At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, including the calibration workspace; the avatar grid becomes two columns and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, the stage becomes a tall `600px` minimum viewport with a `6px` paper corner, and the conversation card becomes `420px` high. The header becomes two rows: a centered wordmark first, then a horizontally scrollable utility rail. Mobile topics, dialog actions, editor confirmations, joint/story toggles, and other primary controls keep a `44px` minimum touch target. Composer text yields to its arrow on the narrow send button, and horizontal action rails scroll internally without increasing page width.
+
+The calibration artwork-treatment selector uses four equal columns on desktop, two columns on narrow desktop, returns to four compact columns on mobile, and collapses to two columns at `430px` and below. Every treatment remains an ordinary control rather than a hero card and preserves at least a `44px` touch height.
 
 The application must maintain zero horizontal page overflow at the `320px` minimum viewport. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing.
 
@@ -317,6 +320,10 @@ The joint toggle is a small tracing-paper control at rest and red-pencil when ac
 
 The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes are native direct-manipulation buttons with a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. They are excluded from global button press transforms so pressing a node cannot shift its calibrated center. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
 
+Artwork treatment happens locally in the browser through `canvas` before joint placement. 原图 is retained permanently and can always be restored; 轻度 brightens the paper, 中度 cleans the gray cast, and 重度 strengthens the drawn lines. Cache completed results by source image and treatment, and guard asynchronous work with a request identity so a slower obsolete render can never replace the latest selection.
+
+The four treatment controls expose selection with `aria-pressed`; a nearby `role="status"` region announces processing, completion, and failure without stealing focus. While processing, disable all treatment choices and the final confirmation, show a concise busy state, and on error restore 原图 with a retryable message. Small descriptions and status copy must meet WCAG AA contrast against their paper surface.
+
 **The Exact Joint Grab Rule.** On `pointerdown`, preserve the exact pointer-to-node-center grab offset and capture that pointer. Resolve movement against the rig canvas padding/content box—not its border box—using `clientWidth` / `clientHeight` and the origin at `rect.left + clientLeft`, `rect.top + clientTop`. Clamp with the measured rendered node half-width and half-height so the complete node remains inside the content box. On matching `pointerup` or `pointercancel`, release capture and clear the drag state; ignore completion from any other pointer. The automated precision check records `0px` displacement at pointer-down, a requested delta of `93px / -47px`, an actual delta of `93.046875px / -47.015625px`, and passing bounds.
 
 ### Command Composer & Feedback
@@ -360,6 +367,8 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
 - **Do** keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.
 - **Do** keep human and animal calibration templates anatomy-aware, draggable, and honest about local processing.
+- **Do** keep 原图 permanently available, process 轻度 / 中度 / 重度 treatments locally in browser `canvas`, cache completed results, and ignore stale asynchronous completions.
+- **Do** disable treatment selection and final confirmation while processing, announce state through `aria-pressed` and a live status region, restore 原图 on failure, and keep small text at AA contrast.
 - **Do** preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.
 - **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
 - **Do** preserve speaker attribution when switching between two companions in one transcript.
@@ -386,6 +395,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
 - **Don't** apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.
+- **Don't** destructively replace the uploaded original, allow a stale treatment request to win, or leave enhancement and confirmation controls active while processing.
 - **Don't** make drag the only way to position an object; keep labeled range controls available to keyboard users.
 - **Don't** shrink mobile actions below the touch-safe envelope merely to fit every utility label on one line.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.

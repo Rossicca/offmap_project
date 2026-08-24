@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from "react";
+import DrawingEnhancementPicker from "./DrawingEnhancementPicker";
+import { enhanceDrawing } from "../utils/enhanceDrawing";
 
 const templates = {
   human: { label: "人物", nodes: [["头",50,18],["身体",50,43],["左肩",38,34],["左肘",27,48],["右肩",62,34],["右肘",73,48],["左髋",44,58],["左膝",42,76],["右髋",56,58],["右膝",58,76]] },
@@ -7,16 +9,54 @@ const templates = {
 };
 
 export default function RigEditor({ analysis, onConfirm, onCancel }) {
+  const originalPreviewUrl = analysis.originalPreviewUrl || analysis.previewUrl;
   const boardRef = useRef(null);
   const dragRef = useRef(null);
+  const enhancementRequestRef = useRef(0);
+  const enhancementCacheRef = useRef(new Map([
+    ["original", originalPreviewUrl],
+    ...(analysis.enhancementLevel && analysis.enhancementLevel !== "original"
+      ? [[analysis.enhancementLevel, analysis.previewUrl]]
+      : []),
+  ]));
   const [species, setSpecies] = useState("human");
   const [nodes, setNodes] = useState(() => templates.human.nodes.map(([label,x,y]) => ({ label, x, y })));
   const [draggingIndex, setDraggingIndex] = useState(null);
+  const [enhancementLevel, setEnhancementLevel] = useState(analysis.enhancementLevel || "original");
+  const [previewUrl, setPreviewUrl] = useState(analysis.previewUrl);
+  const [enhancementBusy, setEnhancementBusy] = useState(false);
+  const [enhancementError, setEnhancementError] = useState("");
   const template = useMemo(() => templates[species], [species]);
 
   const chooseTemplate = (nextSpecies) => {
     setSpecies(nextSpecies);
     setNodes(templates[nextSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
+  };
+
+  const chooseEnhancement = async (level) => {
+    const request = ++enhancementRequestRef.current;
+    setEnhancementLevel(level);
+    setEnhancementError("");
+    const cached = enhancementCacheRef.current.get(level);
+    if (cached) {
+      setPreviewUrl(cached);
+      setEnhancementBusy(false);
+      return;
+    }
+    setEnhancementBusy(true);
+    try {
+      const result = await enhanceDrawing(originalPreviewUrl, level);
+      enhancementCacheRef.current.set(level, result);
+      if (request === enhancementRequestRef.current) setPreviewUrl(result);
+    } catch (error) {
+      if (request === enhancementRequestRef.current) {
+        setEnhancementLevel("original");
+        setPreviewUrl(originalPreviewUrl);
+        setEnhancementError(error.message || "画面调整失败，请继续使用原图。");
+      }
+    } finally {
+      if (request === enhancementRequestRef.current) setEnhancementBusy(false);
+    }
   };
 
   const startNodeDrag = (index, event) => {
@@ -61,6 +101,9 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
 
   const confirm = () => onConfirm({
     ...analysis,
+    originalPreviewUrl,
+    previewUrl,
+    enhancementLevel,
     needsRigSetup: false,
     rigAnalysis: {
       ...analysis.rigAnalysis,
@@ -73,15 +116,16 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
       <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
       <section className="rig-editor-intro"><div><h1>把关节放到<br /><em>正确的位置</em></h1><p>选择最接近的角色模板，然后直接拖动节点。这里是本地可校准模板，不会假装已经完成云端 AI 识别。</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
-        <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${analysis.previewUrl})` }} aria-label="关节校准画布">
+        <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${previewUrl})` }} aria-label="关节校准画布">
           {nodes.map((node, index) => <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${node.x}%`, top: `${node.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>)}
         </div>
         <aside className="rig-controls">
+          <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy} error={enhancementError} onChange={chooseEnhancement} />
           <div><h2>角色类型</h2><p>不同动物会使用不同的可动节点。</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
           <p className="rig-hint"><b>操作提示</b> 按住红色节点拖动；节点名称会跟着移动。确认后仍可在互动世界中显示或隐藏关节。</p>
-          <button className="primary-button" type="button" onClick={confirm}>确认关节，继续画背景 <span aria-hidden="true">→</span></button>
+          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy}>{enhancementBusy ? "正在调整画面…" : "确认关节，继续画背景"} {!enhancementBusy && <span aria-hidden="true">→</span>}</button>
         </aside>
       </section>
     </main>
