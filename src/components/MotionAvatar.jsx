@@ -11,13 +11,16 @@ const frameByAction = {
   dance: "100% 0%",
   spin: "0% 0%",
   cheer: "0% 100%",
+  study: "100% 0%",
+  work: "100% 0%",
+  play: "0% 100%",
   rest: "0% 0%",
   throwBall: "100% 0%",
   carryToy: "100% 0%",
 };
 
 
-const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "房间休息" };
+const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", study: "认真学习", work: "专注创作", play: "户外玩耍", rest: "安静休息" };
 const rpsGestureByAction = { rpsRock: "✊", rpsScissors: "✌️", rpsPaper: "✋" };
 
 

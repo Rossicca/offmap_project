@@ -28,8 +28,9 @@ import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { playDogBark } from "../utils/soundEffects";
 import { backgroundStyleFor, defaultDoghouseDecor, defaultHouseDecor } from "../data/materialCatalog";
-import { ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS } from "../data/companionSystem";
+import { ACTION_IDS, ACTIVITY_IDS, ROOM_SCENE_OBJECTS, SCENE_IDS, isActionId } from "../data/companionSystem";
 import { migrateCompanionSnapshot, normalizeCharacterStates, normalizeSceneId } from "../utils/companionState";
+import { executeCompanionAction } from "../utils/executeCompanionAction";
 
 
 const replacementTypeByKind = { house: "house", animal: "dog", character: "person", prop: "food" };
@@ -160,6 +161,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [cloudDrift, setCloudDrift] = useState(() => initialState?.cloudDrift || 0);
   const [foodGrowth, setFoodGrowth] = useState(() => initialState?.foodGrowth || { level: 0, points: 0 });
   const timers = useRef([]);
+  const companionActionTokens = useRef({});
   const stageRef = useRef(null);
   const roomReturnPositions = useRef({});
   const feedReturnPositions = useRef({});
@@ -230,15 +232,16 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
   const playAction = (objectId, action, customMessage) => {
-    if (sceneTransition && ["rest", "leaveRoom"].includes(action)) return;
+    if (sceneTransition && [ACTION_IDS.ENTER_ROOM, ACTION_IDS.LEAVE_ROOM].includes(action)) return;
     const object = objects.find((item) => item.id === objectId);
     const feedTarget = action === "feed"
       ? objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId) || objects.find((item) => item.type === "person")
       : null;
-    const isRoomExit = action === "leaveRoom" && object?.type === "person";
+    const isRoomExit = action === ACTION_IDS.LEAVE_ROOM && object?.type === "person";
+    const isCompanionAction = object?.type === "person" && isActionId(action);
     const isDoghouseAction = object?.type === "dog" && ["enterDoghouse", "exitDoghouse", "dogEat", "dogEatApple", "dogPlay", "dogFetch"].includes(action);
     const isToyBasketAction = object?.type === "person" && ["tidyToys", "takeToys"].includes(action);
-    if (!object || (!object.actions.includes(action) && !isRoomExit && !isDoghouseAction && !isToyBasketAction)) return;
+    if (!object || (!object.actions?.includes(action) && !isCompanionAction && !isRoomExit && !isDoghouseAction && !isToyBasketAction)) return;
     if (action === "dogEat" && activeActions[objectId]) return;
     if (action === "dogEatApple" && (activeActions[objectId] || activeActions.apple1 || persistentState.appleHidden)) return;
     if (action === "dogPlay" && activeActions[objectId]) return;
@@ -246,8 +249,36 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (isToyBasketAction && (activeActions[objectId] || activeActions.dog1)) return;
     if (action === "feed" && activeActions[objectId]) return;
 
+    const companionResult = isCompanionAction ? executeCompanionAction({
+      action,
+      characterState: characterStates[objectId] || { location: object.sceneId },
+      currentSceneId,
+    }) : null;
+    if (companionResult && !companionResult.accepted) {
+      setMessage(companionResult.reason === "room-required" ? "这个活动要在房间里进行，先点击“进入房间”吧。" : "这个活动要在室外进行，先点击“去室外”吧。");
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2300);
+      return;
+    }
+
+    const companionActionToken = isCompanionAction
+      ? (companionActionTokens.current[objectId] || 0) + 1
+      : null;
+    if (isCompanionAction) companionActionTokens.current[objectId] = companionActionToken;
+
+    if (companionResult && !companionResult.transitionTo) {
+      setCharacterStates((current) => ({ ...current, [objectId]: companionResult.state }));
+      setPersistentState((state) => ({
+        ...state,
+        restingCharacters: companionResult.state.activity === ACTIVITY_IDS.RESTING
+          ? [...new Set([...(state.restingCharacters || []), objectId])]
+          : (state.restingCharacters || []).filter((id) => id !== objectId),
+      }));
+    }
+
     const isAlreadyInRoom = normalizeSceneId(object.sceneId) === SCENE_IDS.ROOM;
     if (isRoomExit) {
+      setActiveActions((current) => ({ ...current, [objectId]: null }));
       const savedOutdoorPosition = object.scenePositions?.[SCENE_IDS.OUTDOOR] || roomReturnPositions.current[objectId];
       const currentRoomPosition = { x: object.x, y: object.y };
       setSceneTransition("leaving-room");
@@ -273,6 +304,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         setSceneTransition(null);
       }, 620);
       later(() => setPersistentState((state) => ({ ...state, doorOpen: false })), 1250);
+      setMessage(customMessage || actionFeedback.leaveRoom);
+      setBubbleVisible(true);
+      later(() => {
+        if (companionActionTokens.current[objectId] === companionActionToken) setBubbleVisible(false);
+      }, 2300);
+      return;
     }
 
 
@@ -286,7 +323,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
 
 
-    setActiveActions((current) => ({ ...current, [objectId]: action }));
+    setActiveActions((current) => ({ ...current, [objectId]: action === ACTION_IDS.ENTER_ROOM ? null : action }));
     setMessage(customMessage || (action === "dogEatApple" ? `狗狗跑到${foodLevels[foodGrowth.level]?.name || "苹果"}旁边，低头吃起来啦！` : actionFeedback[action]) || "世界动起来啦！");
     setBubbleVisible(true);
 
@@ -295,14 +332,12 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (action === "sunrise") setPersistentState((state) => ({ ...state, night: false }));
     if (action === "openDoor") setPersistentState((state) => ({ ...state, doorOpen: true }));
     if (action === "closeDoor") setPersistentState((state) => ({ ...state, doorOpen: false }));
-    if (action === "rest") {
+    if (action === ACTION_IDS.ENTER_ROOM) {
       const room = customObjects.find((item) => item.kind === "house") || objects.find((item) => item.type === "house");
       if (room) {
         if (isAlreadyInRoom) {
           setCurrentSceneId(SCENE_IDS.ROOM);
           setSceneTransition(null);
-          later(() => setActiveActions((current) => ({ ...current, [objectId]: null })), actionDurations.rest);
-          later(() => setBubbleVisible(false), 2300);
           return;
         }
         const outdoorPosition = { x: object.x, y: object.y };
@@ -331,11 +366,11 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           } : item));
           setCharacterStates((current) => ({
             ...current,
-            [objectId]: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.RESTING },
+            [objectId]: { location: SCENE_IDS.ROOM, activity: ACTIVITY_IDS.IDLE },
           }));
           setPersistentState((state) => ({
             ...state,
-            restingCharacters: [...new Set([...(state.restingCharacters || []), objectId])],
+            restingCharacters: (state.restingCharacters || []).filter((id) => id !== objectId),
           }));
           setCurrentSceneId(SCENE_IDS.ROOM);
           setSceneTransition(null);
@@ -348,6 +383,16 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
           }
         }, 900);
       }
+    }
+    if ([ACTION_IDS.STUDY, ACTION_IDS.WORK, ACTION_IDS.REST].includes(action)) {
+      const target = action === ACTION_IDS.REST
+        ? objects.find((item) => item.id === "room-bed-1")
+        : objects.find((item) => item.id === "room-desk-1");
+      if (target) setObjects((current) => current.map((item) => item.id === objectId ? {
+        ...item,
+        x: Math.max(8, target.x - (action === ACTION_IDS.REST ? 2 : 10)),
+        y: Math.min(82, target.y + (action === ACTION_IDS.REST ? 2 : 10)),
+      } : item));
     }
     if (action === "enterDoghouse") {
       const doghouse = objects.find((item) => item.id === "doghouse1");
@@ -536,8 +581,14 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     }
 
 
-    later(() => setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { [feedTarget?.id || "person1"]: null } : {}) })), actionDurations[action] || 1000);
-    later(() => setBubbleVisible(false), action === "feed" ? 2800 : 2300);
+    later(() => {
+      if (isCompanionAction && companionActionTokens.current[objectId] !== companionActionToken) return;
+      setActiveActions((current) => ({ ...current, [objectId]: null, ...(action === "feed" ? { [feedTarget?.id || "person1"]: null } : {}) }));
+    }, actionDurations[action] || 1000);
+    later(() => {
+      if (isCompanionAction && companionActionTokens.current[objectId] !== companionActionToken) return;
+      setBubbleVisible(false);
+    }, action === "feed" ? 2800 : 2300);
   };
 
 
@@ -1005,7 +1056,14 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       setCurrentSceneId(currentSceneId === SCENE_IDS.OUTDOOR ? SCENE_IDS.ROOM : SCENE_IDS.OUTDOOR);
       return;
     }
-    playAction(travelPerson.id, currentSceneId === SCENE_IDS.OUTDOOR ? "rest" : "leaveRoom");
+    if (normalizeSceneId(travelPerson.sceneId) !== currentSceneId) {
+      setCurrentSceneId(currentSceneId === SCENE_IDS.OUTDOOR ? SCENE_IDS.ROOM : SCENE_IDS.OUTDOOR);
+      setMessage(currentSceneId === SCENE_IDS.OUTDOOR ? "房间里的伙伴正在等你。" : "室外的伙伴正在等你。");
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2000);
+      return;
+    }
+    playAction(travelPerson.id, currentSceneId === SCENE_IDS.OUTDOOR ? ACTION_IDS.ENTER_ROOM : ACTION_IDS.LEAVE_ROOM);
   };
   const saveWorld = () => {
     if (sceneTransition) return;

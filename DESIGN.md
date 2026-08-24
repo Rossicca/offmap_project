@@ -163,6 +163,8 @@ The same identity survives from character choice to motion. Product-provided com
 - A focused material library uses six plain-language categories—伙伴, 背景, 互动, 自然, 摆件, and 狗窝—plus a 120-preset house decoration studio. Scene thumbnails depict recognizable illustrated places rather than abstract color swatches.
 - A new world begins with only the background, one house, the primary person, and the dog. Sun, tree, food, toys, basket, and doghouse remain optional, fully interactive additions instead of forced defaults; saved projects retain everything their creator added.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
+- Each person keeps an independent saved location and activity (`idle`, `playing`, `studying`, `working`, or `resting`), while `wave`, `jump`, `study`, `work`, `play`, and `rest` remain short interruptible animations. Entering and leaving the room use the same `playAction` path as direct controls.
+- Outdoor-only play and room-only study, creation, and rest are enforced before animation. Invalid requests explain the needed scene; jumping from rest first restores the person to idle, and an older animation timer never clears a newer action.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
 - The companion music control is a precisely draggable floating button whose position survives reloads and is re-clamped after resize or mobile layout changes.
 - Motion is short, readable, object-specific, and fully reduced when requested.

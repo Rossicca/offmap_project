@@ -5,10 +5,14 @@ const actions = [
   { target: "person1", action: "jump", icon: "jump", label: "跳一下" },
   { target: "person1", action: "dance", icon: "dance", label: "跳个舞" },
   { target: "person1", action: "cheer", icon: "cheer", label: "一起欢呼" },
+  { target: "person1", action: "play", icon: "play", label: "在外面玩" },
+  { target: "person1", action: "study", icon: "study", label: "坐下学习" },
+  { target: "person1", action: "work", icon: "work", label: "专注创作" },
+  { target: "person1", action: "rest", icon: "rest", label: "休息一下" },
+  { target: "person1", action: "enterRoom", icon: "room", label: "进入房间" },
+  { target: "person1", action: "leaveRoom", icon: "outside", label: "去室外" },
   { target: "person1", action: "rpsGame", icon: "game", label: "和小人玩石头剪刀布" },
   { target: "person1", action: "cardCompare", icon: "cards", label: "和小人比大小" },
-  { target: "person1", action: "rest", icon: "rest", label: "进入房间休息" },
-  { target: "person1", action: "leaveRoom", icon: "outside", label: "出去活动" },
   { target: "house1", action: "openDoor", icon: "door", label: "打开门" },
   { target: "sun1", action: "sunset", icon: "sun", label: "看日落" },
   { target: "sun1", action: "sunrise", icon: "sunrise", label: "看日出" },
@@ -33,6 +37,10 @@ function ActionIcon({ name }) {
     jump: <><path d="M12 20V5M7.5 9.5 12 5l4.5 4.5" /><path d="M5 20h14" /></>,
     dance: <><circle cx="12" cy="5" r="2"/><path d="M12 7v6M12 9 7 12M12 9l5-2M12 13l-4 7M12 13l5 6"/></>,
     cheer: <><path d="M7 21v-8l-4-5M17 21v-8l4-5M7 13l5 3 5-3"/><circle cx="12" cy="7" r="3"/></>,
+    play: <><path d="M5 18c2.2-4 4.5-6 7-6s4.8 2 7 6"/><circle cx="12" cy="7" r="3"/><path d="M4 20h16M7 13l-3-3M17 13l3-3"/></>,
+    study: <><path d="M4 5.5c3.2-.8 5.8-.2 8 1.6v13c-2.2-1.8-4.8-2.4-8-1.6v-13ZM20 5.5c-3.2-.8-5.8-.2-8 1.6v13c2.2-1.8 4.8-2.4 8-1.6v-13Z"/></>,
+    work: <><path d="m5 19 3.4-.8L19 7.6 16.4 5 5.8 15.6 5 19Z"/><path d="m14.8 6.6 2.6 2.6M4 21h16"/></>,
+    room: <><path d="m3 11 9-7 9 7M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></>,
     game: <><path d="M6 12V7a2 2 0 0 1 4 0v3-5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v7c0 4-2.5 7-6.5 7C7 21 4 17.5 4 14v-2h2Z"/><path d="M7 3v2M18 2l-1 2M21 7h-2"/></>,
     cards: <><rect x="5" y="3" width="12" height="17" rx="2"/><path d="m9 9 2-2 2 2-2 2-2-2ZM9 15h4M18 7l2 1v11a2 2 0 0 1-2 2h-8"/></>,
     rest: <><path d="M4 17h16M6 17V9h10a4 4 0 0 1 4 4v4M6 13h5"/><path d="M7 20v1M18 20v1"/></>,
@@ -60,6 +68,9 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
     const target = item.target === "person1" ? activeCharacterId : item.target;
+    const outdoorOnly = ["play", "enterRoom", "rpsGame", "cardCompare", "tidyToys", "takeToys"].includes(item.action);
+    const roomOnly = ["study", "work", "rest", "leaveRoom"].includes(item.action);
+    if ((outdoorOnly && currentSceneId !== "outdoor") || (roomOnly && currentSceneId !== "room")) return false;
     if (currentSceneId === "room" && target === "world") return false;
     if (visibleObjectIds && !visibleObjectIds.has(target)) return false;
     if (visibleObjectIds && item.action === "enterDoghouse" && !visibleObjectIds.has("doghouse1")) return false;
@@ -69,8 +80,6 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
     if (visibleObjectIds && item.action === "dogPlay" && !visibleObjectIds.has("dogToy1")) return false;
     if (visibleObjectIds && item.action === "dogFetch" && !visibleObjectIds.has("fetchBall1")) return false;
     if (visibleObjectIds && ["tidyToys", "takeToys"].includes(item.action) && !visibleObjectIds.has("toyBasket1")) return false;
-    if (item.action === "leaveRoom") return currentSceneId === "room";
-    if (item.action === "rest") return currentSceneId === "outdoor";
     if (item.action === "rpsGame") return !restingCharacters.includes(target);
     if (item.action === "cardCompare") return !restingCharacters.includes(target);
     if (item.action === "enterDoghouse") return !persistentState.dogInHouse;

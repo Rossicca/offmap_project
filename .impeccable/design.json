@@ -51,6 +51,7 @@
     "surfacePatterns": [
       { "name": "animator-lightbox", "layout": "framed responsive clean-sky stage above a soft colored-pencil ground", "surface": "Pale storybook sky over Drafting Paper with a blue-pencil frame", "behavior": "no grid, fold lines, ghost artwork, or wireframe clouds; all artwork remains inside measured stage bounds" },
       { "name": "outdoor-room-scenes", "layout": "one stage rendering the active outdoor or room scene", "surface": "outdoor scenery plus a warm-paper, graphite, low-saturation colored-pencil room", "behavior": "stage and SceneEditor filter objects by currentSceneId; bed, desk, chair, and bookcase drag in room; opening and moving through the door enters room; 去室外 returns; currentSceneId, object sceneId, and character scenePositions for outdoor/room persist; missing legacy sceneId defaults to outdoor; four sceneTheme choices affect outdoor only" },
+      { "name": "companion-activity-state", "layout": "the existing collapsible quick-interaction rail targets the active visible person", "surface": "the same graphite inline-SVG actions and short paper reaction badge", "behavior": "playAction remains the sole action entry; play is outdoor-only; study, work, and rest are room-only; each scene-object person saves its own location and activity; activeActions stay transient; jump wakes a resting person; request tokens prevent an older animation timer from clearing a newer action" },
       { "name": "direct-scene-manipulation", "layout": "stage-relative percentage centers with per-object measured bounds", "surface": "low-saturation illustrated cutouts", "behavior": "pointer-captured mouse/touch drag; 5px threshold; grab/grabbing; blue-pencil dashed drag frame; moved clicks suppressed" },
       { "name": "collapsible-quick-interaction", "layout": "one ordinary-sized open/close control when collapsed; complete action set when expanded", "surface": "compact tracing-paper control and contained action rail", "behavior": "aria-expanded reflects state and expanded copy reminds users they can click characters and objects directly" },
       { "name": "draggable-companion-music", "layout": "viewport-clamped floating launcher with a contained music panel", "surface": "small companion paper button above the stage", "behavior": "exact grab offset, 5px threshold, matching pointer capture/release, drag-click suppression, persisted position, and resize/mobile re-clamping; panel links to 位置和大小, 加东西, 装房子, and 显示/隐藏关节 while preserving SceneEditor size controls" },
@@ -177,6 +178,7 @@
       "Drafting paper, tracing paper, graphite structure, blue-pencil guides, and low-saturation colored-pencil fills form one unmistakable world.",
       "One framed stage is the interaction anchor; supporting controls stay compact and tactile.",
       "The implemented living world switches between real outdoor and room stages; rendering and SceneEditor stay scoped to currentSceneId.",
+      "Each person persists an independent scene location and activity while short action animation stays transient and interruptible.",
       "AI-authored character identities remain recognizable across dedicated motion frames, with genuine RGBA cutouts shared by the stage, materials, and wardrobe.",
       "CSS scenery and hand-drawn props use graphite construction and subdued fill rather than glossy clip art.",
       "All quick actions use one graphite inline-SVG stroke family.",
@@ -219,6 +221,7 @@
       "Do preserve speaker attribution when switching between two companions in one transcript.",
       "Do keep scene dragging bounded, touch-capable, and visible through grab/grabbing, temporary lift, and a blue-pencil dashed frame.",
       "Do render and edit only objects matching currentSceneId, preserve independent outdoor/room character positions, and migrate missing legacy sceneId to outdoor.",
+      "Do route enterRoom, leaveRoom, study, work, play, rest, wave, and jump through playAction; enforce scene legality before motion and let only the latest per-person action timer clear itself.",
       "Do keep the room in the Animator's Light Table visual language and scope all four sceneTheme choices to outdoor only.",
       "Do make the music launcher precisely draggable with a 5px threshold, matching pointer capture, viewport clamping, persisted position, and resize/mobile re-clamping; keep the existing SceneEditor size control.",
       "Do use one consistent return control for both world- and background-drawing steps.",
