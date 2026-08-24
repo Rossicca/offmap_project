@@ -6,15 +6,21 @@ const emojiByType = { person: "🧒", sun: "☀️", tree: "🌳", dog: "🐕", 
 const FOREGROUND_CHARACTER_LAYER = 50;
 
 
-function WorldProp({ type }) {
+function WorldProp({ type, dogInHouse = false, treeVariant, houseVariant, personVariant, currentFood }) {
   if (type === "sun") return <span className="world-sun-art" aria-hidden="true"><i /></span>;
-  if (type === "tree") return <span className="world-tree-art" aria-hidden="true"><i /><b /></span>;
-  if (type === "food") return <span className="world-apple-art" aria-hidden="true"><i /></span>;
+  if (type === "tree") return <span className={`world-tree-art tree-${treeVariant || "plain"}`} aria-hidden="true"><i /><b />{treeVariant && <em className="tree-fruits">{Array.from({ length: treeVariant === "blossom" ? 9 : 7 }, (_, index) => <span key={index} />)}</em>}</span>;
+  if (type === "food") return currentFood?.id === "apple" ? <span className="world-apple-art" aria-hidden="true"><i /></span> : <span className="world-upgraded-food-art" aria-hidden="true">{currentFood?.emoji || "🍎"}</span>;
+  if (type === "distantHouse") return <span className={`world-distant-house-art variant-${houseVariant || "red"}`} aria-hidden="true"><i /><b><em /><u /><small /></b></span>;
+  if (type === "distantPerson") return <span className={`world-distant-person-art variant-${personVariant || "red"}`} aria-hidden="true"><i /><b /><em /><u /></span>;
+  if (type === "dogToy") return <span className="world-dog-toy-art" aria-hidden="true"><i /><b /></span>;
+  if (type === "fetchBall") return <span className="world-fetch-ball-art" aria-hidden="true"><i /></span>;
+  if (type === "toyBasket") return <span className="world-toy-basket-art" aria-hidden="true"><i /><b /><em><u /><small /></em></span>;
+  if (type === "doghouse") return <span className="world-doghouse-art" aria-hidden="true"><i /><b><em /></b><u /><strong className={`doghouse-status-sign ${dogInHouse ? "is-home" : "is-away"}`}>{dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}</strong></span>;
   return <span aria-hidden="true">{emojiByType[type]}</span>;
 }
 
 
-export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, onDecorate }) {
+export default function SceneObject({ object, action, persistentState, onInteract, onMove, onMoveEnd, avatar, showJoints, houseArt, houseDecor, doghouseDecor, onDecorate, onDoghouseDecorate, foodGrowth, currentFood }) {
   const { dragging, activate, dragHandlers } = useSceneDrag({ object, onMove, onMoveEnd });
   const isForegroundCharacter = object.type === "person" || object.type === "dog";
   const objectLayer = isForegroundCharacter ? FOREGROUND_CHARACTER_LAYER : object.layer;
@@ -42,7 +48,7 @@ export default function SceneObject({ object, action, persistentState, onInterac
         {houseArt
           ? <span className="custom-house-art" style={{ backgroundImage: `url(${houseArt})` }} aria-hidden="true" />
           : <>
-            <span className="cottage-chimney" aria-hidden="true" />
+            <span className="cottage-chimney" aria-hidden="true"><i /><b /><em /></span>
             <span className="house-roof" aria-hidden="true" />
             <span className={`house-body pattern-${houseDecor?.pattern || "plain"}`} aria-hidden="true">
               <i className="window left" /><i className="window right" />
@@ -54,27 +60,29 @@ export default function SceneObject({ object, action, persistentState, onInterac
   }
 
 
-  const hidden = object.type === "food" && persistentState.appleHidden;
+  const isToy = ["dogToy", "fetchBall"].includes(object.type);
+  const hidden = (object.type === "food" && persistentState.appleHidden) || (object.type === "fetchBall" && persistentState.fetchBallHeld) || (isToy && (persistentState.toysStored || persistentState.toysBeingCarried));
   const isRiggedPerson = object.type === "person" && avatar;
   const isRiggedDog = object.type === "dog";
+  const isInDoghouse = isRiggedDog && persistentState.dogInHouse;
   const isInRoom = object.type === "person" && persistentState.restingCharacters?.includes(object.id);
   return (
     <button
-      className={`scene-object ${object.type}-object action-${action || "idle"} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${dragging ? "is-dragging" : ""}`}
-      style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}) }}
+      className={`scene-object ${object.type}-object ${object.type === "doghouse" ? `variant-${doghouseDecor?.variant || "gable"}` : ""} ${object.type === "toyBasket" && persistentState.toysStored ? "has-toys" : ""} action-${action || "idle"} ${hidden ? "is-hidden" : ""} ${isInRoom ? "is-in-room" : ""} ${isInDoghouse ? "is-in-doghouse" : ""} ${dragging ? "is-dragging" : ""}`}
+      style={{ "--x": `${object.x}%`, "--y": `${object.y}%`, "--object-scale": object.scale || 1, ...(objectLayer ? { zIndex: objectLayer } : {}), ...(object.type === "doghouse" && doghouseDecor ? { "--doghouse-roof": doghouseDecor.roof, "--doghouse-wall": doghouseDecor.wall, "--doghouse-door": doghouseDecor.door, "--doghouse-sign": doghouseDecor.sign } : {}) }}
       type="button"
-      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；点击${object.actions[0] === "feed" ? "去找小朋友" : "触发动作"}`}
+      aria-label={`${object.label}，可拖动，当前位置横向${Math.round(object.x)}%，纵向${Math.round(object.y)}%；${object.type === "doghouse" ? `${persistentState.dogInHouse ? "狗狗进屋了" : "狗狗不在窝里"}，点击更换样式` : `点击${object.actions[0] === "feed" ? "去找小朋友" : "触发动作"}`}`}
       aria-describedby="drag-help"
       data-object-id={object.id}
-      onClick={() => activate(() => onInteract(object.id, object.actions[0]))}
+      onClick={() => activate(() => object.type === "doghouse" ? onDoghouseDecorate?.() : onInteract(object.id, object.actions[0]))}
       {...dragHandlers}
       disabled={hidden}
     >
       {isRiggedPerson
-        ? <MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />
+        ? <><MotionAvatar avatar={avatar} action={action} showJoints={showJoints} />{foodGrowth && <span className="person-food-meter" role="progressbar" aria-label={`${currentFood?.name || "食物"}成长值`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={foodGrowth.points}><i style={{ width: `${foodGrowth.points}%` }} /></span>}</>
         : isRiggedDog
           ? <MotionDog action={action} showJoints={showJoints} />
-          : <WorldProp type={object.type} />}
+          : <WorldProp type={object.type} dogInHouse={persistentState.dogInHouse} treeVariant={object.treeVariant} houseVariant={object.houseVariant} personVariant={object.personVariant} currentFood={currentFood} />}
     </button>
   );
 }
