@@ -40,6 +40,34 @@ const staticMimeTypes = {
   ".webp": "image/webp",
 };
 
+function getBeijingClock(now = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return {
+    dateText: `${parts.year}年${Number(parts.month)}月${Number(parts.day)}日${parts.weekday}`,
+    timeText: `${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`,
+  };
+}
+
+function createClockReply(text) {
+  const clock = getBeijingClock();
+  if (/(今天|现在|当前).*(几月几号|日期|星期几|周几)|今天是/.test(text)) {
+    return { text: `今天是${clock.dateText}。`, target: null, action: null, suggestions: ["现在几点？", "今天学什么？", "我们去冒险吧"], learning: null };
+  }
+  if (/(现在|当前).*(几点|时间)|几点了/.test(text)) {
+    return { text: `现在北京时间是 ${clock.timeText}。`, target: null, action: null, suggestions: ["今天是几号？", "陪我学习", "我们去冒险吧"], learning: null };
+  }
+  return null;
+}
+
 function sendJson(response, status, payload) {
   response.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   response.end(JSON.stringify(payload));
@@ -174,11 +202,15 @@ function normalizeChat(reply, sceneObjects) {
 
 async function handleChat(body) {
   const sceneObjects = Array.isArray(body.sceneObjects) ? body.sceneObjects : [];
+  const userText = String(body.text || "").slice(0, 300);
+  const clockReply = createClockReply(userText);
+  if (clockReply) return clockReply;
+  const clock = getBeijingClock();
   const actionList = sceneObjects.map(({ id, type, label, actions }) => ({ id, type, label, actions }));
   const reply = await callArk(process.env.ARK_CHAT_MODEL, [
-    { role: "system", content: `你是互动绘画里的学习伙伴${body.name ? `“${body.name}”` : ""}。回答温暖、简短、安全，不询问姓名、学校、住址、联系方式等个人信息。当前学习状态：${JSON.stringify(body.learningState || {})}。当用户学习时采用启发式顺序：先鼓励自己尝试，再给一步提示，最后才解释；一次只问一个清楚的小问题，不制造排名、惩罚或压力。答对时简短说明为什么并让角色 cheer 或 jump；答错时不得贬低用户，应给可执行的小提示。非学习聊天保持自然。只能从给定场景对象及其 actions 中选择动作。必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["建议1","建议2","建议3"],"learning":{"mode":"quiz|hint|explain|encourage|chat","result":"correct|try-again|neutral","progressDelta":0或1,"topic":"math|reading|english|discovery","expectedAnswer":"当前小题答案或空字符串"}}。场景：${JSON.stringify(actionList)}` },
+    { role: "system", content: `你是互动绘画里的学习伙伴${body.name ? `“${body.name}”` : ""}。当前北京时间是${clock.dateText} ${clock.timeText}，涉及今天、明天、星期或时间的问题必须以这个时间为准，不得声称无法获取当前日期。回答温暖、简短、安全，不询问姓名、学校、住址、联系方式等个人信息。当前学习状态：${JSON.stringify(body.learningState || {})}。当用户学习时采用启发式顺序：先鼓励自己尝试，再给一步提示，最后才解释；一次只问一个清楚的小问题，不制造排名、惩罚或压力。答对时简短说明为什么并让角色 cheer 或 jump；答错时不得贬低用户，应给可执行的小提示。非学习聊天保持自然。只能从给定场景对象及其 actions 中选择动作。必须只返回 JSON：{"reply":"中文回复","target":"对象id或null","action":"动作或null","suggestions":["建议1","建议2","建议3"],"learning":{"mode":"quiz|hint|explain|encourage|chat","result":"correct|try-again|neutral","progressDelta":0或1,"topic":"math|reading|english|discovery","expectedAnswer":"当前小题答案或空字符串"}}。场景：${JSON.stringify(actionList)}` },
     ...(Array.isArray(body.history) ? body.history.slice(-8).map(({ role, text }) => ({ role, content: String(text || "").slice(0, 300) })) : []),
-    { role: "user", content: String(body.text || "").slice(0, 300) },
+    { role: "user", content: userText },
   ]);
   return normalizeChat(reply, sceneObjects);
 }

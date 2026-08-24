@@ -1,6 +1,37 @@
 import { parseCommand } from "./parseCommand.js";
 
+const getBeijingClock = (now = new Date()) => {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return {
+    dateText: `${parts.year}年${Number(parts.month)}月${Number(parts.day)}日${parts.weekday}`,
+    timeText: `${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`,
+  };
+};
+
 const topicRules = [
+  {
+    test: (text) => /(今天|现在|当前).*(几月几号|日期|星期几|周几)|今天是/.test(text),
+    reply: () => {
+      const clock = getBeijingClock();
+      return { text: `今天是${clock.dateText}。`, suggestions: ["现在几点？", "今天学什么？", "我们去冒险吧"] };
+    },
+  },
+  {
+    test: (text) => /(现在|当前).*(几点|时间)|几点了/.test(text),
+    reply: () => {
+      const clock = getBeijingClock();
+      return { text: `现在北京时间是 ${clock.timeText}。`, suggestions: ["今天是几号？", "陪我学习", "我们去冒险吧"] };
+    },
+  },
   {
     test: (text) => /出一道.*数学|数学小题|一起学数学/.test(text),
     reply: () => ({ text: "好呀，先来一道小题：树上有 3 个苹果，又长出了 4 个，现在一共有几个？你可以慢慢数。", target: "tree1", action: "shake", suggestions: ["7 个", "给我一点提示", "换一道题"], learning: { mode: "quiz", result: "neutral", progressDelta: 0, topic: "math", expectedAnswer: "7" } }),
