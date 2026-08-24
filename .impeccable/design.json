@@ -58,6 +58,7 @@
       { "name": "ai-artwork-redraw", "layout": "four equal columns on desktop, two below 1100px, four compact columns below 760px, and two at 430px and below; controls remain at least 52px tall", "surface": "ordinary tracing-paper selection controls beside the calibration canvas", "behavior": "原图 is permanently retained; Volcengine Ark Seedream image-to-image provides 轻度保留画风, 中度绘本卡通, and 重度角色重绘; pre-action copy discloses the Ark upload and local save; source-and-level results are cached; request identity plus browser abort and server disconnect propagation block obsolete work; generation times out at 180s; controls and confirmation disable while busy; errors restore 原图; PNG/JPEG/WEBP/GIF input is capped at 6MB and image output at 12MB with MIME validation; ARK_IMAGE_MODEL is independent from vision/chat and defaults to doubao-seedream-4-0-250828" },
       { "name": "paper-workspace-layer", "layout": "centered dialogs with 24px inset; scene tools dock directionally", "surface": "Warm White over graphite scrim", "behavior": "scroll-safe, keyboard focused, one modal plane at a time" },
       { "name": "kid-first-tool-language", "layout": "normal-sized plain-text actions in the world header with a contained overflow menu", "surface": "quiet paper pills that preserve stage authority", "behavior": "uses 加东西, 装房子, 移动东西, 放前面, 放后面, and 拿走; never exposes 图层" },
+      { "name": "companion-growth", "layout": "compact Lv entry in the world header and one detailed progress card inside 我的形象", "surface": "warm paper with a red-pencil level stamp and green linear progress track", "behavior": "one-time local experience from meaningful learning, story, creation, outfit, and save milestones; five levels; explicit next reward; no leaderboard, punitive streak, or repeat-point farming; persists across projects and clears with local data" },
       { "name": "material-library", "layout": "60 unique items across seven category tabs; five desktop columns and two mobile columns", "surface": "code-native hand-drawn CSS previews on warm paper cards", "behavior": "non-background choices add saved draggable objects; background choices directly replace the stage treatment" },
       { "name": "house-decoration-studio", "layout": "120 presets across five motif tabs with a large live preview", "surface": "complete miniature houses showing roof, patterned wall, door, and windows", "behavior": "preset clicks update the stage house immediately; clicking the house opens the studio" },
       { "name": "contained-dialog-focus", "layout": "one active scroll-safe dialog or bottom sheet", "surface": "warm paper over a graphite scrim", "behavior": "first-control focus, Escape close, Tab containment, and launcher focus restoration" },
@@ -65,6 +66,13 @@
     ]
   },
   "components": [
+    {
+      "name": "Companion Growth Card",
+      "kind": "custom",
+      "description": "A five-level local companion path that makes progress and the next reward clear without turning learning into a leaderboard.",
+      "html": "<section class=\"ds-growth\" aria-label=\"伙伴成长\"><span><b>2</b>等级</span><div><h3>默契伙伴</h3><p>35 经验 · 再获得 25 经验</p><i><b style=\"transform:scaleX(.3)\"></b></i><strong>下一步：获得「好奇探险家」称号</strong></div></section>",
+      "css": ".ds-growth { padding:12px; display:grid; grid-template-columns:48px minmax(0,1fr); gap:11px; border:1.5px solid #2f3232; border-radius:12px; color:#2f3232; background:#faf8f1; } .ds-growth>span { width:48px; height:54px; display:grid; place-content:center; border-radius:45% 55% 47% 53%; color:#fff; background:#c65343; text-align:center; } .ds-growth>div>i { height:9px; display:block; overflow:hidden; border-radius:999px; background:#dfe8e8; } .ds-growth>div>i>b { width:100%; height:100%; display:block; background:#71846f; transform-origin:left; } .ds-growth h3,.ds-growth p { margin:0; } .ds-growth strong { display:block; margin-top:6px; font-size:.75rem; }"
+    },
     {
       "name": "Kid-First Tool Dock",
       "kind": "nav",

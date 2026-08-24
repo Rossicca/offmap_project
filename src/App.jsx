@@ -238,6 +238,7 @@ export default function App() {
     void clearProjects().catch((storageError) => console.error("作品数据库清理失败：", storageError));
     localStorage.removeItem("living-drawing-projects");
     localStorage.removeItem("living-drawing-voice");
+    localStorage.removeItem("living-drawing-avatar-growth");
     if (analysis) reset();
   };
 

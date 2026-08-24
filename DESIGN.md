@@ -158,6 +158,7 @@ The same identity survives from character choice to motion. Product-provided com
 - Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
 - The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
+- Companion growth is calm and cumulative: meaningful learning, story, creation, outfit, and save milestones award one-time local experience; the compact `Lv.` entry and the full `我的形象` progress card show the same five-level path without rankings or punitive streaks.
 - A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
@@ -278,6 +279,8 @@ Status chips are compact green-on-pale-green pills. They report recognition or l
 ### Cards / Containers
 
 Major cards are warm near-opaque paper sheets with `1.5px` graphite borders, `12px` corners, and one shared ambient shadow. The living stage is a tracing-paper grid with blue-pencil construction marks and a quiet colored-pencil ground wash. Selected avatar cards use a pale blue-pencil tint and `aria-pressed`, never a glossy glow.
+
+The avatar growth card lives inside `我的形象`, below the active companion rather than as a separate dashboard. It pairs a red-pencil level stamp, green linear experience track, explicit `再获得 N 经验` copy, the next reward, and five plain-language milestones. The compact world-header entry shows only `Lv.` and the current title; below `620px`, only the level remains so the existing tool rail keeps its space. Experience persists locally across projects, repeated event IDs never farm points, and clearing local data removes growth with the rest of the user's work.
 
 Calibration, story, and modal surfaces reuse the same graphite-and-paper family. The scene drawer keeps a square desktop edge against the viewport and changes to a softly rounded top edge when docked to the mobile bottom.
 

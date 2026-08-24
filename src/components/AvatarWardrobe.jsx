@@ -1,9 +1,10 @@
 import { useState } from "react";
 import MotionAvatar from "./MotionAvatar";
+import AvatarGrowthCard from "./AvatarGrowthCard";
 import useDialogFocus from "../hooks/useDialogFocus";
 import { defaultAvatarLook, wardrobeCatalog, wardrobeTabs } from "../data/wardrobeCatalog";
 
-export default function AvatarWardrobe({ avatar, avatars = [avatar], value, onApply, onClose }) {
+export default function AvatarWardrobe({ avatar, avatars = [avatar], value, growth, onApply, onClose }) {
   const initial = { ...defaultAvatarLook, ...value };
   const [history, setHistory] = useState([initial]);
   const [cursor, setCursor] = useState(0);
@@ -44,6 +45,7 @@ export default function AvatarWardrobe({ avatar, avatars = [avatar], value, onAp
           <div className="avatar-look-preview">
             <MotionAvatar avatar={previewAvatar} action="wave" look={look} />
             <b>{previewAvatar.name}</b><span>{previewAvatar.gender} · 挥挥手看看搭配</span>
+            <AvatarGrowthCard growth={growth} />
           </div>
           <div className="avatar-look-editor">
             <nav className="wardrobe-tabs" aria-label="换装分类">
