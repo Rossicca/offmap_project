@@ -36,6 +36,7 @@ const defaultPositionByKind = {
 export default function LivingWorld({ sceneObjects, previewUrl, onReset, selectedAvatar, companions = [], rigAnalysis, userName, initialState, onSave, safety = { safeChat: true, voiceAllowed: true, sessionMinutes: 30 }, onSafetyChange, onClearLocalData }) {
   const [activeCompanionId, setActiveCompanionId] = useState(selectedAvatar?.id);
   const activeCompanion = companions.find((avatar) => avatar.id === activeCompanionId) || selectedAvatar;
+  const isUploadedWorld = Boolean(previewUrl && selectedAvatar?.isUploaded);
   const characterName = activeCompanion?.name || "画中小伙伴";
   const [objects, setObjects] = useState(() => {
     const initialObjects = initialState?.sceneObjects || sceneObjects;
@@ -426,7 +427,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
   };
 
 
-  const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type));
+  const visibleObjects = objects.filter((object) => !replacedTypes.includes(object.type) && (!isUploadedWorld || object.type !== "person"));
   const saveWorld = () => onSave?.({
     persistentState,
     messages,
@@ -474,7 +475,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
 
 
       <div className="world-experience">
-      <section ref={stageRef} style={backgroundStyleFor(materialBackground)} className={`world-stage theme-${sceneTheme} ${materialBackground ? "has-library-background" : ""} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""}`} aria-label="可拖动的互动世界">
+      <section ref={stageRef} style={backgroundStyleFor(materialBackground)} className={`world-stage theme-${sceneTheme} ${materialBackground ? "has-library-background" : ""} ${persistentState.night ? "is-night" : ""} ${storyActive ? "story-is-active" : ""} ${isUploadedWorld ? "has-uploaded-world" : ""}`} aria-label="可拖动的互动世界">
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 按住任意角色或物件直接拖动；位置会跟随作品保存</div>
         <button className={`joint-toggle ${showJoints ? "is-active" : ""}`} type="button" onClick={() => setShowJoints((value) => !value)} aria-pressed={showJoints}>
@@ -482,11 +483,7 @@ export default function LivingWorld({ sceneObjects, previewUrl, onReset, selecte
         </button>
         <StoryMode active={storyActive} step={storyStep} ending={storyEnding} onToggle={() => setStoryActive((value) => !value)} onAction={handleDirectAction} />
         <div className="drawing-backdrop" style={{ backgroundImage: previewUrl ? `url(${previewUrl})` : "none" }} aria-hidden="true" />
-        <div className="sky-wash" aria-hidden="true" />
-        <div className="stars" aria-hidden="true"><i /><i /><i /><i /></div>
-        <div className="cloud cloud-one" aria-hidden="true" />
-        <div className="cloud cloud-two" aria-hidden="true" />
-        <div className="ground" aria-hidden="true" />
+        {!isUploadedWorld && <><div className="sky-wash" aria-hidden="true" /><div className="stars" aria-hidden="true"><i /><i /><i /><i /></div><div className="cloud cloud-one" aria-hidden="true" /><div className="cloud cloud-two" aria-hidden="true" /><div className="ground" aria-hidden="true" /></>}
         {worldArt.background && <div className="custom-world-background" style={{ backgroundImage: `url(${worldArt.background})` }} aria-hidden="true" />}
         <SpeechBubble message={message} visible={bubbleVisible && !storyActive} />
         <div className={persistentState.dogMoved ? "dog-route is-moved" : "dog-route"}>
