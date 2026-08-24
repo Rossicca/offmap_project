@@ -5,7 +5,7 @@ const levels = [
   { id: "strong", name: "重度", hint: "角色重绘" },
 ];
 
-export default function DrawingEnhancementPicker({ value, busy, error, onChange }) {
+export default function DrawingEnhancementPicker({ value, busy, error, styleLock, onStyleLockChange, onChange }) {
   return (
     <section className="drawing-enhancement" aria-labelledby="drawing-enhancement-title">
       <div><h2 id="drawing-enhancement-title">豆包帮我画</h2><p>选择后原画会发送到火山方舟重绘；原图仍保存在本机。</p></div>
@@ -16,6 +16,12 @@ export default function DrawingEnhancementPicker({ value, busy, error, onChange 
           </button>
         ))}
       </div>
+      <label className="drawing-style-lock">
+        <input type="checkbox" checked={styleLock} onChange={(event) => onStyleLockChange(event.target.checked)} disabled={busy} />
+        <span aria-hidden="true" />
+        <b>保持本站手绘画风</b>
+        <small>限制写实、3D 和杂乱背景</small>
+      </label>
       <p className={`drawing-enhancement-status ${error ? "is-error" : ""}`} role="status">{error || (busy ? "豆包正在重新画，请稍等…" : value === "original" ? "现在显示原图" : `豆包${levels.find((level) => level.id === value)?.name}重绘已完成`)}</p>
     </section>
   );

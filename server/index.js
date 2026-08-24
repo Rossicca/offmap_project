@@ -65,12 +65,18 @@ const artworkPrompts = {
   strong: "以原画为角色设计草图，重绘成完成度很高、可用于动画的可爱原创卡通角色。保留角色数量、核心概念、姿势、朝向和构图，让造型更有辨识度，完善五官、发型或动物特征、服装、鞋子、肢体结构、配色和轻柔阴影。不要写实，不添加文字、边框或新角色，干净浅色背景，输出单张完整插画。",
 };
 
+const projectArtworkStyle = "统一为本项目的温暖二维手绘绘本风格：暖白纸张底色，清晰但略带手绘抖动的石墨轮廓，彩铅和蜡笔质感，珊瑚红、芥末黄、鼠尾草绿、灰蓝与可可棕的低饱和配色。画面只保留主体需要的内容，背景干净。禁止照片写实、塑料3D、霓虹高饱和、企业扁平矢量、文字、水印、边框、灰色放大人物或云朵轮廓、重复主体和无关装饰。";
+
 async function handleArtworkEnhancement(body, clientSignal) {
   const imageMatch = typeof body.image === "string" && body.image.match(/^data:image\/(png|jpeg|webp|gif);base64,([a-z0-9+/=\r\n]+)$/i);
   if (!imageMatch) throw new Error("缺少有效原画");
   if (Buffer.byteLength(imageMatch[2], "base64") > 6 * 1024 * 1024) throw new Error("处理后的原画不能超过 6MB");
-  const prompt = artworkPrompts[body.level];
-  if (!prompt) throw new Error("请选择轻度、中度或重度");
+  const levelPrompt = artworkPrompts[body.level];
+  if (!levelPrompt) throw new Error("请选择轻度、中度或重度");
+  const styleLock = body.styleLock !== false;
+  const prompt = styleLock
+    ? `必须严格遵守以下项目风格规范，不得偏离：${projectArtworkStyle}\n${levelPrompt}`
+    : `以以下项目风格作为优先参考，但允许保留原作更明显的个人笔触：${projectArtworkStyle}\n${levelPrompt}`;
   if (!process.env.ARK_API_KEY) throw new Error("后端尚未配置 ARK_API_KEY");
   const upstream = await fetch(`${baseUrl}/images/generations`, {
     method: "POST",
