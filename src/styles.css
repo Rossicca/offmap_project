@@ -2262,11 +2262,66 @@ html, body {
 .learning-progress i.is-earned { color:#e8b94d; filter:drop-shadow(0 1px 0 #fff); }
 .learning-actions button { min-height:38px; color:#77503a; border-color:#efd19b; background:#fff6d9; }
 .learning-actions button:disabled { opacity:.55; cursor:wait; }
+.study-focus { display:grid; gap:9px; }
+.study-focus-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.study-focus-heading > div { min-width:0; flex:1 1 auto; display:grid; gap:1px; }
+.study-focus-heading b { color:#5f4934; font-size:.78rem; }
+.study-focus-heading small { overflow:hidden; color:#71856a; font-size:.6rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.study-focus-heading p { max-width:145px; margin:0; display:flex; align-items:center; justify-content:flex-end; gap:5px; color:#8a593c; font-size:.64rem; font-weight:900; text-align:right; }
+.study-focus-heading p span { width:22px; height:22px; flex:0 0 auto; display:grid; place-items:center; border:1.5px solid #efd27b; border-radius:50%; color:#8b5d27; background:#fff6c9; }
+.learning-topic-list button { display:inline-flex; align-items:center; gap:4px; }
+.learning-topic-list button > span { color:#76967b; font-size:.7rem; font-weight:1000; }
+.learning-topic-list button.is-active > span { color:#fff; }
+.study-duration-row { display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none; }
+.study-duration-row > span { margin-right:auto; color:#71856a; font-size:.65rem; font-weight:900; white-space:nowrap; }
+.study-duration-row button { min-height:32px; padding:0 8px; flex:0 0 auto; border:1.5px solid #d9d9c0; border-radius:8px; color:#705d47; background:#fffdf5; font-size:.64rem; font-weight:900; cursor:pointer; }
+.study-duration-row button.is-active { color:#fff; border-color:#e28d70; background:#e99a72; }
+.study-start-button { min-height:40px; display:flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:10px; color:#fff; background:#5f9c72; box-shadow:0 4px 0 #477b58; font-size:.72rem; font-weight:1000; cursor:pointer; }
+.study-start-button:hover { transform:translateY(-1px); }
+.study-start-button:active { transform:translateY(2px); box-shadow:0 2px 0 #477b58; }
+.study-start-button span { font-size:.65rem; }
+.study-timer { padding:10px; border:1.5px solid #b9dcc5; border-radius:12px; background:#fffdf5; }
+.study-timer-top { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:7px; }
+.study-subject-mark { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; color:#fff; background:#7fab75; font-weight:1000; }
+.study-timer-top > div { min-width:0; display:grid; }
+.study-timer-top b { color:#5f4934; font-size:.76rem; }
+.study-timer-top small { overflow:hidden; color:#71856a; font-size:.6rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.study-timer-top em { padding:3px 6px; border-radius:999px; color:#4b7b59; background:#e6f1e3; font-size:.58rem; font-style:normal; font-weight:1000; }
+.study-timer.is-paused .study-timer-top em { color:#926045; background:#fff0dc; }
+.study-timer > strong { margin:8px 0 5px; display:block; color:#5a6f57; font-size:2rem; line-height:1; letter-spacing:.03em; text-align:center; font-variant-numeric:tabular-nums; }
+.study-timer progress { width:100%; height:8px; display:block; overflow:hidden; border:0; border-radius:999px; accent-color:#7fab75; background:#dfe9d9; }
+.study-timer progress::-webkit-progress-bar { border-radius:999px; background:#dfe9d9; }
+.study-timer progress::-webkit-progress-value { border-radius:999px; background:#7fab75; }
+.study-timer-actions { margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.study-timer-actions button { min-height:36px; border:1.5px solid #b7d5c1; border-radius:9px; color:#58715c; background:#f4f8e9; font-size:.66rem; font-weight:900; cursor:pointer; }
+.study-timer-actions button:last-child { color:#8b5b45; border-color:#edc7b4; background:#fff4ed; }
+.study-timer-actions button.is-confirm { color:#fff; border-color:#d67b68; background:#d9826f; }
+.study-reward-track { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+.study-reward-track > div { min-width:0; min-height:45px; padding:5px 3px; display:grid; grid-template-columns:22px 1fr; align-content:center; column-gap:4px; border:1.5px solid #d6decf; border-radius:9px; color:#7c8777; background:#f6f7f0; }
+.study-reward-track > div > span { grid-row:1 / 3; width:22px; height:22px; display:grid; place-items:center; border-radius:50%; color:#fff; background:#aeb6a9; font-size:.56rem; font-weight:1000; }
+.study-reward-track > div small,.study-reward-track > div b { min-width:0; overflow:hidden; font-size:.52rem; line-height:1.15; text-overflow:ellipsis; white-space:nowrap; }
+.study-reward-track > div b { font-size:.57rem; }
+.study-reward-track > div.is-unlocked { color:#665126; border-color:#ebd274; background:#fff8cf; }
+.study-reward-track > div.is-unlocked > span { color:#735923; background:#efcf55; }
+.action-scroll button.is-study-locked { color:#71808a; border-color:#cdd8dc; background:#eef2f2; box-shadow:none; }
+.action-scroll button.is-study-locked .action-icon { opacity:.5; }
+.action-scroll button.is-study-locked small { display:inline-flex; align-items:center; gap:4px; color:#7c7f76; font-size:.58rem; font-weight:900; }
+.action-scroll button.is-study-locked small b { width:20px; height:20px; display:grid; place-items:center; border-radius:50%; color:#fff; background:#9aa5a3; font-size:.5rem; }
+.action-scroll button:disabled { cursor:not-allowed; opacity:.72; transform:none; }
 @keyframes learning-open { from { opacity:0; transform:translateY(-4px); } }
 
 @media (max-width:560px) {
   .learning-companion-toggle { min-height:48px; }
   .learning-topic-list button,.learning-actions button { min-height:44px; }
+  .learning-companion-body { max-height:58vh; overflow-y:auto; }
+  .conversation-panel:has(.learning-companion.is-open) { height:auto; max-height:none; overflow:visible; }
+  .learning-companion.is-open { flex:0 0 auto; }
+  .study-duration-row button,.study-timer-actions button { min-height:44px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .learning-companion-body,.quick-actions-panel { animation:none; }
+  .study-start-button { transition:none; }
 }
 
 /* One-line world toolbar: the canvas, not the chrome, owns the vertical space. */
