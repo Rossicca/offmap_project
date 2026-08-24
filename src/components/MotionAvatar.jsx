@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import dogMotion from "../assets/dog-motion-paper.png";
+import { segmentCharacterRig } from "../utils/segmentCharacterRig";
 
 
 const frameByAction = {
@@ -41,6 +43,41 @@ function JointOverlay({ species, calibratedNodes }) {
   );
 }
 
+function SegmentedCharacter({ avatar }) {
+  const [rig, setRig] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    setRig(null);
+    segmentCharacterRig(avatar.imageUrl, avatar.rigNodes).then((nextRig) => {
+      if (active) setRig(nextRig);
+    });
+    return () => { active = false; };
+  }, [avatar.imageUrl, avatar.rigNodes]);
+
+  if (!rig) return <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />;
+
+  const centerX = avatar.rigNodes.find((node) => /身体中心|身体|躯干|胸/.test(node.label))?.x ?? 50;
+  return (
+    <span className="segmented-character" style={{ "--body-center-x": `${centerX}%` }} aria-hidden="true">
+      <img className="segmented-character-base" src={rig.baseUrl} alt="" draggable="false" />
+      {rig.arms.map((arm) => {
+        const visualSide = arm.shoulder.x < centerX ? "visual-left" : "visual-right";
+        return (
+          <span
+            className={`segmented-arm ${visualSide}`}
+            key={arm.side}
+            style={{ "--shoulder-x": `${arm.shoulder.x}%`, "--shoulder-y": `${arm.shoulder.y}%`, "--elbow-x": `${arm.elbow.x}%`, "--elbow-y": `${arm.elbow.y}%` }}
+          >
+            <img className="segmented-upper-arm" src={arm.upperUrl} alt="" draggable="false" />
+            <span className="segmented-forearm"><img src={arm.forearmUrl} alt="" draggable="false" /></span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 
 export default function MotionAvatar({ avatar, action, showJoints }) {
   const frame = frameByAction[action] || "0% 0%";
@@ -48,9 +85,9 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
     ? `${avatar.imageSize.width} / ${avatar.imageSize.height}`
     : undefined;
   return (
-    <div className={`motion-avatar motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
+    <div className={`motion-avatar motion-${action || "idle"} ${avatar.isUploaded && avatar.rigNodes?.length ? "has-segmented-rig" : ""} ${showJoints ? "show-joints" : ""}`} style={uploadedAspect ? { aspectRatio: uploadedAspect } : undefined}>
       {avatar.isUploaded
-        ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
+        ? <SegmentedCharacter avatar={avatar} />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
