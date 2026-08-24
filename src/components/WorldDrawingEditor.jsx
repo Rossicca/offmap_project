@@ -108,7 +108,7 @@ export default function WorldDrawingEditor({ initialArt, initialMode = "backgrou
   const editor = (
       <section className={`world-drawing-editor ${embedded ? "is-embedded" : ""}`} role={embedded ? "region" : "dialog"} aria-modal={embedded ? undefined : "true"} aria-labelledby="world-drawing-title" data-version={version}>
         <header>
-          <div><span>{backgroundOnly ? "背景创作项目" : "场景画板"}</span><h2 id="world-drawing-title">{backgroundOnly ? "画出完整的游戏世界" : "画自己的房子和背景"}</h2></div>
+          <div><span>{backgroundOnly ? "绘梦伙伴 · 背景画板" : "绘梦伙伴 · 场景画板"}</span><h2 id="world-drawing-title">{backgroundOnly ? "画出完整的游戏世界" : "画自己的房子和背景"}</h2></div>
           {!embedded && <button type="button" onClick={onClose} aria-label="关闭场景画板">×</button>}
         </header>
 

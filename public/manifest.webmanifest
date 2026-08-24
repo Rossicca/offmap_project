@@ -1,6 +1,6 @@
 {
-  "name": "My Living Drawing",
-  "short_name": "Living Drawing",
+  "name": "绘梦伙伴",
+  "short_name": "绘梦伙伴",
   "description": "让孩子画出来的世界活起来",
   "start_url": "/",
   "display": "standalone",

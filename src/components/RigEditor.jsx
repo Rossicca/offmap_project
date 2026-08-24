@@ -36,7 +36,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
 
   return (
     <main className="rig-editor-page">
-      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
+      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>绘梦伙伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
       <section className="rig-editor-intro"><div><h1>把关节放到<br /><em>正确的位置</em></h1><p>选择最接近的角色模板，然后直接拖动节点。这里是本地可校准模板，不会假装已经完成云端 AI 识别。</p></div><span>第 2 步，共 2 步</span></section>
       <section className="rig-editor-workspace">
         <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${analysis.previewUrl})` }} aria-label="关节校准画布">

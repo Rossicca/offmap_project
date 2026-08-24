@@ -1345,6 +1345,31 @@ html, body {
   .side-doodles { display: none; }
 }
 
+/* Background drawing studio in the same soft crayon visual system. */
+.creator-page:has(.world-drawing-editor.is-embedded) { min-height: 100dvh; padding: 12px 0 28px; color: #6b321d; background-color: #fffef9; background-image: radial-gradient(rgba(236,185,95,.08) .8px,transparent .8px); background-size: 9px 9px; }
+.world-drawing-backdrop { background: rgba(71,139,163,.35); backdrop-filter: blur(3px); }
+.world-drawing-editor { position: relative; border: 5px solid rgba(110,190,218,.48); border-radius: 38px; color: #6b321d; background: #fffefa; box-shadow: 0 18px 42px rgba(69,145,174,.16); }
+.world-drawing-editor::before { content: ""; position: absolute; z-index: 0; inset: 9px; border: 2px dashed rgba(112,192,220,.18); border-radius: 28px; pointer-events: none; }.world-drawing-editor > * { position: relative; z-index: 1; }
+.world-drawing-editor > header { margin: -22px -22px 4px; padding: 20px 26px; align-items: center; border-radius: 32px 32px 0 0; background: #bce6f2; background-image: repeating-linear-gradient(-7deg,rgba(255,255,255,.13) 0 3px,transparent 3px 8px); }.world-drawing-editor > header span { color: rgba(39,126,157,.7); font-size: .66rem; letter-spacing: .15em; }.world-drawing-editor h2 { color: white; font-family: KaiTi,STKaiti,"Microsoft YaHei",sans-serif; font-size: clamp(1.9rem,3.5vw,3rem); text-shadow: 2px 3px 0 rgba(89,168,197,.2); }.world-drawing-editor > header button { border: 2px solid white; color: #4e8ca1; background: rgba(255,255,255,.72); }
+.world-drawing-modes button,.world-drawing-tools > button,.world-drawing-editor footer button { border: 2px solid #b9dfe8; border-radius: 999px; color: #5b91a2; background: #f4fbfb; box-shadow: none; }.world-drawing-modes button.is-active,.world-drawing-tools > button.is-active { color: white; border-color: #f49279; background: #f49279; }.world-drawing-tools { padding: 10px 13px; border: 3px solid rgba(110,190,218,.35); border-radius: 22px; background: #f6fbfa; }.world-drawing-tools label { color: #7d5944; }.world-drawing-tools input[type="range"] { accent-color: #f49279; }
+.world-drawing-colors { gap: 8px; }.world-drawing-colors button { width: 32px; height: 32px; border: 3px solid white; background: var(--swatch); box-shadow: 0 0 0 2px rgba(91,154,176,.32); }.world-drawing-colors button.is-active { box-shadow: 0 0 0 4px #f2ce66; transform: rotate(-4deg) scale(.9); }
+.world-drawing-paper,.world-drawing-editor.is-embedded .world-drawing-paper { border: 5px solid rgba(110,190,218,.46); border-radius: 28px; background-color: #fffdf7; background-image: radial-gradient(rgba(229,181,104,.13) .8px,transparent .9px); background-size: 9px 9px; box-shadow: inset 0 4px 16px rgba(91,165,188,.08); }.world-drawing-paper canvas { border-radius: 23px; }
+.world-drawing-editor footer { padding-top: 2px; }.world-drawing-editor footer p { color: #8a6957; line-height: 1.55; }.world-drawing-editor footer button { color: #5b91a2; background: white; }.world-drawing-editor footer .primary-button { border-color: #f49279; color: white; background: #f49279; }.world-drawing-editor footer .primary-button:disabled { border-color: #d6e2de; color: #94aaa2; background: #edf2ee; }
+.world-drawing-editor.is-embedded { width: min(1080px,calc(100% - 24px)); margin: 0 auto; padding: 22px; border-radius: 40px; background: #fffefa; box-shadow: 0 18px 42px rgba(69,145,174,.14); }
+
+@media (min-width: 761px) {
+  .creator-page:has(.world-drawing-editor.is-embedded) { height: 100dvh; min-height: 0; display: grid; grid-template-rows: 38px minmax(0,1fr); overflow: hidden; }
+  .creator-page:has(.world-drawing-editor.is-embedded) .studio-back { height: 34px; margin: 0 0 4px 4vw; }
+  .world-drawing-editor.is-embedded { height: calc(100dvh - 58px); min-height: 0; display: grid; grid-template-rows: auto auto minmax(0,1fr) auto; overflow: hidden; }
+  .world-drawing-editor.is-embedded > header { padding-block: 14px; }
+  .world-drawing-editor.is-embedded .world-drawing-paper { min-height: 0; height: 100%; }
+  .world-drawing-editor.is-embedded .world-drawing-paper canvas { min-height: 0; width: 100%; height: 100%; aspect-ratio: auto; }
+}
+
+@media (max-width: 760px) {
+  .creator-page:has(.world-drawing-editor.is-embedded) { padding-top: 6px; }.world-drawing-editor,.world-drawing-editor.is-embedded { width: calc(100% - 16px); padding: 14px; border-width: 3px; border-radius: 28px; }.world-drawing-editor > header { margin: -14px -14px 4px; padding: 17px; border-radius: 23px 23px 0 0; }.world-drawing-editor h2 { font-size: 1.8rem; }.world-drawing-tools { border-width: 2px; }.world-drawing-paper,.world-drawing-editor.is-embedded .world-drawing-paper { border-width: 3px; border-radius: 21px; }
+}
+
 @media (min-width: 761px) {
   .companion-login-page { height: 100dvh; min-height: 0; padding-block: clamp(12px,3vh,32px); }
   .companion-login-window { max-height: calc(100dvh - 24px); display: grid; grid-template-rows: clamp(76px,12vh,102px) minmax(0,1fr); }
