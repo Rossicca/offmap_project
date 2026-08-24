@@ -113,6 +113,7 @@ export default function App() {
       foregroundExtracted: Boolean(nextAnalysis.cutoutApplied),
       preserveSourceArt: !nextAnalysis.cutoutApplied,
       cutoutApplied: Boolean(nextAnalysis.cutoutApplied),
+      armRig: nextAnalysis.armRig || null,
       inputOrigin: nextAnalysis.inputOrigin || "upload",
       editableImageUrl: nextAnalysis.editableImageUrl || "",
       isUploaded: true,
