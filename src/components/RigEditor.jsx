@@ -8,8 +8,10 @@ const templates = {
 
 export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const boardRef = useRef(null);
+  const dragRef = useRef(null);
   const [species, setSpecies] = useState("human");
   const [nodes, setNodes] = useState(() => templates.human.nodes.map(([label,x,y]) => ({ label, x, y })));
+  const [draggingIndex, setDraggingIndex] = useState(null);
   const template = useMemo(() => templates[species], [species]);
 
   const chooseTemplate = (nextSpecies) => {
@@ -17,12 +19,44 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     setNodes(templates[nextSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
   };
 
+  const startNodeDrag = (index, event) => {
+    if (event.button !== 0) return;
+    const board = boardRef.current;
+    const rect = board?.getBoundingClientRect();
+    if (!board || !rect) return;
+    const originX = rect.left + board.clientLeft;
+    const originY = rect.top + board.clientTop;
+    const node = nodes[index];
+    dragRef.current = {
+      index,
+      pointerId: event.pointerId,
+      offsetX: event.clientX - (originX + board.clientWidth * node.x / 100),
+      offsetY: event.clientY - (originY + board.clientHeight * node.y / 100),
+    };
+    setDraggingIndex(index);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
   const moveNode = (index, event) => {
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-    const rect = boardRef.current.getBoundingClientRect();
-    const x = Math.max(2, Math.min(98, ((event.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(2, Math.min(98, ((event.clientY - rect.top) / rect.height) * 100));
+    const drag = dragRef.current;
+    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId) return;
+    const board = boardRef.current;
+    const rect = board.getBoundingClientRect();
+    const originX = rect.left + board.clientLeft;
+    const originY = rect.top + board.clientTop;
+    const halfWidth = (event.currentTarget.offsetWidth / 2 / board.clientWidth) * 100 + .5;
+    const halfHeight = (event.currentTarget.offsetHeight / 2 / board.clientHeight) * 100 + .5;
+    const x = Math.max(halfWidth, Math.min(100 - halfWidth, ((event.clientX - drag.offsetX - originX) / board.clientWidth) * 100));
+    const y = Math.max(halfHeight, Math.min(100 - halfHeight, ((event.clientY - drag.offsetY - originY) / board.clientHeight) * 100));
     setNodes((current) => current.map((node, nodeIndex) => nodeIndex === index ? { ...node, x, y } : node));
+  };
+
+  const finishNodeDrag = (index, event) => {
+    const drag = dragRef.current;
+    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    setDraggingIndex(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
   const confirm = () => onConfirm({
@@ -40,7 +74,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
       <section className="rig-editor-intro"><div><h1>把关节放到<br /><em>正确的位置</em></h1><p>选择最接近的角色模板，然后直接拖动节点。这里是本地可校准模板，不会假装已经完成云端 AI 识别。</p></div><span>第 2 步，共 2 步</span></section>
       <section className="rig-editor-workspace">
         <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${analysis.previewUrl})` }} aria-label="关节校准画布">
-          {nodes.map((node, index) => <button key={`${node.label}-${index}`} className="rig-node" type="button" style={{ left: `${node.x}%`, top: `${node.y}%` }} onPointerDown={(event) => event.currentTarget.setPointerCapture(event.pointerId)} onPointerMove={(event) => moveNode(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>)}
+          {nodes.map((node, index) => <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${node.x}%`, top: `${node.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>)}
         </div>
         <aside className="rig-controls">
           <div><h2>角色类型</h2><p>不同动物会使用不同的可动节点。</p></div>

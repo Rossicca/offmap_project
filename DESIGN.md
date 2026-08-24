@@ -153,7 +153,10 @@ The same identity survives from character choice to motion. Product-provided com
 - The living world and its white paper conversation card read as one responsive two-column play surface.
 - Conversation stays continuous and lightweight through pale tracing-paper assistant bubbles, muted red-pencil user bubbles, typing dots, quick-topic pills, and one composer.
 - Uploaded drawings pass through an explicit paper-board calibration workspace; draggable red-pencil joints preserve the child’s artwork while making the local template model understandable.
+- Joint calibration nodes are direct-manipulation buttons that preserve the exact grab offset, use the rig canvas content box, match pointer capture through completion, and stay fully inside measured half-size bounds.
 - Story tasks, scene tools, export, and parent safety behave as compact layers around the stage rather than competing destinations.
+- The world header uses normal-sized, novice-friendly plain-text tools; concise verbs explain the result without oversized or infantilized controls.
+- A 60-item, seven-category material library and a 120-preset house decoration studio extend the paper world with code-native hand-drawn previews.
 - A second companion may join the same world; the transcript names and switches speakers without duplicating the conversation surface.
 - Scene objects advertise direct manipulation with `grab`, change to `grabbing` with a blue-pencil dashed selection frame, and remain bounded inside the stage.
 - Motion is short, readable, object-specific, and fully reduced when requested.
@@ -214,6 +217,8 @@ The palette behaves like an animator's desk viewed through a warm lightbox. Most
 
 **The Friendly Weight Rule.** Use strong weight, compact line length, and scale for hierarchy; do not introduce thin editorial typography.
 
+**The Plain-Language Tool Rule.** Header utilities stay at normal control scale and use short concrete verbs. Child-friendly means immediately understandable, not oversized, babyish, or visually loud.
+
 ## Layout
 
 The welcome screen is centered within `1120px`, using a `1.08fr / .92fr` story-and-card split with an `8vw` gap. The creator hub is centered within `1220px`; its studio uses a `1.5fr / .65fr` library-and-preview split with a `24px` gutter and a four-column character grid. The direct upload view is capped at `1180px` with a `0.9fr / 1.1fr` split. Its follow-on rig editor stays within `1220px`, pairing a `1.35fr / .65fr` image canvas and control column; the canvas remains dominant and the node inventory never becomes a separate dashboard. The living experience is centered within `1360px` as a `minmax(0, 1fr) / 370px` world-and-chat grid with an `18px` gutter; the quick-action rail remains capped at `1260px` beneath it.
@@ -223,6 +228,8 @@ The stage and desktop conversation card are fluid from `560px` to `760px` tall. 
 At `1050px`, the world-and-chat grid stacks and the conversation card becomes a compact `430px`-high follow-on surface. At `820px`, the remaining two-column surfaces become one column, including the calibration workspace; the avatar grid becomes two columns and quick actions become a horizontally scrollable rail. At `560px`, page inset contracts to `12px`, the stage becomes a tall `600px` minimum viewport with a `6px` paper corner, and the conversation card becomes `420px` high. The header becomes two rows: a centered wordmark first, then a horizontally scrollable utility rail. Mobile topics, dialog actions, editor confirmations, joint/story toggles, and other primary controls keep a `44px` minimum touch target. Composer text yields to its arrow on the narrow send button, and horizontal action rails scroll internally without increasing page width.
 
 The application must maintain zero horizontal page overflow at the `320px` minimum viewport. Use `min-width: 0` on grid children, contain horizontal rails inside their parent, and reserve scroll behavior for explicitly labeled carousels and utility rails; `body` remains `overflow-x: hidden` as a final guard, not as a substitute for correct sizing.
+
+The material library and house decoration studio are centered desktop dialogs with contained scrolling. Below `700px`, each docks to the viewport bottom as a sheet capped at `92dvh`; category and motif tabs scroll within their own rail, item grids reduce to two columns, every tab and utility action preserves a `44px` target, and no dialog content may widen the page.
 
 Scene editing is a `420px` right drawer on desktop and a bottom sheet capped at `78dvh` on mobile. Export and parent safety use centered, scroll-safe dialogs with `24px` outer insets and a dark graphite scrim; the break reminder uses the same modal plane. Only one such modal layer may be open at once, and destructive local-data actions stay visually separated from ordinary settings.
 
@@ -272,7 +279,21 @@ Fields use Warm White, a fine blue-gray border, `9px`–`12px` corners, `50px`�
 
 ### Navigation
 
-Headers stay transparent and low-density so the stage retains authority. The wordmark uses a small red-pencil spark; utility actions are graphite text with minimal decoration. The centered status disappears where the active surface already repeats it.
+Headers stay transparent and low-density so the stage retains authority. The wordmark uses a small red-pencil spark; utility actions are normal-sized plain-text controls with minimal decoration. The first-line tools are `加东西`, `装房子`, `自己画`, `保存`, and `更多`; the overflow menu continues with concrete task language such as `移动东西`. The centered status disappears where the active surface already repeats it.
+
+Do not expose implementation language such as “图层” to children. Object arrangement uses `移动东西`, `放前面`, `放后面`, and `拿走`, while creation uses `加东西` and `装房子`. These labels describe what happens in the world rather than the data model behind it.
+
+### Material Library
+
+The library contains exactly 60 unique materials across seven plain-language categories: 伙伴, 衣服, 头发, 鞋子, 背景, 自然, and 摆件. Every choice has a code-native CSS preview assembled from simple outlined shapes, category-specific silhouettes, small hand-drawn variations, and low-saturation pencil colors; do not depend on emoji, stock thumbnails, or network imagery.
+
+Selecting a non-background material adds a named, saved scene object and closes the library. The object enters at a staggered stage position, can be dragged with the same bounded direct-manipulation behavior as built-in pieces, participates in `移动东西`, `放前面`, `放后面`, and `拿走`, and persists with the saved world. Selecting a background applies it directly to the stage sky, ground, and sun treatment as a replacement instead of creating a draggable object. Cards say `放进去` or `换背景` so the consequence is explicit before activation.
+
+### House Decoration Studio
+
+The house studio contains exactly 120 unique presets: six pencil palettes × five motif families × four window accents. Its five tabs are 圆点, 条纹, 方格, 花朵, and 星星. Every preset button shows a complete miniature house—not a color chip—with roof, patterned wall, door, and two windows, plus its preset and accent names.
+
+A large live house preview updates immediately when a preset is clicked, and the selected treatment applies to the real house without a separate commit step. The stage house itself opens the same studio on click, while its door state remains separately legible in the artwork. The full-width `装好啦` action simply closes the studio after exploration.
 
 ### Motion Sprite Characters
 
@@ -294,7 +315,9 @@ The joint toggle is a small tracing-paper control at rest and red-pencil when ac
 
 ### Joint Calibration Editor
 
-The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes use a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
+The upload follow-on is a two-step calibration workspace, not a simulated recognition result. The uploaded drawing fills a white, graphite-framed canvas with contained image scaling. Draggable `20px` red-pencil nodes are native direct-manipulation buttons with a white inner border, graphite outer ring, grab cursor, and adjacent graphite label. They are excluded from global button press transforms so pressing a node cannot shift its calibrated center. Human, dog, and rabbit templates appear as stacked `56px` controls; the active template flips to red pencil and updates its anatomy-aware node list. On compact screens, the canvas stacks above the controls, remains at least `460px` tall, and follows the compact paper radius.
+
+**The Exact Joint Grab Rule.** On `pointerdown`, preserve the exact pointer-to-node-center grab offset and capture that pointer. Resolve movement against the rig canvas padding/content box—not its border box—using `clientWidth` / `clientHeight` and the origin at `rect.left + clientLeft`, `rect.top + clientTop`. Clamp with the measured rendered node half-width and half-height so the complete node remains inside the content box. On matching `pointerup` or `pointercancel`, release capture and clear the drag state; ignore completion from any other pointer. The automated precision check records `0px` displacement at pointer-down, a requested delta of `93px / -47px`, an actual delta of `93.046875px / -47.015625px`, and passing bounds.
 
 ### Command Composer & Feedback
 
@@ -314,7 +337,9 @@ Story mode is an optional stage overlay opened by a small control. Its warm-pape
 
 ### Scene, Export & Safety Layers
 
-Scene editing is the keyboard-accessible alternative to free dragging: a directional drawer with theme controls, one object card per piece, and labeled horizontal/vertical range inputs using the same measured bounds as the stage. This is not a second positioning model; both interfaces update the same coordinates. Export is a centered paper dialog with a pale tracing-paper preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions. Every dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit.
+Scene editing is the keyboard-accessible alternative to free dragging: a directional drawer with theme controls, one object card per piece, and labeled horizontal/vertical range inputs using the same measured bounds as the stage. This is not a second positioning model; both interfaces update the same coordinates. Its child-facing arrangement controls say `移动东西`, `放前面`, `放后面`, and `拿走`, never “图层”. Export is a centered paper dialog with a pale tracing-paper preview and large stacked choices for SVG, JSON, and copyable text. Parent safety reuses the dialog shell but gates settings behind a simple PIN form; settings are roomy bordered rows, while privacy guidance is calm and the clear-data action is isolated and explicitly destructive. The break reminder is shorter and centered, with two equally sized `48px` actions.
+
+Every modal dialog has a labeled close control, scroll-safe height, keyboard focus visibility, and a single unambiguous primary exit. Opening moves focus to its first enabled control; `Tab` and `Shift+Tab` remain contained within the active dialog; `Escape` closes it; closing restores focus to the element that launched it. Material and house dialogs additionally allow a backdrop click to close, without treating clicks inside the sheet as dismissal.
 
 ### Mobile Utility Navigation
 
@@ -335,6 +360,7 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** keep the joint overlay optional, labeled by anatomy, and visually secondary during motion.
 - **Do** keep chat as one continuous transcript with pale tracing-paper assistant bubbles, muted red-pencil user bubbles, visible typing feedback, and action-linked replies.
 - **Do** keep human and animal calibration templates anatomy-aware, draggable, and honest about local processing.
+- **Do** preserve the exact joint grab offset, use the rig canvas content-box origin and dimensions, clear only the matching captured pointer on up or cancel, and clamp by measured node half-size.
 - **Do** keep story tasks short, progressive, and visibly subordinate to the world they control.
 - **Do** preserve speaker attribution when switching between two companions in one transcript.
 - **Do** keep pointer and touch dragging direct, bounded, and visibly acknowledged with grab/grabbing cursors, blue-pencil dashed selection, and temporary lift.
@@ -343,6 +369,9 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Do** preserve the `1050px`, `820px`, and `560px` responsive behaviors, two-row mobile navigation, `44px` touch-safe targets, shared gold focus ring, and reduced-motion override.
 - **Do** verify zero horizontal page overflow down to the `320px` minimum viewport.
 - **Do** keep Chinese copy concise, warm, honest about local Demo behavior, and immediately actionable.
+- **Do** use normal-sized plain-text header tools and concrete child-facing verbs: `加东西`, `装房子`, `移动东西`, `放前面`, `放后面`, and `拿走`.
+- **Do** keep all 60 library items and 120 house presets visually previewable with code-native hand-drawn forms before selection.
+- **Do** give every modal initial focus, `Escape` dismissal, contained tab order, and focus restoration to its launcher.
 
 ### Don't:
 
@@ -356,6 +385,9 @@ Quick-action icons are unified `24px` inline SVGs with no fill, graphite `1.9px`
 - **Don't** open story, editing, export, or safety layers as competing dashboards or allow multiple modal planes to stack.
 - **Don't** hide the active speaker, reset chat when switching companions, or render duplicate conversation panels.
 - **Don't** let any scene object cross the measured stage boundary or allow drag completion to trigger its click action.
+- **Don't** apply global button press transforms to rig nodes or calculate their drag coordinates from the rig canvas border box.
 - **Don't** make drag the only way to position an object; keep labeled range controls available to keyboard users.
 - **Don't** shrink mobile actions below the touch-safe envelope merely to fit every utility label on one line.
 - **Don't** imply live AI capability or saved personal data when the shipped experience is local and replaceable.
+- **Don't** use “图层” in child-facing UI or substitute oversized, infantilized controls for clear novice-friendly wording.
+- **Don't** render material choices as generic chips or house presets as partial color swatches; show the whole object being chosen.
