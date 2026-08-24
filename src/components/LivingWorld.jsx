@@ -18,6 +18,7 @@ import HouseDecorator from "./HouseDecorator";
 import DoghouseDecorator from "./DoghouseDecorator";
 import KidToolDock from "./KidToolDock";
 import RockPaperScissors from "./RockPaperScissors";
+import CardCompareGame from "./CardCompareGame";
 import { screenChildMessage } from "../utils/safety";
 import { chatWithArk } from "../utils/api";
 import { playDogBark } from "../utils/soundEffects";
@@ -40,6 +41,12 @@ const defaultPositionByKind = {
   prop: { x: 52, y: 69 },
 };
 const defaultLearningState = { topic: "discovery", stars: 0, streak: 0, attempts: 0, currentAnswer: null, lastResult: "neutral" };
+const foodLevels = [
+  { id: "apple", name: "苹果", emoji: "🍎" },
+  { id: "sandwich", name: "三明治", emoji: "🥪" },
+  { id: "cake", name: "蛋糕", emoji: "🍰" },
+  { id: "feast", name: "营养大餐", emoji: "🍱" },
+];
 const learningPrompts = {
   start: { math: "我们一起学数学吧，请先用一个简单问题了解我的程度。", reading: "我们一起练阅读吧，请给我一小段适合朗读的内容。", english: "我们一起学英语吧，请从一个简单的生活词语开始。", discovery: "我想自由探索，请从这幅画里的事物开始教我一个小知识。" },
   quiz: { math: "请给我出一道简短的数学小题，先不要告诉我答案。", reading: "请给我一道简短的阅读理解小题，先让我自己想。", english: "请给我一道简单的英语词语小题，先不要公布答案。", discovery: "请根据画面给我出一道观察或常识小题。" },
@@ -102,8 +109,10 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [showParentControls, setShowParentControls] = useState(false);
   const [timeUp, setTimeUp] = useState(false);
   const [showRpsGame, setShowRpsGame] = useState(false);
+  const [showCardCompare, setShowCardCompare] = useState(false);
   const [windActive, setWindActive] = useState(false);
   const [cloudDrift, setCloudDrift] = useState(() => initialState?.cloudDrift || 0);
+  const [foodGrowth, setFoodGrowth] = useState(() => initialState?.foodGrowth || { level: 0, points: 0 });
   const timers = useRef([]);
   const stageRef = useRef(null);
   const roomReturnPositions = useRef({});
@@ -144,6 +153,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     if (action === "dogPlay" && activeActions[objectId]) return;
     if (action === "dogFetch" && activeActions[objectId]) return;
     if (isToyBasketAction && (activeActions[objectId] || activeActions.dog1)) return;
+    if (action === "feed" && activeActions[objectId]) return;
 
     const isPerson = object.type === "person";
     const isAlreadyInRoom = persistentState.restingCharacters?.includes(objectId);
@@ -187,7 +197,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
     setActiveActions((current) => ({ ...current, [objectId]: action }));
-    setMessage(customMessage || actionFeedback[action] || "世界动起来啦！");
+    setMessage(customMessage || (action === "dogEatApple" ? `狗狗跑到${foodLevels[foodGrowth.level]?.name || "苹果"}旁边，低头吃起来啦！` : actionFeedback[action]) || "世界动起来啦！");
     setBubbleVisible(true);
 
 
@@ -259,7 +269,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
         later(() => setActiveActions((current) => ({ ...current, [objectId]: "dogEat" })), 900);
         later(() => {
           setPersistentState((state) => ({ ...state, appleHidden: true }));
-          setMessage("咔嚓咔嚓，狗狗把苹果吃掉啦！");
+          setMessage(`咔嚓咔嚓，狗狗把${foodLevels[foodGrowth.level]?.name || "苹果"}吃掉啦！`);
         }, 1450);
         later(() => {
           setActiveActions((current) => ({ ...current, [objectId]: null }));
@@ -374,6 +384,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       setObjects((current) => current.map((item) => item.id === objectId ? { ...item, x: item.x > 58 ? 50 : 70 } : item));
     }
     if (action === "feed") {
+      const currentFood = foodLevels[foodGrowth.level] || foodLevels[0];
+      const completesFood = foodGrowth.points + 10 >= 100;
+      const nextLevel = completesFood ? (foodGrowth.level + 1) % foodLevels.length : foodGrowth.level;
+      const nextFood = foodLevels[nextLevel];
+      const nextGrowth = completesFood
+        ? { level: nextLevel, points: 0 }
+        : { level: foodGrowth.level, points: Math.min(100, foodGrowth.points + 10) };
       if (feedTarget) {
         feedReturnPositions.current[objectId] = { x: object.x, y: object.y };
         setPersistentState((state) => ({ ...state, appleHidden: false }));
@@ -386,7 +403,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       later(() => {
         setPersistentState((state) => ({ ...state, appleHidden: true }));
         setActiveActions((current) => ({ ...current, [feedTarget?.id || "person1"]: "eat" }));
-        setMessage("好吃！");
+        setFoodGrowth(nextGrowth);
+        setMessage(completesFood ? (nextLevel === 0 ? "营养大餐完成啦！新一轮从苹果重新开始！" : `食物成长值满100啦！解锁了更好的${nextFood.name}！`) : `${currentFood.name}真好吃！食物成长值增加10。`);
       }, 980);
       later(() => {
         const returnPosition = feedReturnPositions.current[objectId];
@@ -645,6 +663,13 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       later(() => setBubbleVisible(false), 2200);
       return;
     }
+    if (action === "cardCompare") {
+      setShowCardCompare(true);
+      setMessage(`来和${characterName}用 1 到 10 的卡牌比大小吧！`);
+      setBubbleVisible(true);
+      later(() => setBubbleVisible(false), 2200);
+      return;
+    }
     const originalType = objects.find((item) => item.id === objectId)?.type;
     const replacement = customObjects.find((item) => item.replacesType === originalType);
     if (replacement) {
@@ -667,6 +692,15 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     setBubbleVisible(true);
     later(() => setActiveActions((current) => ({ ...current, person1: null })), 1200);
     later(() => setBubbleVisible(false), 2000);
+  };
+
+  const handleCardCompareRound = ({ result }) => {
+    const resultMessage = result === "win" ? "你的卡牌更大，这一轮你赢啦！" : result === "lose" ? `${characterName}的卡牌更大！` : "两张牌一样大，这一轮平局！";
+    setActiveActions((current) => ({ ...current, person1: result === "lose" ? "cheer" : "wave" }));
+    setMessage(resultMessage);
+    setBubbleVisible(true);
+    later(() => setActiveActions((current) => ({ ...current, person1: null })), 1100);
+    later(() => setBubbleVisible(false), 1800);
   };
 
 
@@ -751,6 +785,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     learningState,
     doghouseDecor,
     cloudDrift,
+    foodGrowth,
   });
 
 
@@ -783,6 +818,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showObjectDrawing && <ObjectDrawingEditor onAdd={addCustomObject} onClose={() => setShowObjectDrawing(false)} />}
       {showParentControls && <ParentControls settings={safety} onChange={onSafetyChange} onClear={onClearLocalData} onClose={() => setShowParentControls(false)} />}
       {showRpsGame && <RockPaperScissors characterName={characterName} onRound={handleRpsRound} onClose={() => setShowRpsGame(false)} />}
+      {showCardCompare && <CardCompareGame characterName={characterName} onRound={handleCardCompareRound} onClose={() => setShowCardCompare(false)} />}
       {timeUp && <div className="break-reminder" role="dialog" aria-modal="true" aria-labelledby="break-title"><section><span aria-hidden="true">✦</span><h2 id="break-title">让眼睛休息一下吧</h2><p>已经创作了一段时间。看看远处、活动一下，准备好后再回来。</p><div><button type="button" onClick={onReset}>回到作品库</button><button type="button" onClick={() => setTimeUp(false)}>再创作一会儿</button></div></section></div>}
 
 
@@ -825,6 +861,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
               doghouseDecor={doghouseDecor}
               onDecorate={() => setShowHouseDecorator(true)}
               onDoghouseDecorate={() => { setEditingDoghouseId(null); setShowDoghouseDecorator(true); }}
+              foodGrowth={object.type === "person" ? foodGrowth : null}
+              currentFood={foodLevels[foodGrowth.level] || foodLevels[0]}
             />
           ))}
           {customObjects.map((object) => (
@@ -868,7 +906,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       </div>
 
 
-      <ActionButtons onAction={handleDirectAction} persistentState={persistentState} activeActions={activeActions} windActive={windActive} />
+      <ActionButtons onAction={handleDirectAction} persistentState={persistentState} activeActions={activeActions} windActive={windActive} currentFood={foodLevels[foodGrowth.level] || foodLevels[0]} />
     </main>
   );
 }
