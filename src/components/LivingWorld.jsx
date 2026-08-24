@@ -65,6 +65,12 @@ const learningPrompts = {
   hint: { math: "这道题我还没想明白，请只给我一步提示，不要直接说答案。", reading: "请提示我应该回到哪句话找线索，不要直接说答案。", english: "请给我一个联想或首字母提示，不要直接说答案。", discovery: "请给我一个观察提示，让我自己发现答案。" },
   review: { math: "请用一句话带我复习刚才的数学方法，再给一个很小的例子。", reading: "请帮我复习刚才用到的阅读方法。", english: "请带我复习刚才学过的英语词语。", discovery: "请用三个要点帮我复习刚才发现的知识。" },
 };
+const fruitDetails = {
+  apple: { name: "红苹果", effect: "活力满满", color: "#d96256" },
+  pear: { name: "香甜梨", effect: "心情清爽", color: "#dfc956" },
+  orange: { name: "小橙子", effect: "元气加倍", color: "#ed9544" },
+};
+
 const prepareCompanionSnapshot = (initialState, sceneObjects) => {
   const hasSavedScene = Array.isArray(initialState?.sceneObjects);
   const migrated = migrateCompanionSnapshot({
@@ -163,6 +169,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const [windActive, setWindActive] = useState(false);
   const [cloudDrift, setCloudDrift] = useState(() => initialState?.cloudDrift || 0);
   const [foodGrowth, setFoodGrowth] = useState(() => initialState?.foodGrowth || { level: 0, points: 0 });
+  const [recentActivities, setRecentActivities] = useState(() => initialState?.recentActivities || []);
   const timers = useRef([]);
   const companionActionTokens = useRef({});
   const stageRef = useRef(null);
@@ -176,6 +183,8 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
   const messageId = useRef(Math.max(1, ...(initialState?.messages || []).map((item) => Number(item.id) || 0)) + 1);
   const avatarGrowthRef = useRef(avatarGrowth);
   const handledStudyCompletion = useRef(null);
+
+  const recordActivity = (text) => setRecentActivities((current) => [...current.slice(-5), text]);
 
   const grantGrowth = (eventId, xp, reason) => {
     const result = awardGrowth(avatarGrowthRef.current, eventId, xp);
@@ -255,6 +264,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     const completionMessage = reward
       ? `${subjectName}专注完成！记录了 ${studiedFor}，新解锁：${reward.label}！`
       : `${subjectName}学习记录好了：${studiedFor}。先活动一下眼睛和身体吧！`;
+    recordActivity(`完成${subjectName}学习 · ${studiedFor}`);
     if (person) {
       const celebrationAction = ["dance", "cheer"].includes(reward?.action) ? reward.action : isStudyRewardUnlocked("cheer", completion.afterSeconds) ? "cheer" : "wave";
       playAction(person.id, celebrationAction, completionMessage);
@@ -799,6 +809,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       later(() => setBubbleVisible(false), 2200);
     }
     grantGrowth(`outfit-${avatar.id}-${look.outfit}`, 6, "完成一次形象搭配");
+    recordActivity(`换上了${avatar.name}的新搭配`);
   };
 
 
@@ -1058,6 +1069,47 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       later(() => setBubbleVisible(false), 2200);
       return;
     }
+    const directObject = objects.find((item) => item.id === objectId);
+    if (action === "shake" && directObject?.type === "tree" && directObject.fruitType) {
+      playAction(objectId, action);
+      const existingFruit = objects.some((item) => item.type === "harvestFruit" && item.sourceTreeId === objectId);
+      if (!existingFruit) {
+        const fruit = fruitDetails[directObject.fruitType] || fruitDetails.apple;
+        later(() => {
+          setObjects((current) => current.some((item) => item.type === "harvestFruit" && item.sourceTreeId === objectId) ? current : [...current, {
+            id: `harvest-${objectId}-${Date.now()}`,
+            type: "harvestFruit",
+            fruitVariant: directObject.fruitType,
+            sourceTreeId: objectId,
+            sceneId: currentSceneId,
+            x: Math.min(92, directObject.x + 4),
+            y: Math.min(84, directObject.y + 24),
+            layer: 22,
+            actions: ["consumeFruit"],
+            label: fruit.name,
+          }]);
+          setMessage(`${fruit.name}掉下来啦！点一下就可以让伙伴吃掉。`);
+          setBubbleVisible(true);
+          later(() => setBubbleVisible(false), 2800);
+        }, 480);
+      }
+      appendMessage("assistant", existingFruit ? "树下已经有一颗果实啦，先把它用掉吧！" : "摇一摇，果实掉下来啦！");
+      return;
+    }
+    if (action === "consumeFruit" && directObject?.type === "harvestFruit") {
+      const fruit = fruitDetails[directObject.fruitVariant] || fruitDetails.apple;
+      const eater = objects.find((item) => item.type === "person" && item.avatarId === activeCompanionId && normalizeSceneId(item.sceneId) === currentSceneId)
+        || objects.find((item) => item.type === "person" && normalizeSceneId(item.sceneId) === currentSceneId);
+      setActiveActions((current) => ({ ...current, [objectId]: "consumeFruit", ...(eater ? { [eater.id]: "eat" } : {}) }));
+      setMessage(`${characterName}吃下${fruit.name}，${fruit.effect}！`);
+      setBubbleVisible(true);
+      recordActivity(`吃了${fruit.name} · ${fruit.effect}`);
+      later(() => setObjects((current) => current.filter((item) => item.id !== objectId)), 760);
+      later(() => setActiveActions((current) => ({ ...current, [objectId]: null, ...(eater ? { [eater.id]: null } : {}) })), 1300);
+      later(() => setBubbleVisible(false), 2600);
+      appendMessage("assistant", `${fruit.name}很好吃，${fruit.effect}！`);
+      return;
+    }
     const originalType = objects.find((item) => item.id === objectId)?.type;
     const replacement = customObjects.find((item) => item.replacesType === originalType);
     if (replacement) {
@@ -1202,6 +1254,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     doghouseDecor,
     cloudDrift,
     foodGrowth,
+    recentActivities,
     });
     setMessage(editingProjectName ? `《${editingProjectName}》的修改已经保存啦！` : "作品已经保存到我的作品啦！");
     setBubbleVisible(true);
@@ -1237,7 +1290,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
       {showExport && <ExportPanel data={{ characterName, userName, messageCount: messages.length, ending: storyEnding, persistentState, messages, storyStep }} onClose={() => setShowExport(false)} />}
       {showMaterialLibrary && <MaterialLibrary onAdd={addMaterial} onClose={() => setShowMaterialLibrary(false)} />}
       {showHouseDecorator && <HouseDecorator value={houseDecor} onChange={setHouseDecor} onClose={() => setShowHouseDecorator(false)} />}
-      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} avatars={primaryAvatarCatalog} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} growth={avatarGrowth} onApply={applyAvatarLook} onClose={() => setShowAvatarWardrobe(false)} />}
+      {showAvatarWardrobe && activeCompanion && <AvatarWardrobe avatar={activeCompanion} avatars={primaryAvatarCatalog} value={avatarLooks[activeCompanion.id] || defaultAvatarLook} growth={avatarGrowth} studyProgress={study.progress} studyCompletionRatio={study.completionRatio} activityLabel={({ idle: "正在陪伴", playing: "正在玩耍", studying: "正在学习", working: "专注创作中", resting: "正在休息" })[characterStates[travelPerson?.id]?.activity] || "正在陪伴"} recentActivities={recentActivities} onApply={applyAvatarLook} onClose={() => setShowAvatarWardrobe(false)} />}
       {showDoghouseDecorator && <DoghouseDecorator value={editingDoghouseId ? libraryObjects.find((object) => object.id === editingDoghouseId)?.material : doghouseDecor} onChange={changeDoghouseDecor} onClose={closeDoghouseDecorator} />}
       {showSceneEditor && <SceneEditor objects={[...visibleObjects, ...visibleCustomObjects, ...visibleLibraryObjects]} theme={sceneTheme} sceneId={currentSceneId} positionBounds={positionBounds} onThemeChange={setSceneTheme} onObjectChange={moveSceneObject} onLayerChange={changeObjectLayer} onDeleteObject={deleteCustomObject} onClose={() => setShowSceneEditor(false)} />}
       {worldDrawingMode && <WorldDrawingEditor initialArt={worldArt} initialMode={worldDrawingMode} backgroundOnly onApply={applyWorldArt} onClose={() => setWorldDrawingMode(null)} />}
@@ -1250,7 +1303,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
 
 
       <div className="world-experience">
-      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${editMode ? "is-edit-mode" : "is-interaction-mode"} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${Object.values(characterStates).some((state) => [ACTIVITY_IDS.STUDYING, ACTIVITY_IDS.WORKING].includes(state.activity)) ? "has-desk-activity" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={`${currentSceneId === SCENE_IDS.ROOM ? "室内房间" : "室外世界"}，当前为${editMode ? "调整画面" : "互动"}模式`}>
+      <section ref={stageRef} style={currentSceneId === SCENE_IDS.OUTDOOR ? backgroundStyleFor(materialBackground) : undefined} className={`world-stage scene-${currentSceneId} theme-${sceneTheme} ${editMode ? "is-edit-mode" : "is-interaction-mode"} ${currentSceneId === SCENE_IDS.OUTDOOR && materialBackground ? "has-library-background" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && worldArt.background ? "has-custom-background" : ""} ${persistentState.night ? "is-night" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && storyActive ? "story-is-active" : ""} ${currentSceneId === SCENE_IDS.OUTDOOR && windActive ? "is-windy" : ""} ${Object.values(characterStates).some((state) => [ACTIVITY_IDS.STUDYING, ACTIVITY_IDS.WORKING].includes(state.activity)) ? "has-desk-activity" : ""} ${Object.values(characterStates).some((state) => state.activity === ACTIVITY_IDS.STUDYING) ? "has-study-activity" : ""} ${Object.values(characterStates).some((state) => state.activity === ACTIVITY_IDS.RESTING) ? "has-bed-activity" : ""} ${bubbleVisible ? "has-visible-bubble" : ""} ${sceneTransition ? `is-${sceneTransition}` : ""}`} aria-label={`${currentSceneId === SCENE_IDS.ROOM ? "室内房间" : "室外世界"}，当前为${editMode ? "调整画面" : "互动"}模式`}>
         <div className="demo-mode-badge"><span aria-hidden="true">●</span> {currentSceneId === SCENE_IDS.ROOM ? "伙伴的房间" : worldArt.background ? "原始世界 + 自绘背景" : selectedAvatar?.isUploaded ? "自绘角色已进入世界" : selectedAvatar ? "原角色动作帧" : "本地 Demo 识别"}</div>
         {editMode && <div className="drag-tip" id="drag-help"><span aria-hidden="true">↔</span> 点选物体后拖动或调整大小</div>}
         <button className={`world-edit-toggle ${editMode ? "is-active" : ""}`} type="button" onClick={() => setEditMode((value) => !value)} aria-pressed={editMode}>
