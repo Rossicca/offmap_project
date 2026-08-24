@@ -57,7 +57,7 @@ export default function CreatorHub({ userName, onUpload, onEditArtwork, onChoose
         <button className="doodle-tile yellow music-tile side-tool" data-label="伙伴音乐" type="button" onClick={() => window.dispatchEvent(new Event("living-drawing-open-music"))} aria-label="打开伙伴音乐播放器" title="伙伴音乐">♫</button><i aria-hidden="true">➰</i>
       </div>
       <section className="companion-window" aria-labelledby="companion-title">
-        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>MY LIVING DRAWING</span><h1 id="companion-title">AI 画伴</h1></div><button type="button" onClick={onLogout} aria-label="进入登录界面">登</button></header>
+        <header className="companion-titlebar"><div className="window-dots" aria-hidden="true"><i /><i /></div><div><span>DREAM DRAWING COMPANION</span><h1 id="companion-title">绘梦伙伴</h1></div><button type="button" onClick={onLogout} aria-label="进入登录界面">登</button></header>
         <div className="companion-content">
           <section className="companion-hero">
             <div className="character-showcase"><span className="spark s1">★</span><span className="spark s2">✦</span><span className="spark s3">〰</span><div className="character-frame" style={{ backgroundImage: `url(${selected.motionSprite})` }} role="img" aria-label={selected.name} /><div className="character-caption"><b>{selected.name}</b><span>今天也想陪你一起玩！</span></div></div>

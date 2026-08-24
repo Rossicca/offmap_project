@@ -265,7 +265,7 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
 
   return (
     <main className="rig-editor-page">
-      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
+      <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>绘梦伙伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
       <section className="rig-editor-intro"><div><h1>{armRigging ? "描出小手臂" : cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{armRigging ? "让手肘自然动" : cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{armRigging ? "从手肘圆点涂到小手，只涂要转动的小手臂。动作会限制在自然角度，人物原图不会被改色。" : cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : usingTemplateFallback ? "这次自动识别没有得到足够关节点，已自动换成可拖动模板。把红点放到角色对应位置即可继续。" : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
         <div className={`rig-canvas ${cutoutResult ? "is-cutout-review" : ""} ${armRigging ? "is-arm-rig-review" : ""}`} ref={boardRef} style={{ backgroundImage: cutoutResult ? "none" : `url(${previewUrl})` }} aria-label={armRigging ? "小手臂动作标记画布" : cutoutResult ? "人物透明背景检查画布" : "关节校准画布"}>

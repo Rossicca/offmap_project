@@ -1105,7 +1105,7 @@ export default function LivingWorld({ sceneObjects, onReset, selectedAvatar, com
     <main className="world-page">
       <header className="world-header">
         <button className="wordmark" type="button" onClick={onReset} aria-label="返回上传新画作">
-          <span aria-hidden="true">✦</span><b>AI 画伴</b>
+          <span aria-hidden="true">✦</span><b>绘梦伙伴</b>
         </button>
         <button className="world-back-button" type="button" onClick={onReset}>← 返回作品库</button>
         {editingProjectName && <div className="editing-project-status" title={editingProjectName}><span aria-hidden="true">✎</span><em>正在修改</em><b>{editingProjectName}</b></div>}
