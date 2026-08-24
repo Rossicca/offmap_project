@@ -5,7 +5,8 @@ const actions = [
   { target: "person1", action: "jump", icon: "jump", label: "跳一下" },
   { target: "person1", action: "dance", icon: "dance", label: "跳个舞" },
   { target: "person1", action: "cheer", icon: "cheer", label: "一起欢呼" },
-  { target: "person1", action: "rpsGame", icon: "game", label: "和小人玩游戏" },
+  { target: "person1", action: "rpsGame", icon: "game", label: "和小人玩石头剪刀布" },
+  { target: "person1", action: "cardCompare", icon: "cards", label: "和小人比大小" },
   { target: "person1", action: "rest", icon: "rest", label: "进入房间休息" },
   { target: "person1", action: "leaveRoom", icon: "outside", label: "出去活动" },
   { target: "house1", action: "openDoor", icon: "door", label: "打开门" },
@@ -33,6 +34,7 @@ function ActionIcon({ name }) {
     dance: <><circle cx="12" cy="5" r="2"/><path d="M12 7v6M12 9 7 12M12 9l5-2M12 13l-4 7M12 13l5 6"/></>,
     cheer: <><path d="M7 21v-8l-4-5M17 21v-8l4-5M7 13l5 3 5-3"/><circle cx="12" cy="7" r="3"/></>,
     game: <><path d="M6 12V7a2 2 0 0 1 4 0v3-5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v7c0 4-2.5 7-6.5 7C7 21 4 17.5 4 14v-2h2Z"/><path d="M7 3v2M18 2l-1 2M21 7h-2"/></>,
+    cards: <><rect x="5" y="3" width="12" height="17" rx="2"/><path d="m9 9 2-2 2 2-2 2-2-2ZM9 15h4M18 7l2 1v11a2 2 0 0 1-2 2h-8"/></>,
     rest: <><path d="M4 17h16M6 17V9h10a4 4 0 0 1 4 4v4M6 13h5"/><path d="M7 20v1M18 20v1"/></>,
     outside: <><path d="M4 21V3h10v18M8 12h12M16 8l4 4-4 4"/><circle cx="11" cy="12" r=".7"/></>,
     door: <><path d="M6 21V3h12v18M9 21V6h7v15" /><circle cx="13.5" cy="13" r=".8" /></>,
@@ -53,7 +55,7 @@ function ActionIcon({ name }) {
 }
 
 
-export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false }) {
+export default function ActionButtons({ onAction, persistentState, visibleObjectIds, activeActions = {}, windActive = false, currentFood = { name: "苹果" } }) {
   const [open, setOpen] = useState(false);
   const restingCharacters = persistentState.restingCharacters || [];
   const visibleActions = actions.filter((item) => {
@@ -61,6 +63,7 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
     if (item.action === "leaveRoom") return restingCharacters.includes(item.target);
     if (item.action === "rest") return !restingCharacters.includes(item.target);
     if (item.action === "rpsGame") return !restingCharacters.includes(item.target);
+    if (item.action === "cardCompare") return !restingCharacters.includes(item.target);
     if (item.action === "enterDoghouse") return !persistentState.dogInHouse;
     if (item.action === "exitDoghouse") return Boolean(persistentState.dogInHouse);
     if (item.action === "move" && item.target === "dog1") return !persistentState.dogInHouse;
@@ -82,7 +85,7 @@ export default function ActionButtons({ onAction, persistentState, visibleObject
         <div className="action-scroll">
         {visibleActions.map((item) => {
           const actualAction = item.target === "house1" && persistentState.doorOpen ? "closeDoor" : item.action;
-          const label = actualAction === "closeDoor" ? "关上门" : item.action === "wind" && windActive ? "风正在吹" : item.label;
+          const label = actualAction === "closeDoor" ? "关上门" : item.action === "wind" && windActive ? "风正在吹" : item.action === "feed" ? `喂${currentFood.name}` : item.action === "dogEatApple" ? `狗狗吃${currentFood.name}` : item.label;
           return (
             <button key={`${item.target}-${item.action}`} type="button" disabled={item.action === "wind" && windActive} onClick={() => onAction(item.target, actualAction)}>
               <ActionIcon name={item.icon} />{label}
