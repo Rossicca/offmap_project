@@ -481,23 +481,6 @@ button:active:not(:disabled):not(.scene-object):not(.rig-node) { transform: tran
   mix-blend-mode: multiply;
 }
 
-.world-stage.has-uploaded-world { background: #1f2528; }
-.world-stage.has-uploaded-world::before { display: none; }
-.world-stage.has-uploaded-world .drawing-backdrop {
-  z-index: 0;
-  opacity: 1;
-  filter: none;
-  mix-blend-mode: normal;
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-.world-stage.has-uploaded-world .dog-route { position: absolute; z-index: 6; inset: 0; pointer-events: none; }
-.world-stage.has-uploaded-world .dog-route > .scene-object { pointer-events: auto; }
-.world-stage.has-uploaded-world .demo-mode-badge,
-.world-stage.has-uploaded-world .joint-toggle,
-.world-stage.has-uploaded-world .drag-tip { z-index: 18; }
-
-
 .sky-wash { position: absolute; inset: 0; z-index: -2; background: linear-gradient(#72d7f3 0%, #a9e8f4 67%, #9bd071 67%); transition: 1.5s ease; }
 .world-stage.is-night .sky-wash { background: linear-gradient(#172a59 0%, #364c77 67%, #263a3c 67%); }
 .world-stage.theme-forest .sky-wash { background: linear-gradient(#f6b768 0%, #cde09b 67%, #719b58 67%); }

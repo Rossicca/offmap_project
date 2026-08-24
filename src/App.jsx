@@ -85,6 +85,7 @@ export default function App() {
       joints: rig.movable,
       rigNodes: rig.nodes,
       imageUrl: nextAnalysis.previewUrl,
+      imageSize: nextAnalysis.imageSize,
       isUploaded: true,
     };
     setSelectedAvatar(uploadedAvatar);
