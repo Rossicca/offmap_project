@@ -48,7 +48,7 @@ export default function UploadPanel({ onUpload, busy, error }) {
         <button className="primary-button" type="button" disabled={busy} onClick={() => inputRef.current?.click()}>
           {busy ? <><span className="loading-dots" aria-hidden="true">•••</span> 正在分析</> : <>选择我的画 <span aria-hidden="true">↗</span></>}
         </button>
-        <small>图片只在当前页面使用 · 最大 12MB</small>
+        <small>AI 分析或重绘时，图片会发送到配置的火山方舟模型；作品仍保存在本机 · 最大 12MB</small>
         {error && <p className="inline-error" role="alert">{error}</p>}
       </section>
     </main>
