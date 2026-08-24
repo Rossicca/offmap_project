@@ -8,7 +8,8 @@ function createLocalPreview(file) {
     const sourceUrl = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => {
-      const maxSide = 720;
+      // Keep enough line and color detail for joint placement and foreground matting.
+      const maxSide = 1440;
       const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
