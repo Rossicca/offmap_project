@@ -9,10 +9,13 @@ const frameByAction = {
   spin: "0% 0%",
   cheer: "0% 100%",
   rest: "0% 0%",
+  throwBall: "100% 0%",
+  carryToy: "100% 0%",
 };
 
 
 const reactionByAction = { dance: "跳舞时间", spin: "转起来", cheer: "太棒啦", rest: "房间休息" };
+const rpsGestureByAction = { rpsRock: "✊", rpsScissors: "✌️", rpsPaper: "✋" };
 
 
 const humanNodes = [
@@ -53,19 +56,22 @@ export default function MotionAvatar({ avatar, action, showJoints }) {
         ? <img className="uploaded-avatar-art" src={avatar.imageUrl} alt="" draggable="false" />
         : <span className="motion-sprite" style={{ backgroundImage: `url(${avatar.motionSprite})`, backgroundPosition: frame }} aria-hidden="true" />}
       {showJoints && <JointOverlay species={avatar.species} calibratedNodes={avatar.rigNodes} />}
+      {action === "carryToy" && <span className="person-carry-toy" aria-hidden="true"><i /><b /><small /></span>}
       {reactionByAction[action] && <em className="reaction-badge">{reactionByAction[action]}</em>}
+      {rpsGestureByAction[action] && <span className="rps-world-gesture" aria-hidden="true">{rpsGestureByAction[action]}</span>}
     </div>
   );
 }
 
 
 export function MotionDog({ action, showJoints }) {
-  const dogFrames = { idle: "0% 0%", move: "100% 0%", jump: "0% 100%", sit: "100% 100%" };
+  const dogFrames = { idle: "0% 0%", move: "100% 0%", jump: "0% 100%", sit: "100% 100%", dogEat: "100% 0%", dogPlay: "100% 0%", dogChase: "100% 0%", dogCarry: "100% 0%" };
   const frame = dogFrames[action] || dogFrames.idle;
   const dogNodes = [["头",35,33],["躯干",57,52],["左前腿",39,72],["右前腿",50,74],["左后腿",66,73],["右后腿",77,72],["尾巴",82,45]];
   return (
     <div className={`motion-dog motion-${action || "idle"} ${showJoints ? "show-joints" : ""}`}>
       <span className="motion-sprite" style={{ backgroundImage: `url(${dogMotion})`, backgroundPosition: frame }} aria-hidden="true" />
+      {action === "dogCarry" && <span className="dog-mouth-fetch-ball" aria-hidden="true" />}
       {showJoints && <span className="image-joints dog-joints" aria-hidden="true">{dogNodes.map(([label,x,y]) => <i key={label} style={{left:`${x}%`,top:`${y}%`}}><b>{label}</b></i>)}</span>}
     </div>
   );
