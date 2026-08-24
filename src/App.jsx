@@ -84,8 +84,10 @@ export default function App() {
       species: rig.type === "兔子" ? "rabbit" : rig.type === "人物" ? "human" : "animal",
       joints: rig.movable,
       rigNodes: rig.nodes,
-      imageUrl: nextAnalysis.previewUrl,
-      imageSize: nextAnalysis.imageSize,
+      imageUrl: nextAnalysis.foregroundUrl || nextAnalysis.previewUrl,
+      sourceImageUrl: nextAnalysis.previewUrl,
+      imageSize: nextAnalysis.cutoutSize || nextAnalysis.imageSize,
+      foregroundExtracted: Boolean(nextAnalysis.foregroundPrepared),
       isUploaded: true,
     };
     setSelectedAvatar(uploadedAvatar);
@@ -180,11 +182,11 @@ export default function App() {
     const restoredUploadedAvatar = project.avatarData?.isUploaded ? project.avatarData : null;
     const restoredCompanions = restoredUploadedAvatar ? [restoredUploadedAvatar] : (project.companionIds?.length ? project.companionIds : [project.avatarId]).map((id) => avatarCatalog.find((item) => item.id === id)).filter(Boolean);
     const avatar = restoredCompanions[0] || avatarCatalog[0];
-    previewUrlRef.current = restoredUploadedAvatar?.imageUrl || null;
+    previewUrlRef.current = restoredUploadedAvatar?.sourceImageUrl || restoredUploadedAvatar?.imageUrl || null;
     setSelectedAvatar(avatar);
     setCompanions(restoredCompanions.length ? restoredCompanions : [avatar]);
     setCurrentProjectId(project.id);
-    setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: restoredUploadedAvatar ? "saved-upload" : "saved-project", previewUrl: restoredUploadedAvatar?.imageUrl || null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints, nodes: avatar.rigNodes }, dog: { type: "小狗", joints: 7 } } });
+    setAnalysis({ sceneObjects: project.snapshot?.sceneObjects || [...demoScene.map((object) => object.type === "person" ? { ...object, avatarId: avatar.id } : { ...object }), ...(restoredCompanions[1] ? [{ ...companionObject, avatarId: restoredCompanions[1].id, label: restoredCompanions[1].name }] : [])], source: restoredUploadedAvatar ? "saved-upload" : "saved-project", previewUrl: restoredUploadedAvatar?.sourceImageUrl || restoredUploadedAvatar?.imageUrl || null, savedState: project.snapshot, rigAnalysis: { person: { type: avatar.kind, joints: avatar.joints.length, movable: avatar.joints, nodes: avatar.rigNodes }, dog: { type: "小狗", joints: 7 } } });
   };
 
 

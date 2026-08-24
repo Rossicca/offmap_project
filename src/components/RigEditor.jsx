@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DrawingEnhancementPicker from "./DrawingEnhancementPicker";
+import CharacterCutoutReview from "./CharacterCutoutReview";
 import { enhanceDrawing } from "../utils/enhanceDrawing";
+import { extractCharacterForeground } from "../utils/extractCharacterForeground";
 
 const templates = {
   human: { label: "人物", nodes: [["头",50,18],["身体",50,43],["左肩",38,34],["左肘",27,48],["右肩",62,34],["右肘",73,48],["左髋",44,58],["左膝",42,76],["右髋",56,58],["右膝",58,76]] },
@@ -11,6 +13,7 @@ const templates = {
 export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const originalPreviewUrl = analysis.originalPreviewUrl || analysis.previewUrl;
   const boardRef = useRef(null);
+  const cutoutReviewRef = useRef(null);
   const dragRef = useRef(null);
   const enhancementRequestRef = useRef(0);
   const enhancementAbortRef = useRef(null);
@@ -30,6 +33,11 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   const [previewUrl, setPreviewUrl] = useState(analysis.previewUrl);
   const [enhancementBusy, setEnhancementBusy] = useState(false);
   const [enhancementError, setEnhancementError] = useState("");
+  const [cutoutResult, setCutoutResult] = useState(null);
+  const [cutoutReviewReady, setCutoutReviewReady] = useState(false);
+  const [cutoutBusy, setCutoutBusy] = useState(false);
+  const [cutoutProgress, setCutoutProgress] = useState("");
+  const [cutoutError, setCutoutError] = useState("");
   const template = useMemo(() => templates[species], [species]);
   const [boardSize, setBoardSize] = useState({ width: 1, height: 1 });
   const imageAspect = analysis.imageSize ? analysis.imageSize.width / analysis.imageSize.height : null;
@@ -60,11 +68,15 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
   useEffect(() => () => enhancementAbortRef.current?.abort(), []);
 
   const chooseTemplate = (nextSpecies) => {
+    setCutoutResult(null);
+    setCutoutError("");
     setSpecies(nextSpecies);
     setNodes(templates[nextSpecies].nodes.map(([label,x,y]) => ({ label, x, y })));
   };
 
   const chooseEnhancement = async (level) => {
+    setCutoutResult(null);
+    setCutoutError("");
     const request = ++enhancementRequestRef.current;
     enhancementAbortRef.current?.abort();
     enhancementAbortRef.current = null;
@@ -139,33 +151,73 @@ export default function RigEditor({ analysis, onConfirm, onCancel }) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const confirm = () => onConfirm({
+  const finishRig = ({ foregroundUrl = null, cutoutSize = null, finalNodes = nodes, foregroundPrepared = false } = {}) => onConfirm({
     ...analysis,
     originalPreviewUrl,
     previewUrl,
+    foregroundUrl,
+    foregroundPrepared,
+    cutoutSize,
     enhancementLevel,
     needsRigSetup: false,
     rigAnalysis: {
       ...analysis.rigAnalysis,
-      person: { type: detectedNodes?.length ? detectedType : template.label, joints: nodes.length, movable: nodes.map((node) => node.label), nodes, source: detectedNodes?.length ? "ark-vision-reviewed" : "user-calibrated-template" },
+      person: { type: detectedNodes?.length ? detectedType : template.label, joints: finalNodes.length, movable: finalNodes.map((node) => node.label), nodes: finalNodes, source: detectedNodes?.length ? "ark-vision-reviewed" : "user-calibrated-template" },
     },
   });
+
+  const prepareCutout = async () => {
+    setCutoutBusy(true);
+    setCutoutError("");
+    setCutoutProgress("正在准备人物范围…");
+    try {
+      const result = await extractCharacterForeground(previewUrl, nodes, {
+        onProgress: ({ key, percent }) => {
+          if (/fetch|download|model|resource/i.test(key)) setCutoutProgress(`首次加载本机人物模型 ${percent}%`);
+          else if (/inference|compute/i.test(key)) setCutoutProgress("正在识别人物轮廓…");
+          else setCutoutProgress("正在整理透明边缘…");
+        },
+      });
+      setCutoutReviewReady(false);
+      setCutoutResult(result);
+      setCutoutProgress("人物已经单独提取，请检查边缘。");
+    } catch (error) {
+      setCutoutError(error.message || "人物没有成功提取。请调整关节点后重试。");
+      setCutoutProgress("");
+    } finally {
+      setCutoutBusy(false);
+    }
+  };
+
+  const confirm = async () => {
+    if (!cutoutResult) {
+      await prepareCutout();
+      return;
+    }
+    finishRig({ foregroundUrl: cutoutReviewRef.current?.exportPng() || cutoutResult.url, cutoutSize: cutoutResult.size, finalNodes: cutoutResult.nodes, foregroundPrepared: true });
+  };
 
   return (
     <main className="rig-editor-page">
       <header className="rig-editor-header"><div className="wordmark"><span>✦</span><b>AI 画伴</b></div><button type="button" onClick={onCancel}>返回主页</button></header>
-      <section className="rig-editor-intro"><div><h1>{detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。拖动不准确的节点后即可进入世界。` : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
+      <section className="rig-editor-intro"><div><h1>{cutoutResult ? "人物已经单独提取" : detectedNodes?.length ? "AI 已找到关节" : "把关节放到"}<br /><em>{cutoutResult ? "请检查边缘" : detectedNodes?.length ? "请检查一下" : "正确的位置"}</em></h1><p>{cutoutResult ? "透明格子表示已经移除的部分。需要时用画笔擦掉多余背景，或补回被误删的人物。" : detectedNodes?.length ? `视觉模型识别到 ${detectedNodes.length} 个关节。校准后将在本机提取人物，不会按白色删除画面。` : "请选择最接近的角色模板并拖动节点校准。"}</p></div><span>第 2 步，共 3 步</span></section>
       <section className="rig-editor-workspace">
-        <div className="rig-canvas" ref={boardRef} style={{ backgroundImage: `url(${previewUrl})` }} aria-label="关节校准画布">
-          {nodes.map((node, index) => { const point = displayNode(node); return <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${point.x}%`, top: `${point.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>; })}
+        <div className={`rig-canvas ${cutoutResult ? "is-cutout-review" : ""}`} ref={boardRef} style={{ backgroundImage: cutoutResult ? "none" : `url(${previewUrl})` }} aria-label={cutoutResult ? "人物透明背景检查画布" : "关节校准画布"}>
+          {cutoutResult
+            ? <CharacterCutoutReview ref={cutoutReviewRef} result={cutoutResult} onReady={() => setCutoutReviewReady(true)} />
+            : nodes.map((node, index) => { const point = displayNode(node); return <button key={`${node.label}-${index}`} className={`rig-node ${draggingIndex === index ? "is-dragging" : ""}`} type="button" style={{ left: `${point.x}%`, top: `${point.y}%` }} onDragStart={(event) => event.preventDefault()} onPointerDown={(event) => startNodeDrag(index, event)} onPointerMove={(event) => moveNode(index, event)} onPointerUp={(event) => finishNodeDrag(index, event)} onPointerCancel={(event) => finishNodeDrag(index, event)} aria-label={`拖动${node.label}`}><i /><b>{node.label}</b></button>; })}
+          {cutoutBusy && <div className="cutout-processing" role="status"><i aria-hidden="true" /><b>{cutoutProgress}</b><span>首次使用需要下载约 80MB 模型，之后会从浏览器缓存读取。</span></div>}
         </div>
         <aside className="rig-controls">
-          <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy} error={enhancementError} onChange={chooseEnhancement} />
-          <div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
+          {!cutoutResult && <DrawingEnhancementPicker value={enhancementLevel} busy={enhancementBusy || cutoutBusy} error={enhancementError} onChange={chooseEnhancement} />}
+          <div className={`cutout-status ${cutoutResult ? "is-ready" : ""}`} role="status"><h2>{cutoutResult ? "人物边缘检查" : "本机人物提取"}</h2><p>{cutoutResult ? "人物内部的白色会保留；透明格子不会进入背景。完成修边后即可继续。" : "使用关节范围定位人物，再生成独立透明 PNG。图片只在这台设备上处理。"}</p>{cutoutProgress && !cutoutBusy && <small>{cutoutProgress}</small>}{cutoutError && <small className="cutout-error">{cutoutError}</small>}</div>
+          {!cutoutResult && <><div><h2>{detectedNodes?.length ? "识别结果" : "角色类型"}</h2><p>{detectedNodes?.length ? `模型判断为${detectedType || template.label}；如有偏差可直接拖动红点。` : "不同动物会使用不同的可动节点。"}</p></div>
           <div className="rig-template-switch" aria-label="关节模板">{Object.entries(templates).map(([key,value]) => <button type="button" key={key} className={species === key ? "is-active" : ""} onClick={() => chooseTemplate(key)} aria-pressed={species === key}>{value.label}<small>{value.nodes.length} 个节点</small></button>)}</div>
           <div className="rig-node-list"><h3>当前节点</h3><div>{nodes.map((node) => <span key={node.label}>{node.label}</span>)}</div></div>
-          <p className="rig-hint"><b>操作提示</b> 按住红色节点拖动；节点名称会跟着移动。确认后仍可在互动世界中显示或隐藏关节。</p>
-          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy}>{enhancementBusy ? "正在调整画面…" : "确认关节，继续画背景"} {!enhancementBusy && <span aria-hidden="true">→</span>}</button>
+          <p className="rig-hint"><b>操作提示</b> 红点范围会帮助模型避开周围的房子、云朵和其他物件。</p></>}
+          {cutoutResult && <button className="cutout-retry" type="button" onClick={() => { setCutoutResult(null); setCutoutReviewReady(false); setCutoutProgress(""); }}>重新定位关节</button>}
+          {cutoutError && !cutoutResult && <button className="cutout-fallback" type="button" onClick={() => finishRig()}>暂用原图继续</button>}
+          <button className="primary-button" type="button" onClick={confirm} disabled={enhancementBusy || cutoutBusy || (cutoutResult && !cutoutReviewReady)}>{enhancementBusy ? "正在调整画面…" : cutoutBusy ? "正在提取人物…" : cutoutResult && !cutoutReviewReady ? "正在生成预览…" : cutoutResult ? "使用这个人物，继续画背景" : "提取人物并检查"} {!enhancementBusy && !cutoutBusy && (!cutoutResult || cutoutReviewReady) && <span aria-hidden="true">→</span>}</button>
         </aside>
       </section>
     </main>
